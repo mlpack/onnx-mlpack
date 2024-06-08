@@ -13,7 +13,7 @@ size_t FindOutputDimension(onnx::GraphProto graph, onnx::NodeProto node);
 
 arma::mat ExtractWeights(onnx::GraphProto graph, onnx::NodeProto node, bool transposed);
 
-arma::mat ExtractBiases(onnx::GraphProto graph, onnx::NodeProto node, bool transposed);
+arma::mat ExtractBiases(onnx::GraphProto graph, onnx::NodeProto node);
 
 
 #include "gemm_impl.hpp"

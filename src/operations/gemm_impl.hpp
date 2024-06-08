@@ -4,22 +4,20 @@ void AddGemm(mlpack::FFN<> &ffn, onnx::GraphProto graph,
               onnx::NodeProto node, map<string, double> onnxOperatorAttribute)
 {
     mlpack::LinearNoBias *linearNoBias = new mlpack::LinearNoBias(FindOutputDimension(graph, node));
-    if (onnxOperatorAttribute["transA"] == 0){
-        linearNoBias->Parameters() = onnxOperatorAttribute["alpha"] * ExtractWeights(graph, node, false);
-    }else if(onnxOperatorAttribute["transA"] == 1){
-        linearNoBias->Parameters() = onnxOperatorAttribute["alpha"] * ExtractWeights(graph, node, true);
-    }
+    // getting the weights in correct dimension
+    arma::mat weights = onnxOperatorAttribute["alpha"] * ExtractWeights(graph, node, onnxOperatorAttribute["transB"]);
+    weights.print("weights");
+    linearNoBias->Parameters() = weights;
     ffn.Add(linearNoBias);
-    cout<<"added linearnobias"<<endl;
+    cout<<"Added linearnobias"<<endl;
 
     mlpack::Add *add = new mlpack::Add();
-    if (onnxOperatorAttribute["transB"] == 0){
-        linearNoBias->Parameters() = onnxOperatorAttribute["beta"] * ExtractBiases(graph, node, false);
-    }else if(onnxOperatorAttribute["transB"] == 1){
-        linearNoBias->Parameters() = onnxOperatorAttribute["beta"] * ExtractBiases(graph, node, true);
-    }
+    // getting the biases in correct dimension
+    arma::mat biases = ExtractBiases(graph, node);
+    biases.print("biases");
+    add->Parameters() = biases;
     ffn.Add(add);
-    cout<<"added the add layer"<<endl;
+    cout<<"Added the add layer"<<endl;
 }
 
 size_t FindOutputDimension(onnx::GraphProto graph, onnx::NodeProto node){
@@ -56,10 +54,9 @@ arma::mat ExtractWeights(onnx::GraphProto graph, onnx::NodeProto node, bool tran
         return transposed ? Weights : Weights.t();
     }
     throw std::runtime_error("error occured at weight extraction in gemm");
-
 }
 
-arma::mat ExtractBiases(onnx::GraphProto graph, onnx::NodeProto node, bool transposed){
+arma::mat ExtractBiases(onnx::GraphProto graph, onnx::NodeProto node){
     // finding the initializer in which biases are stored
     string input_name = node.input(2);
     onnx::TensorProto biasInitializer;
@@ -80,5 +77,4 @@ arma::mat ExtractBiases(onnx::GraphProto graph, onnx::NodeProto node, bool trans
         return Biases;
     }
     throw std::runtime_error("error occured at bias extraction in gemm");
-
 }

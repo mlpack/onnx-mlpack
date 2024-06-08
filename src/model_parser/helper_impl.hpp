@@ -55,3 +55,13 @@ onnx::NodeProto get::CurrentNode(onnx::GraphProto graph, string nodeInput)
     }
     return node;
 }
+
+onnx::TensorProto Initializer(onnx::GraphProto graph, string initializerName){
+    for( onnx::TensorProto init: graph.initializer()){
+        if(initializerNamer == init.name()){
+            return init;
+        }
+    }
+    throw std::runtime_error("No initializer found with name " + initializerName);
+}
+

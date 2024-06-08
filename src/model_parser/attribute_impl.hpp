@@ -14,11 +14,9 @@ std::map<std::string, int> AttributeType = {
     {"TENSORS", 9},
     {"GRAPHS", 10},
     {"SPARSE_TENSORS", 12},
-    {"TYPE_PROTOS", 14}
-};
+    {"TYPE_PROTOS", 14}};
 
-int
-extract_attr_values(onnx::AttributeProto attr)
+int extract_attr_values(onnx::AttributeProto attr)
 {
     int value;
 
@@ -72,7 +70,14 @@ map<string, double> OnnxOperatorAttribute(onnx::GraphProto graph, onnx::NodeProt
     else if (node.op_type() == "Relu")
     {
     }
+    else if (node.op_type() == "LeakyRelu")
+    {
+        onnxOperatorAttribute["alpha"] = 0.01;
+    }
     else if (node.op_type() == "Softmax")
+    {
+    }
+    else if (node.op_type() == "Mul")
     {
     }
     else
@@ -83,7 +88,7 @@ map<string, double> OnnxOperatorAttribute(onnx::GraphProto graph, onnx::NodeProt
     // iteratre throught the attribute and set the values
     for (onnx::AttributeProto attr : node.attribute())
     {
-        if (attr.name() == "alpha")
+        if (attr.name() == "alpha") // Gemm, LeakyRelu
         {
             onnxOperatorAttribute["alpha"] = extract_attr_values(attr);
         }
