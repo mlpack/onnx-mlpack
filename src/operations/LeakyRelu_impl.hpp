@@ -1,6 +1,5 @@
-#include "relu.hpp"
+#include "LeakyRelu.hpp"
 
-void AddRelu(mlpack::FFN<> &ffn){
-    ffn.Add(new mlpack::LeakyReLU());
-    cout<<"added the addRelu"<<endl;
+void AddLeakyRelu(mlpack::FFN<> &ffn){
+    
 }

@@ -56,9 +56,9 @@ onnx::NodeProto get::CurrentNode(onnx::GraphProto graph, string nodeInput)
     return node;
 }
 
-onnx::TensorProto Initializer(onnx::GraphProto graph, string initializerName){
+onnx::TensorProto get::Initializer(onnx::GraphProto graph, string initializerName){
     for( onnx::TensorProto init: graph.initializer()){
-        if(initializerNamer == init.name()){
+        if(initializerName == init.name()){
             return init;
         }
     }

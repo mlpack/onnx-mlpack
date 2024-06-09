@@ -1,4 +1,4 @@
-#include "gemm.hpp"
+#include "Gemm.hpp"
 
 void AddGemm(mlpack::FFN<> &ffn, onnx::GraphProto graph,
               onnx::NodeProto node, map<string, double> onnxOperatorAttribute)

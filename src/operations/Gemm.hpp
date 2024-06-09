@@ -16,5 +16,5 @@ arma::mat ExtractWeights(onnx::GraphProto graph, onnx::NodeProto node, bool tran
 arma::mat ExtractBiases(onnx::GraphProto graph, onnx::NodeProto node);
 
 
-#include "gemm_impl.hpp"
+#include "Gemm_impl.hpp"
 #endif

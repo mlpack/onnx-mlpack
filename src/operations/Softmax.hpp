@@ -9,5 +9,5 @@ using namespace std;
 void AddSoftmax(mlpack::FFN<> &ffn);
 
 
-#include "softmax_impl.hpp"
+#include "Softmax_impl.hpp"
 #endif

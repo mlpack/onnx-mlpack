@@ -30,7 +30,4 @@ void AddLayer(mlpack::FFN<> &ffn, onnx::GraphProto graph,
     else if (node.op_type() == "MaxPool"){
         AddMaxPool(ffn);
     }
-    else if (node.op_type() == "BatchNormalization"){
-        AddBatchNormalization(ffn);
-    }
 }

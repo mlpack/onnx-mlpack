@@ -9,5 +9,5 @@ using namespace std;
 void AddRelu(mlpack::FFN<> &ffn);
 
 
-#include "relu_impl.hpp"
+#include "Relu_impl.hpp"
 #endif

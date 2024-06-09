@@ -1,4 +1,4 @@
-#include "softmax.hpp"
+#include "Softmax.hpp"
 
 void AddSoftmax(mlpack::FFN<> &ffn){
     ffn.Add(new mlpack::Softmax());
