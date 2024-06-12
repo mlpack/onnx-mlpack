@@ -33,7 +33,7 @@ vector<size_t> get::InputDimension(onnx::GraphProto graph, string modelInput)
         if (input.name() == modelInput)
         {
             int dim_size = input.type().tensor_type().shape().dim().size();
-            for (int i = 1; i < dim_size; i++)
+            for (int i = dim_size - 1; i > 0; i--)
             {
                 dimension.push_back(input.type().tensor_type().shape().dim(i).dim_value());
             }
@@ -45,10 +45,13 @@ vector<size_t> get::InputDimension(onnx::GraphProto graph, string modelInput)
 onnx::NodeProto get::CurrentNode(onnx::GraphProto graph, string nodeInput)
 {
     onnx::NodeProto node;
-    
-    for (onnx::NodeProto node : graph.node()){
-        for(int i=0; i<node.input().size(); i++){
-            if( nodeInput == node.input(i)){
+
+    for (onnx::NodeProto node : graph.node())
+    {
+        for (int i = 0; i < node.input().size(); i++)
+        {
+            if (nodeInput == node.input(i))
+            {
                 return node;
             }
         }
@@ -56,12 +59,14 @@ onnx::NodeProto get::CurrentNode(onnx::GraphProto graph, string nodeInput)
     return node;
 }
 
-onnx::TensorProto get::Initializer(onnx::GraphProto graph, string initializerName){
-    for( onnx::TensorProto init: graph.initializer()){
-        if(initializerName == init.name()){
+onnx::TensorProto get::Initializer(onnx::GraphProto graph, string initializerName)
+{
+    for (onnx::TensorProto init : graph.initializer())
+    {
+        if (initializerName == init.name())
+        {
             return init;
         }
     }
     throw std::runtime_error("No initializer found with name " + initializerName);
 }
-

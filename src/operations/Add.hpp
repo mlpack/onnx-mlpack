@@ -6,7 +6,8 @@
 
 using namespace std;
 
-void AddAdd(mlpack::FFN<> &ffn);
+void AddAdd(mlpack::FFN<> &ffn, onnx::GraphProto graph,
+              onnx::NodeProto node, map<string, double> onnxOperatorAttribute/*, vector<int> inputDimension*/);
 
 
 #include "Add_impl.hpp"

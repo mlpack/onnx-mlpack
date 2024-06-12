@@ -6,7 +6,8 @@
 
 using namespace std;
 
-void AddBatchNormalization(mlpack::FFN<> &ffn);
+void AddBatchNormalization(mlpack::FFN<> &ffn, onnx::GraphProto graph,
+              onnx::NodeProto node, map<string, double> onnxOperatorAttribute);
 
 
 #include "BatchNormalization_impl.hpp"

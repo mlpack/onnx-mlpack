@@ -1,13 +1,11 @@
 #include "Mul.hpp"
 
 void AddMul(mlpack::FFN<> &ffn, onnx::GraphProto graph,
-              onnx::NodeProto node){
+              onnx::NodeProto node, map<string, double> onnxOperatorAttribute){
     float scalar = FindScallingFactor(graph, node);
     ffn.Add(new ScaleLayer(scalar));
-    cout<<"added the Mul"<<endl;
+    cout<<"Added the Mul layer"<<endl;
 }
-
-
 
 float FindScallingFactor(onnx::GraphProto graph, onnx::NodeProto node){
     string initializerName = node.input(1);

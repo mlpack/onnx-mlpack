@@ -6,7 +6,8 @@
 
 using namespace std;
 
-void AddLeakyRelu(mlpack::FFN<> &ffn);
+void AddLeakyRelu(mlpack::FFN<> &ffn, onnx::GraphProto graph,
+              onnx::NodeProto node, map<string, double> onnxOperatorAttribute);
 
 
 #include "LeakyRelu_impl.hpp"

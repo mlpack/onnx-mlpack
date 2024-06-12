@@ -2,5 +2,5 @@
 
 void AddSoftmax(mlpack::FFN<> &ffn){
     ffn.Add(new mlpack::Softmax());
-    cout<<"added the softmax"<<endl;
+    cout<<"Added the Softmax layer"<<endl;
 }

@@ -17,7 +17,12 @@ void AddGemm(mlpack::FFN<> &ffn, onnx::GraphProto graph,
     biases.print("biases");
     add->Parameters() = biases;
     ffn.Add(add);
-    cout<<"Added the add layer"<<endl;
+    //
+    ffn.Reset();
+    cout<<"Add input dimensions "<<ffn.Network().back()->InputDimensions()<<endl;
+    ffn.Network().back()->Parameters().print("parameters of Add layer");
+    //
+    cout<<"Added the Gemm layer"<<endl;
 }
 
 size_t FindOutputDimension(onnx::GraphProto graph, onnx::NodeProto node){

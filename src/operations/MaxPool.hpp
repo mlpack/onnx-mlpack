@@ -6,7 +6,8 @@
 
 using namespace std;
 
-void AddMaxPool(mlpack::FFN<> &ffn);
+void AddMaxPool(mlpack::FFN<> &ffn, onnx::GraphProto graph,
+              onnx::NodeProto node, map<string, double> onnxOperatorAttribute);
 
 
 #include "MaxPool_impl.hpp"

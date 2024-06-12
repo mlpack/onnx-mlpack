@@ -14,6 +14,7 @@ mlpack::FFN<> converter(onnx::GraphProto graph)
     mlpack::FFN<> ffn;
     string modelInput = get::ModelInput(graph);
     vector<size_t> inputDimension = get::InputDimension(graph, modelInput);
+    ffn.InputDimensions() = inputDimension;
 
     // Iterating through nodes in topological order
     string nodeInput = modelInput;

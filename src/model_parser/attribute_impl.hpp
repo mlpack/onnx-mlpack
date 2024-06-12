@@ -94,9 +94,13 @@ map<string, double> OnnxOperatorAttribute(onnx::GraphProto graph, onnx::NodeProt
     else if (node.op_type() == "Mul")
     {
     }
+    else if(node.op_type() == "Add")
+    {
+    }
     else if (node.op_type() == "Conv")
-    { // either there will be auto_pad or pads
+    {   // either there will be auto_pad or pads, but we will set default value for both of them
         // here we will be encoding the auto_pad attribute
+        onnxOperatorAttribute["paddingType"] = 0; // none 0, valid 1, same 2
         onnxOperatorAttribute["auto_pad"] = 0; // NOTSET 0, SAME_UPPER 1, SAME_LOWER 2, VALID 3
         onnxOperatorAttribute["pad_top"] = 0;
         onnxOperatorAttribute["pad_bottom"] = 0;
@@ -105,10 +109,10 @@ map<string, double> OnnxOperatorAttribute(onnx::GraphProto graph, onnx::NodeProt
         onnxOperatorAttribute["group"] = 1;
         onnxOperatorAttribute["dilation_height"] = 1;
         onnxOperatorAttribute["dilation_width"] = 1;
-        onnxOperatorAttribute["kernel_shape_height"] = 1; // do not found any default value for kernels
-        onnxOperatorAttribute["kernel_shape_width"] = 1;
-        onnxOperatorAttribute["strides_height"] = 1;
-        onnxOperatorAttribute["strides_width"] = 1;
+        onnxOperatorAttribute["kernel_height"] = 1; // do not found any default value for kernels
+        onnxOperatorAttribute["kernel_width"] = 1;
+        onnxOperatorAttribute["stride_height"] = 1;
+        onnxOperatorAttribute["stride_width"] = 1;
     }
     else if(node.op_type() == "BatchNormalization")
     {
@@ -126,8 +130,8 @@ map<string, double> OnnxOperatorAttribute(onnx::GraphProto graph, onnx::NodeProt
         onnxOperatorAttribute["group"] = 1;
         onnxOperatorAttribute["dilation_height"] = 1;
         onnxOperatorAttribute["dilation_width"] = 1;
-        onnxOperatorAttribute["kernel_shape_height"] = 1; // do not found any default value for kernels
-        onnxOperatorAttribute["kernel_shape_width"] = 1;
+        onnxOperatorAttribute["kernel_height"] = 1; // do not found any default value for kernels
+        onnxOperatorAttribute["kernel_width"] = 1;
         onnxOperatorAttribute["stride_height"] = 1;
         onnxOperatorAttribute["stride_width"] = 1;
         // same as the convolution layer, just two new attribute
@@ -160,7 +164,8 @@ map<string, double> OnnxOperatorAttribute(onnx::GraphProto graph, onnx::NodeProt
             onnxOperatorAttribute["transB"] = attr.i();
         }
         else if (attr.name() == "auto_pad") // conv, MaxPool
-        {
+        { 
+            onnxOperatorAttribute["auto_pad_or_pads"] = 0; // by this we will get to wether we have to use autopad or pads
             if (attr.s() == "NOTSET")
             {
                 onnxOperatorAttribute["auto_pad"] = 0;
@@ -177,6 +182,14 @@ map<string, double> OnnxOperatorAttribute(onnx::GraphProto graph, onnx::NodeProt
             {
                 onnxOperatorAttribute["auto_pad"] = 3;
             }
+        }
+        else if(attr.name() == "pads") // conv, MaxPool
+        {
+            onnxOperatorAttribute["auto_pad_or_pads"] = 1; // by this we will get to wether we have to use autopad or pads
+            onnxOperatorAttribute["pad_top"] = attr.ints(0);
+            onnxOperatorAttribute["pad_bottom"] = attr.ints(1);
+            onnxOperatorAttribute["pad_right"] = attr.ints(2);
+            onnxOperatorAttribute["pad_left"] = attr.ints(3);
         }
         else if (attr.name() == "strides")  // conv, MaxPool
         {

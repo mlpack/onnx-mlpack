@@ -17,7 +17,7 @@ ONNX internally download and build protobuf for ONNX build. So you just need to 
 
 ### The repository is in developing phase and its been tested on the following models.
 
-| Models    | Model Generation   | Weight Transfer |     |
-| --------- | ------------------ | --------------- | --- |
-| Linear NN | :heavy_check_mark: | :x:             |     |
-| Mnist     | :heavy_check_mark: | :x:             |     |
+| Models              | Model Generation   | Weight Transfer    |     |
+| ------------------- | ------------------ | ------------------ | --- |
+| Iris classification | :heavy_check_mark: | :heavy_check_mark: |     |
+| Yolo                | :heavy_check_mark: | :x:                |     |

@@ -10,6 +10,7 @@
 #include "Mul.hpp"
 #include "Add.hpp"
 #include "MaxPool.hpp"
+#include "../model_parser/utils.hpp"
 
 
 void AddLayer(mlpack::FFN<> &ffn,

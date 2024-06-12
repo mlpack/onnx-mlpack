@@ -6,8 +6,10 @@
 
 using namespace std;
 
-void AddConv(mlpack::FFN<> &ffn);
-
+void AddConv(mlpack::FFN<> &ffn, onnx::GraphProto graph,
+              onnx::NodeProto node, map<string, double> onnxOperatorAttribute);
+              
+int FindConvMap(onnx::GraphProto graph, onnx::NodeProto node);
 
 #include "Conv_impl.hpp"
 #endif

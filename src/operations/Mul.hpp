@@ -8,17 +8,18 @@
 using namespace std;
 
 void AddMul(mlpack::FFN<> &ffn, onnx::GraphProto graph,
-              onnx::NodeProto node);
+            onnx::NodeProto node, map<string, double> onnxOperatorAttribute);
 
-class ScaleLayer: public mlpack::IdentityType<arma::mat>{
+class ScaleLayer : public mlpack::IdentityType<arma::mat>
+{
 public:
     float scalar;
-    ScaleLayer(float scalar) : scalar(scalar){}
+    ScaleLayer(float scalar) : scalar(scalar) {}
 
     void Forward(
-        const arma::mat& input, arma::mat& output)
+        const arma::mat &input, arma::mat &output)
     {
-    output = input * scalar;
+        output = input * scalar;
     }
 };
 
