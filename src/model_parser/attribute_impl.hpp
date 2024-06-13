@@ -127,7 +127,6 @@ map<string, double> OnnxOperatorAttribute(onnx::GraphProto graph, onnx::NodeProt
         onnxOperatorAttribute["pad_bottom"] = 0;
         onnxOperatorAttribute["pad_right"] = 0;
         onnxOperatorAttribute["pad_left"] = 0;
-        onnxOperatorAttribute["group"] = 1;
         onnxOperatorAttribute["dilation_height"] = 1;
         onnxOperatorAttribute["dilation_width"] = 1;
         onnxOperatorAttribute["kernel_height"] = 1; // do not found any default value for kernels
@@ -135,7 +134,7 @@ map<string, double> OnnxOperatorAttribute(onnx::GraphProto graph, onnx::NodeProt
         onnxOperatorAttribute["stride_height"] = 1;
         onnxOperatorAttribute["stride_width"] = 1;
         // same as the convolution layer, just two new attribute
-        onnxOperatorAttribute["ceil_mode"] = 0;
+        onnxOperatorAttribute["ceil_mode"] = 0; // floor 0 and ceil 1
         onnxOperatorAttribute["storage_order"] = 0;
  
     }
@@ -206,7 +205,7 @@ map<string, double> OnnxOperatorAttribute(onnx::GraphProto graph, onnx::NodeProt
             onnxOperatorAttribute["dilation_height"] = attr.ints(0);
             onnxOperatorAttribute["dilation_width"] = attr.ints(1);
         }
-        else if (attr.name() == "group")  // conv, MaxPool
+        else if (attr.name() == "group")  // conv
         {
             onnxOperatorAttribute["group"] = attr.i();
         }

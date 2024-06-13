@@ -70,3 +70,38 @@ onnx::TensorProto get::Initializer(onnx::GraphProto graph, string initializerNam
     }
     throw std::runtime_error("No initializer found with name " + initializerName);
 }
+
+arma::mat get::ConvertToColumnMajor(onnx::TensorProto initializer)
+{
+    // onnx initializer stores data in row major format
+    // {N, C, H, W}
+    vector<int> rowMajorDim(4, 1);
+    int j = 3;
+    int n_dims = initializer.dims().size();
+    for(int i=n_dims-1; i>=0; i--){
+        rowMajorDim[j] = initializer.dims(i);
+        j--;
+    }
+
+    int N = rowMajorDim[0]; // l
+    int C = rowMajorDim[1]; // k
+    int H = rowMajorDim[2]; // j
+    int W = rowMajorDim[3]; // i
+    vector<double> colMajorData;
+    for(int l=0; l<W; l++){
+        for(int k=0; k<H; k++){
+            for(int j=0; j<C; j++){
+                for(int i=0; i<N; i++){
+                    int colMajorIndex = l*(H*C*N) + k*(C*N) + j*(N) + i;
+                    int rowMajorIndex = i*(C*H*W) + j*(H*W) + k*(W) + l;
+                    colMajorData.push_back(initializer.float_data(rowMajorIndex));
+                }
+            }
+        }
+    }
+
+    arma::mat matrix(colMajorData);
+    return matrix;
+
+
+}

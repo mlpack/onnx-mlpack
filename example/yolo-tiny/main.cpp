@@ -21,9 +21,20 @@ int main(){
     // outputMatrix.print("outputMatrix");
 
     // playing with dimensions
-    cout<<" input dimensions "<<generatedModel.Network()[0]->InputDimensions()<<endl;
-    cout<<" output dimensions "<<generatedModel.Network()[0]->OutputDimensions()<<endl;
-
-
+    // cout<<" input dimensions 0 "<<generatedModel.Network()[0]->InputDimensions()<<endl;
+    // cout<<" output dimensions 0 "<<generatedModel.Network()[0]->OutputDimensions()<<endl;
+    // cout<<" input dimensions 1 "<<generatedModel.Network()[1]->InputDimensions()<<endl;
+    // cout<<" output dimensions 1 "<<generatedModel.Network()[1]->OutputDimensions()<<endl;
+    // cout<<" input dimensions 2 "<<generatedModel.Network()[2]->InputDimensions()<<endl;
+    // cout<<" output dimensions 2 "<<generatedModel.Network()[2]->OutputDimensions()<<endl;
+    // arma::mat matrix = generatedModel.Network()[2]->Parameters();
+    // cout<<"for the conv layer:: rows "<<matrix.n_rows<<" cols "<<matrix.n_cols<<endl;
+    int i = 0;
+    for(auto layer : generatedModel.Network())
+    {
+        // cout<<" input dimensions "<<i<<" "<<layer->InputDimensions()<<endl;
+        cout<<" output dimensions "<<i<<" "<<layer->OutputDimensions()<<endl;
+        i++;
+    }
     return 0;
 }

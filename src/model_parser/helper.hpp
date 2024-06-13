@@ -14,6 +14,7 @@ namespace get{
     vector<size_t> InputDimension(onnx::GraphProto graph, string modelInput);
     onnx::NodeProto CurrentNode(onnx::GraphProto graph, string nodeInput);
     onnx::TensorProto Initializer(onnx::GraphProto graph, string initializerName);
+    arma::mat ConvertToColumnMajor(onnx::TensorProto initializer);
 }
 
 #include "helper_impl.hpp"
