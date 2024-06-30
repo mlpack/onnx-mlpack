@@ -1,7 +1,7 @@
 #include "MaxPool.hpp"
 
 void AddMaxPool(mlpack::FFN<> &ffn, onnx::GraphProto graph,
-                onnx::NodeProto node, map<string, double> onnxOperatorAttribute)
+                onnx::NodeProto node, map<string, double> onnxOperatorAttribute, vector<arma::Mat<double>> &layerParameters)
 {
     size_t kernelWidth = onnxOperatorAttribute["kernel_width"];
     size_t kernelHeight = onnxOperatorAttribute["kernel_height"];
@@ -30,14 +30,16 @@ void AddMaxPool(mlpack::FFN<> &ffn, onnx::GraphProto graph,
 
     mlpack::Padding *padding = new mlpack::Padding(padWLeft, padWRight, padHTop, padHBottom);
     // mlpack::Padding *padding = new mlpack::Padding(0, 0, 0, 0);
+    layerParameters.push_back(arma::Mat<double>());
     ffn.Add(padding);
     cout << "Added the Padding layer" << endl;
 
 
     // max pooling part
     mlpack::MaxPooling *maxPooling = new mlpack::MaxPooling(kernelWidth, kernelHeight, strideWidth, strideHeight, floor);
+    layerParameters.push_back(arma::Mat<double>());
     ffn.Add(maxPooling);
     cout << "Added the MaxPool layer" << endl;
-    vector<size_t> vec = {kernelWidth, kernelHeight, strideWidth, strideHeight};
-    cout << vec << endl;
+    // vector<size_t> vec = {kernelWidth, kernelHeight, strideWidth, strideHeight};
+    // cout << vec << endl;
 }

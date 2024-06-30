@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void AddRelu(mlpack::FFN<> &ffn);
+void AddRelu(mlpack::FFN<> &ffn, vector<arma::Mat<double>> &layerParameters);
 
 
 #include "Relu_impl.hpp"

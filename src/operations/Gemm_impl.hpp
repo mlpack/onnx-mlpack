@@ -1,13 +1,14 @@
 #include "Gemm.hpp"
 
 void AddGemm(mlpack::FFN<> &ffn, onnx::GraphProto graph,
-              onnx::NodeProto node, map<string, double> onnxOperatorAttribute)
+              onnx::NodeProto node, map<string, double> onnxOperatorAttribute, vector<arma::Mat<double>> &layerParameters)
 {
     mlpack::LinearNoBias *linearNoBias = new mlpack::LinearNoBias(FindOutputDimension(graph, node));
     // getting the weights in correct dimension
     arma::mat weights = onnxOperatorAttribute["alpha"] * ExtractWeights(graph, node, onnxOperatorAttribute["transB"]);
     weights.print("weights");
-    linearNoBias->Parameters() = weights;
+    // linearNoBias->Parameters() = weights;
+    layerParameters.push_back(weights);
     ffn.Add(linearNoBias);
     cout<<"Added linearnobias"<<endl;
 
@@ -15,12 +16,13 @@ void AddGemm(mlpack::FFN<> &ffn, onnx::GraphProto graph,
     // getting the biases in correct dimension
     arma::mat biases = ExtractBiases(graph, node);
     biases.print("biases");
-    add->Parameters() = biases;
+    // add->Parameters() = biases;
+    layerParameters.push_back(biases);
     ffn.Add(add);
     //
-    ffn.Reset();
-    cout<<"Add input dimensions "<<ffn.Network().back()->InputDimensions()<<endl;
-    ffn.Network().back()->Parameters().print("parameters of Add layer");
+    // ffn.Reset();
+    // cout<<"Add input dimensions "<<ffn.Network().back()->InputDimensions()<<endl;
+    // ffn.Network().back()->Parameters().print("parameters of Add layer");
     //
     cout<<"Added the Gemm layer"<<endl;
 }

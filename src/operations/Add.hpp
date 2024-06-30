@@ -7,7 +7,7 @@
 using namespace std;
 
 void AddAdd(mlpack::FFN<> &ffn, onnx::GraphProto graph,
-              onnx::NodeProto node, map<string, double> onnxOperatorAttribute/*, vector<int> inputDimension*/);
+              onnx::NodeProto node, map<string, double> onnxOperatorAttribute, vector<arma::Mat<double>> &layerParameters);
 
 
 #include "Add_impl.hpp"

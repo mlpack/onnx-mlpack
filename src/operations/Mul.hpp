@@ -8,7 +8,7 @@
 using namespace std;
 
 void AddMul(mlpack::FFN<> &ffn, onnx::GraphProto graph,
-            onnx::NodeProto node, map<string, double> onnxOperatorAttribute);
+            onnx::NodeProto node, map<string, double> onnxOperatorAttribute, vector<arma::Mat<double>> &layerParameters);
 
 class ScaleLayer : public mlpack::IdentityType<arma::mat>
 {

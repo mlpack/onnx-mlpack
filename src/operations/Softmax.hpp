@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void AddSoftmax(mlpack::FFN<> &ffn);
+void AddSoftmax(mlpack::FFN<> &ffn, vector<arma::Mat<double>> &layerParameters);
 
 
 #include "Softmax_impl.hpp"

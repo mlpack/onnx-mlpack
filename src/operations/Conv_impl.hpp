@@ -1,7 +1,7 @@
 #include "Conv.hpp"
 
 void AddConv(mlpack::FFN<> &ffn, onnx::GraphProto graph,
-             onnx::NodeProto node, map<string, double> onnxOperatorAttribute)
+              onnx::NodeProto node, map<string, double> onnxOperatorAttribute, vector<arma::Mat<double>> &layerParameters)
 {
     string initializerName = node.input(1);
     onnx::TensorProto initializer = get::Initializer(graph, initializerName);
@@ -13,6 +13,7 @@ void AddConv(mlpack::FFN<> &ffn, onnx::GraphProto graph,
     size_t kernelWidth = onnxOperatorAttribute["kernel_width"];
     size_t strideHeight = onnxOperatorAttribute["stride_height"];
     size_t strideWidth = onnxOperatorAttribute["stride_width"];
+    size_t group = onnxOperatorAttribute["group"];
     size_t padW = 0;
     size_t padH = 0;
     string paddingType = "none";
@@ -34,19 +35,22 @@ void AddConv(mlpack::FFN<> &ffn, onnx::GraphProto graph,
     }
     else if(onnxOperatorAttribute["auto_pad_or_pads"] == 1) // pads
     {
-        size_t padH = (onnxOperatorAttribute["pad_right"] + onnxOperatorAttribute["pad_left"]) / 2;
-        size_t padW = (onnxOperatorAttribute["pad_top"] + onnxOperatorAttribute["pad_bottom"]) / 2;
+        padW = (onnxOperatorAttribute["pad_right"] + onnxOperatorAttribute["pad_left"]) / 2;
+        padH = (onnxOperatorAttribute["pad_top"] + onnxOperatorAttribute["pad_bottom"]) / 2;
     }
 
-    // mlpack::Convolution* convolution = new mlpack::Convolution(maps, kernelWidth, kernelHeight, strideWidth, strideHeight, padW, padH, paddingType, useBias);
-    mlpack::Convolution* convolution = new mlpack::Convolution(maps, kernelWidth, kernelHeight, strideWidth, strideHeight, padW, padH, paddingType, useBias);
-
-    convolution->Parameters() = get::ConvertToColumnMajor(initializer);
-    ffn.Add(convolution);
-    cout << "Added the Conv layer" << endl;
+    layerParameters.push_back(get::ConvertToColumnMajor(initializer));
+    if(group == 1){
+        mlpack::Convolution* convolution = new mlpack::Convolution(maps, kernelWidth, kernelHeight, strideWidth, strideHeight, padW, padH, paddingType, useBias);
+        ffn.Add(convolution);
+        cout << "Added the Conv layer" << endl;
+    }else{
+        mlpack::GroupedConvolution* convolution = new mlpack::GroupedConvolution(maps, kernelWidth, kernelHeight, group, strideWidth, strideHeight, padW, padH, paddingType, useBias);
+        ffn.Add(convolution);
+        cout << "Added the GroupedConv layer" << endl;
+    }
+    
 }
-
-
 
 int FindConvMap(mlpack::FFN<> &ffn, onnx::GraphProto graph, onnx::NodeProto node){
     // return ffn.Network().back()->OutputDimensions()[2];     

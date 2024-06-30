@@ -137,6 +137,10 @@ map<string, double> OnnxOperatorAttribute(onnx::GraphProto graph, onnx::NodeProt
         onnxOperatorAttribute["ceil_mode"] = 0; // floor 0 and ceil 1
         onnxOperatorAttribute["storage_order"] = 0;
  
+    }else if(node.op_type() == "GlobalAveragePool"){
+
+    }else if(node.op_type() == "Reshape"){
+        
     }
     else
     {

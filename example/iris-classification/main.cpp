@@ -7,6 +7,7 @@ int main(){
 
     // getting the model from the graph
     mlpack::FFN<> generatedModel = converter(graph);
+    // generatedModel.Reset();
 
     //! Testing the model
     arma::mat data;

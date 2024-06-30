@@ -1,5 +1,6 @@
 #include "helper.hpp"
 
+
 string get::ModelInput(onnx::GraphProto graph)
 {
     vector<string> inputNames;
@@ -42,21 +43,33 @@ vector<size_t> get::InputDimension(onnx::GraphProto graph, string modelInput)
     return dimension;
 }
 
-onnx::NodeProto get::CurrentNode(onnx::GraphProto graph, string nodeInput)
+vector<int> get::CurrentNode(onnx::GraphProto graph, string nodeInput)
 {
-    onnx::NodeProto node;
-
-    for (onnx::NodeProto node : graph.node())
+    vector<int> nodes;
+    for (int i = 0; i < graph.node().size(); i++)
     {
-        for (int i = 0; i < node.input().size(); i++)
+        for (int j = 0; j < graph.node(i).input().size(); j++)
         {
-            if (nodeInput == node.input(i))
+            if (nodeInput == graph.node(i).input(j))
             {
-                return node;
+                nodes.push_back(i);
             }
         }
     }
-    return node;
+    return nodes;
+    // throw std::runtime_error("No node found whose input is  " + nodeInput);
+
+    // for (onnx::NodeProto node : graph.node())
+    // {
+    //     for (int i = 0; i < node.input().size(); i++)
+    //     {
+    //         if (nodeInput == node.input(i))
+    //         {
+    //             return node;
+    //         }
+    //     }
+    // }
+    // return node;
 }
 
 onnx::TensorProto get::Initializer(onnx::GraphProto graph, string initializerName)
@@ -78,7 +91,8 @@ arma::mat get::ConvertToColumnMajor(onnx::TensorProto initializer)
     vector<int> rowMajorDim(4, 1);
     int j = 3;
     int n_dims = initializer.dims().size();
-    for(int i=n_dims-1; i>=0; i--){
+    for (int i = n_dims - 1; i >= 0; i--)
+    {
         rowMajorDim[j] = initializer.dims(i);
         j--;
     }
@@ -88,12 +102,17 @@ arma::mat get::ConvertToColumnMajor(onnx::TensorProto initializer)
     int H = rowMajorDim[2]; // j
     int W = rowMajorDim[3]; // i
     vector<double> colMajorData;
-    for(int l=0; l<W; l++){
-        for(int k=0; k<H; k++){
-            for(int j=0; j<C; j++){
-                for(int i=0; i<N; i++){
-                    int colMajorIndex = l*(H*C*N) + k*(C*N) + j*(N) + i;
-                    int rowMajorIndex = i*(C*H*W) + j*(H*W) + k*(W) + l;
+    for (int l = 0; l < W; l++)
+    {
+        for (int k = 0; k < H; k++)
+        {
+            for (int j = 0; j < C; j++)
+            {
+                for (int i = 0; i < N; i++)
+                {
+                    // int colMajorIndex = l * (H * C * N) + k * (C * N) + j * (N) + i;
+                    int colMajorIndex = i + j * (N) + k * (C * N) + l * (H * C * N);
+                    int rowMajorIndex = i * (C * H * W) + j * (H * W) + k * (W) + l;
                     colMajorData.push_back(initializer.float_data(rowMajorIndex));
                 }
             }
@@ -102,6 +121,50 @@ arma::mat get::ConvertToColumnMajor(onnx::TensorProto initializer)
 
     arma::mat matrix(colMajorData);
     return matrix;
+}
 
 
+
+vector<int> get::TopologicallySortedNodes(onnx::GraphProto &graph)
+{
+    int totalNodes = graph.node().size();
+
+    // creating the adjencList and inDegree
+    vector<vector<int>> adj(totalNodes);
+    for (int i = 0; i < totalNodes; i++)
+    {
+        for (string output : graph.node(i).output())
+        {
+            vector<int> nodeIndex = get::CurrentNode(graph, output);
+            for (int element : nodeIndex)
+            {
+                adj[i].push_back(element);
+            }
+        }
+    }
+
+    int visitedNode[totalNodes] = {0};
+    stack<int> st;
+
+    for(int i=0; i<totalNodes; i++){
+        if(!visitedNode[i]){
+            dfs(i, visitedNode, adj, st);
+        }
+    }
+    vector<int> topologicalShort;
+    while(!st.empty()){
+        topologicalShort.push_back(st.top());
+        st.pop();
+    }
+    return topologicalShort;
+}
+
+void dfs(int node, int visitedNode[], vector<vector<int>> adj, stack<int> &st){
+    visitedNode[node] = 1;
+    for(int neighbouringNode : adj[node]){
+        if(!visitedNode[neighbouringNode]){
+            dfs(neighbouringNode, visitedNode, adj, st);
+        }
+    }
+    st.push(node);
 }
