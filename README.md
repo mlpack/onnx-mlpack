@@ -20,4 +20,4 @@ ONNX internally download and build protobuf for ONNX build. So you just need to 
 | Models              | Model Generation   | Weight Transfer    |     |
 | ------------------- | ------------------ | ------------------ | --- |
 | Iris classification | :heavy_check_mark: | :heavy_check_mark: |     |
-| Yolo                | :heavy_check_mark: | :x:                |     |
+| Yolo                | :heavy_check_mark: | ✔️:                |     |
