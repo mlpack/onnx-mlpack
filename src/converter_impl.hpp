@@ -12,6 +12,7 @@ onnx::GraphProto getGraph(string filePath)
 mlpack::FFN<> converter(onnx::GraphProto graph)
 {
     mlpack::FFN<> ffn;
+    // layerParameters will be set once the whone network is created
     vector<arma::Mat<double>> layerParameters;
     string modelInput = get::ModelInput(graph);
     vector<size_t> inputDimension = get::InputDimension(graph, modelInput);
