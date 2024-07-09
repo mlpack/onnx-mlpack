@@ -9,6 +9,11 @@
   <h2>Unlock the Power of Other Frameworks in mlpack</h2>
 </div>
 
+
+This repository contains a converter for certain machine learning models from
+onnx to mlpack format. Currently this repository is still under construction
+and might undergo some major refactoring, please use with cautios.
+
 ### Dependencies of this repository
 * Protocol Buffer
 * ONNX
