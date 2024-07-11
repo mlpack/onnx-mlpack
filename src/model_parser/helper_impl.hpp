@@ -1,6 +1,5 @@
 #include "helper.hpp"
 
-
 string get::ModelInput(onnx::GraphProto graph)
 {
     vector<string> inputNames;
@@ -123,9 +122,54 @@ arma::mat get::ConvertToColumnMajor(onnx::TensorProto initializer)
     return matrix;
 }
 
-
-
 vector<int> get::TopologicallySortedNodes(onnx::GraphProto &graph)
+{
+    int totalNodes = graph.node().size();
+
+    // creating the adjencList and inDegree
+    vector<vector<int>> adj = get::AdjencyMatrix(graph);
+
+    // ------ print the adj
+    int i = 0;
+    for (auto element : adj)
+    {
+        cout << i << " => " << element << endl;
+        i++;
+    }
+
+    int visitedNode[totalNodes] = {0};
+    stack<int> st;
+
+    for (int i = 0; i < totalNodes; i++)
+    {
+        if (!visitedNode[i])
+        {
+            dfs(i, visitedNode, adj, st);
+        }
+    }
+    vector<int> topologicalShort;
+    while (!st.empty())
+    {
+        topologicalShort.push_back(st.top());
+        st.pop();
+    }
+    return topologicalShort;
+}
+
+void dfs(int node, int visitedNode[], vector<vector<int>> adj, stack<int> &st)
+{
+    visitedNode[node] = 1;
+    for (int neighbouringNode : adj[node])
+    {
+        if (!visitedNode[neighbouringNode])
+        {
+            dfs(neighbouringNode, visitedNode, adj, st);
+        }
+    }
+    st.push(node);
+}
+
+vector<vector<int>> get::AdjencyMatrix(onnx::GraphProto graph)
 {
     int totalNodes = graph.node().size();
 
@@ -143,28 +187,5 @@ vector<int> get::TopologicallySortedNodes(onnx::GraphProto &graph)
         }
     }
 
-    int visitedNode[totalNodes] = {0};
-    stack<int> st;
-
-    for(int i=0; i<totalNodes; i++){
-        if(!visitedNode[i]){
-            dfs(i, visitedNode, adj, st);
-        }
-    }
-    vector<int> topologicalShort;
-    while(!st.empty()){
-        topologicalShort.push_back(st.top());
-        st.pop();
-    }
-    return topologicalShort;
-}
-
-void dfs(int node, int visitedNode[], vector<vector<int>> adj, stack<int> &st){
-    visitedNode[node] = 1;
-    for(int neighbouringNode : adj[node]){
-        if(!visitedNode[neighbouringNode]){
-            dfs(neighbouringNode, visitedNode, adj, st);
-        }
-    }
-    st.push(node);
+    return adj;
 }

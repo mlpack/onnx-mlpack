@@ -9,7 +9,7 @@
 using namespace std;
 
 void AddReshape(mlpack::FFN<> &ffn, onnx::GraphProto graph,
-                           onnx::NodeProto node, map<string, double> onnxOperatorAttribute, vector<arma::Mat<double>> &layerParameters);
+                onnx::NodeProto node, map<string, double> onnxOperatorAttribute, vector<arma::Mat<double>> &layerParameters);
 
 class Reshape : public mlpack::IdentityType<arma::mat>
 {
@@ -17,7 +17,8 @@ public:
     vector<size_t> modifiedDimension; // w, h, c
     Reshape(vector<size_t> modifiedDimension) : modifiedDimension(modifiedDimension) {}
 
-    void ComputeOutputDimensions(){
+    void ComputeOutputDimensions()
+    {
         outputDimensions = modifiedDimension;
     }
 };

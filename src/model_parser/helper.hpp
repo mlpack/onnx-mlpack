@@ -20,6 +20,7 @@ namespace get{
     arma::mat ConvertToColumnMajor(onnx::TensorProto initializer);
 
     // making the topological short with 
+    vector<vector<int>> AdjencyMatrix(onnx::GraphProto graph);
     vector<int> TopologicallySortedNodes(onnx::GraphProto &graph);
 }
 void dfs(int node, int visitedNode[], vector<vector<int>> adj, stack<int> &st);
