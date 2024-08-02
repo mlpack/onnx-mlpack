@@ -1,43 +1,80 @@
 #include "converter.hpp"
 
-int main(){
+int mul(vector<size_t> v){
+    size_t a = 1;
+    for(size_t element : v){
+        a *= element;
+    }
+    return a;
+}
+
+int main()
+{
     // generating the onnx graph
-    string onnxFilePath = "tinyyolo-v1.3-o8.onnx";
+    string onnxFilePath = "tinyyolo-v2.3-o8.onnx";
     onnx::GraphProto graph = getGraph(onnxFilePath);
 
     // getting the model from the graph
     mlpack::FFN<> generatedModel = converter(graph);
-    // Extracting image 
+    cout<<generatedModel.Parameters().n_rows<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<endl;
+
+
+    // Extracting image, Input
     mlpack::data::ImageInfo imageInfo(416, 416, 3, 1);
-    string fileName = "image(416-416)/1.jpg";
-    arma::Mat<double> imageMatrix;
-    mlpack::data::Load<double>(fileName, imageMatrix, imageInfo, false);
-    // cout<<"imageMatrix rows "<<imageMatrix.n_rows<<" cols "<<imageMatrix.n_cols<<endl;
+    string fileName = "image(416-416)/10.jpg";
+    arma::Mat<double> imageMat;
+    mlpack::data::Load<double>(fileName, imageMat, imageInfo, false);
+    //ImageMatrx => rgb rgb 
+    // we want int => rrr...ggg...bbb...
+    int H = 416;
+    int W = 416;
+    int C = 3;
+    vector<double> imageVector(H*W*C, 0);
+    for(int i=0; i<C; i++){
+        for(int j=0; j<W; j++){
+            for(int k=0; k<H; k++){
+                imageVector[k + (j*H) + (i*H*W)] = imageMat(i + (C*W*k) + (C*j), 0);
+            }
+        }
+    }
+    arma::mat imageMatrix(imageVector);
 
-    arma::Mat<double> outputMatrix;
-    generatedModel.Predict(imageMatrix, outputMatrix);
-    generatedModel.Network()[2]->Forward(imageMatrix, outputMatrix);
-    // outputMatrix.print("outputMatrix");
+    //---------------------------------------
+    
+    arma::mat B = imageMatrix.submat(0, 0, 5, 0);
+    cout<<"image"<<endl;
+    cout<<B<<endl;
 
 
-    int i = 0;
+
     arma::Mat<double> input = imageMatrix;
-    arma::Mat<double> output;
-    for(auto layer : generatedModel.Network())
+    // forward pass layer by layer
+    int i=1;
+    for (auto layer : generatedModel.Network())
     {
-        // layer->Forward(input, output);
-        // input = output;
-        //printing the output dimension
-        cout<<" output dimensions "<<i<<" "<<layer->OutputDimensions()<<endl;
+        arma::Mat<double> output(mul(layer->OutputDimensions()), 1, arma::fill::ones);
+        layer->Forward(input, output);
+        input = output;
+
+        arma::mat A = input.submat(0, 0, 5, 0);
+
+        // printing the output dimension
+        // Set precision to 10 decimal places
+        std::cout << std::fixed << std::setprecision(10);
+
+        // Use raw_print to have more control over formatting
+        // A.raw_print(std::cout);
+        // cout << " output dimensions " << i << " " << output.n_rows << endl;
+        cout<<"output Dimension "<<i<<layer->OutputDimensions()<<endl;
+        A.raw_print(std::cout);
+        // cout<<A<<endl<<endl;
         i++;
     }
 
 
+
     return 0;
 }
-
-
-
 
 // arma::Mat<double> input = imageMatrix;
 // arma::Mat<double> output;
@@ -46,4 +83,3 @@ int main(){
 //     layer->Forward(input, output);
 //     input = output;
 // }
-

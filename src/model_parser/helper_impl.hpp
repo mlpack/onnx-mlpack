@@ -83,7 +83,7 @@ onnx::TensorProto get::Initializer(onnx::GraphProto graph, string initializerNam
     throw std::runtime_error("No initializer found with name " + initializerName);
 }
 
-arma::mat get::ConvertToColumnMajor(onnx::TensorProto initializer)
+arma::Mat<double> get::ConvertToColumnMajor(onnx::TensorProto initializer)
 {
     // onnx initializer stores data in row major format
     // {N, C, H, W}
@@ -101,24 +101,45 @@ arma::mat get::ConvertToColumnMajor(onnx::TensorProto initializer)
     int H = rowMajorDim[2]; // j
     int W = rowMajorDim[3]; // i
     vector<double> colMajorData;
-    for (int l = 0; l < W; l++)
+    // for (int l = 0; l < W; l++)
+    // {
+    //     for (int k = 0; k < H; k++)
+    //     {
+    //         for (int j = 0; j < C; j++)
+    //         {
+    //             for (int i = 0; i < N; i++)
+    //             {
+    //                 // int colMajorIndex = l * (H * C * N) + k * (C * N) + j * (N) + i;
+    //                 int colMajorIndex = i + j * (N) + k * (C * N) + l * (H * C * N);
+    //                 int rowMajorIndex = i * (C * H * W) + j * (H * W) + k * (W) + l;
+    //                 colMajorData.push_back(initializer.float_data(rowMajorIndex));
+    //             }
+    //         }
+    //     }
+    // }
+    vector<float> v;
+    for(int i=0; i<initializer.float_data().size(); i++){
+        v.push_back(initializer.float_data(i));
+    }
+    for (int l = 0; l < N; l++)
     {
-        for (int k = 0; k < H; k++)
+        for (int k = 0; k < C; k++)
         {
-            for (int j = 0; j < C; j++)
+            for (int j = 0; j < W; j++)
             {
-                for (int i = 0; i < N; i++)
+                for (int i = 0; i < H; i++)
                 {
                     // int colMajorIndex = l * (H * C * N) + k * (C * N) + j * (N) + i;
-                    int colMajorIndex = i + j * (N) + k * (C * N) + l * (H * C * N);
-                    int rowMajorIndex = i * (C * H * W) + j * (H * W) + k * (W) + l;
+                    // int colMajorIndex = i + j * (N) + k * (C * N) + l * (H * C * N);
+                    // int rowMajorIndex = i + (j * H) + (k * H * W) + (l * W * H * C);
+                    int rowMajorIndex = j + (i * W) + (k * W * H) + (l*C*W*H);
                     colMajorData.push_back(initializer.float_data(rowMajorIndex));
                 }
             }
         }
     }
 
-    arma::mat matrix(colMajorData);
+    arma::Mat<double> matrix(colMajorData);
     return matrix;
 }
 

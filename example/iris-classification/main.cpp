@@ -8,6 +8,8 @@ int main(){
     // getting the model from the graph
     mlpack::FFN<> generatedModel = converter(graph);
     // generatedModel.Reset();
+    cout<<generatedModel.Parameters().n_rows<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<endl;
+
 
     //! Testing the model
     arma::mat data;

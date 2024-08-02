@@ -12,7 +12,7 @@ onnx::GraphProto getGraph(string filePath)
 mlpack::FFN<> converter(onnx::GraphProto graph)
 {
     mlpack::FFN<> ffn;
-    // First layers will be added in ffn and corresponding parameters will be stored
+    // at first layers will be added in ffn and corresponding parameters will be stored
     // in layerParameters, and once the whole model is set, the parameters inside
     // layerParameters will be transfered to ffn
     vector<arma::Mat<double>> layerParameters;
@@ -36,20 +36,49 @@ mlpack::FFN<> converter(onnx::GraphProto graph)
     }
     // -----------------------------
     ffn.Reset();
+    printParametersSize(layerParameters);
+    
+    // vectorising the layer prameters and putting all together
+    // and then transferring the whole parameters to the model 
+    // at once
+    // arma::mat flattenParameters = FlattenParameters(layerParameters);
+
+    // ffn.Parameters() = flattenParameters;
 
     // mapping the parameters to the layers
     int i = 0;
     for(mlpack::Layer<>* layer : ffn.Network()){
         if(layerParameters[i].n_elem){
+            
             // int rows = layer->Parameters().n_rows;
             // int cols = layer->Parameters().n_cols;
             // int _rows = layerParameters[i].n_rows;
             // int _cols = layerParameters[i].n_cols;
             // cout<< "layer parameters: [" << rows << ", "<< cols << " ] and stored parameters: [" <<_rows << ", " << _cols << " ]"<<endl;
             layer->Parameters() = layerParameters[i];
+            cout<<"layerParameters "<<i<<endl;
+            layerParameters[i].submat(0, 0, 10, 0).print(" ");
         }
         // cout<<i<<endl;
         i++;
     }
     return ffn;
+}
+
+
+// get the whole size of the parameters
+void printParametersSize(vector<arma::Mat<double>> layerParameters){
+    int count = 0;
+    for(auto element : layerParameters){
+        count+= (element.n_rows*element.n_cols);
+    }
+    cout<<count<<"<--------"<<endl;
+}
+
+arma::mat FlattenParameters(vector<arma::Mat<double>> layerParameters){
+    arma::vec flattenParameters;
+    for(auto layerParameter: layerParameters){
+        flattenParameters = arma::join_vert(flattenParameters, arma::vectorise(layerParameter));
+    }
+    return flattenParameters;
 }
