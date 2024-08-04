@@ -39,7 +39,7 @@ void AddConv(mlpack::FFN<> &ffn, onnx::GraphProto graph,
         padH = (onnxOperatorAttribute["pad_top"] + onnxOperatorAttribute["pad_bottom"]) / 2;
     }
 
-    layerParameters.push_back(get::ConvertToColumnMajor(initializer));
+    layerParameters.push_back(arma::conv_to<arma::mat>::from(get::ConvertToColumnMajor(initializer)));
     if(group == 1){
         mlpack::Convolution* convolution = new mlpack::Convolution(maps, kernelWidth, kernelHeight, strideWidth, strideHeight, padW, padH, paddingType, useBias);
         ffn.Add(convolution);
@@ -49,7 +49,6 @@ void AddConv(mlpack::FFN<> &ffn, onnx::GraphProto graph,
         ffn.Add(convolution);
         cout << "Added the GroupedConv layer" << endl;
     }
-    
 }
 
 int FindConvMap(mlpack::FFN<> &ffn, onnx::GraphProto graph, onnx::NodeProto node){

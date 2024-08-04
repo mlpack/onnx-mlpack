@@ -19,14 +19,16 @@ mlpack::FFN<> converter(onnx::GraphProto graph)
     string modelInput = get::ModelInput(graph);
     vector<size_t> inputDimension = get::InputDimension(graph, modelInput);
     ffn.InputDimensions() = inputDimension;
-    cout<<"inputDimension "<< inputDimension<<endl;
+    cout << "inputDimension " << inputDimension << endl;
 
     // Iterating through nodes in topological order
     vector<int> topoSortedNode = get::TopologicallySortedNodes(graph);
 
-    for(int nodeIndex : topoSortedNode){
-        if(nodeIndex == 117){
-            cout<< "this is the point"<<endl;
+    for (int nodeIndex : topoSortedNode)
+    {
+        if (nodeIndex == 117)
+        {
+            cout << "this is the point" << endl;
             int i = 3;
         }
         onnx::NodeProto node = graph.node(nodeIndex);
@@ -37,9 +39,9 @@ mlpack::FFN<> converter(onnx::GraphProto graph)
     // -----------------------------
     ffn.Reset();
     printParametersSize(layerParameters);
-    
+
     // vectorising the layer prameters and putting all together
-    // and then transferring the whole parameters to the model 
+    // and then transferring the whole parameters to the model
     // at once
     // arma::mat flattenParameters = FlattenParameters(layerParameters);
 
@@ -47,17 +49,30 @@ mlpack::FFN<> converter(onnx::GraphProto graph)
 
     // mapping the parameters to the layers
     int i = 0;
-    for(mlpack::Layer<>* layer : ffn.Network()){
-        if(layerParameters[i].n_elem){
-            
+    for (mlpack::Layer<> *layer : ffn.Network())
+    {
+        if (layerParameters[i].n_elem)
+        {
+            // making rounding
+            // int decimal_places = 20;
+            // Scaling factor
+            // double scale = std::pow(10.0, decimal_places);
+
+            // Scale, round, and then scale back
+            // arma::mat A = arma::round(layerParameters[i] * scale) / scale;
+            // arma::mat A = layerParameters[i];
+
+            // std::cout << std::fixed << std::setprecision(20);
+            // A.submat(0, 0, 10, 0).raw_print(std::cout);
+
             // int rows = layer->Parameters().n_rows;
             // int cols = layer->Parameters().n_cols;
             // int _rows = layerParameters[i].n_rows;
             // int _cols = layerParameters[i].n_cols;
             // cout<< "layer parameters: [" << rows << ", "<< cols << " ] and stored parameters: [" <<_rows << ", " << _cols << " ]"<<endl;
             layer->Parameters() = layerParameters[i];
-            cout<<"layerParameters "<<i<<endl;
-            layerParameters[i].submat(0, 0, 10, 0).print(" ");
+            cout << "layerParameters " << i << endl;
+            // A.submat(0, 0, 10, 0).print(" ");
         }
         // cout<<i<<endl;
         i++;
@@ -65,19 +80,22 @@ mlpack::FFN<> converter(onnx::GraphProto graph)
     return ffn;
 }
 
-
 // get the whole size of the parameters
-void printParametersSize(vector<arma::Mat<double>> layerParameters){
+void printParametersSize(vector<arma::Mat<double>> layerParameters)
+{
     int count = 0;
-    for(auto element : layerParameters){
-        count+= (element.n_rows*element.n_cols);
+    for (auto element : layerParameters)
+    {
+        count += (element.n_rows * element.n_cols);
     }
-    cout<<count<<"<--------"<<endl;
+    cout << count << "<--------" << endl;
 }
 
-arma::mat FlattenParameters(vector<arma::Mat<double>> layerParameters){
+arma::mat FlattenParameters(vector<arma::Mat<double>> layerParameters)
+{
     arma::vec flattenParameters;
-    for(auto layerParameter: layerParameters){
+    for (auto layerParameter : layerParameters)
+    {
         flattenParameters = arma::join_vert(flattenParameters, arma::vectorise(layerParameter));
     }
     return flattenParameters;

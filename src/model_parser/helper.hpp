@@ -17,7 +17,7 @@ namespace get{
     // more than one node can take same input in a graph
     vector<int> CurrentNode(onnx::GraphProto graph, string nodeInput);
     onnx::TensorProto Initializer(onnx::GraphProto graph, string initializerName);
-    arma::mat ConvertToColumnMajor(onnx::TensorProto initializer);
+    arma::fmat ConvertToColumnMajor(onnx::TensorProto initializer);
 
     // making the topological short with 
     vector<vector<int>> AdjencyMatrix(onnx::GraphProto graph);

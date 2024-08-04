@@ -16,10 +16,10 @@ void AddBatchNormalization(mlpack::FFN<> &ffn, onnx::GraphProto graph,
     string var_input = node.input(4);
 
 
-    batchNorm->TrainingMean() = get::ConvertToColumnMajor(get::Initializer(graph, mean_input));
-    batchNorm->TrainingVariance() = get::ConvertToColumnMajor(get::Initializer(graph, var_input));
-    // batchNorm->Parameters() = arma::join_cols(get::ConvertToColumnMajor(get::Initializer(graph, mean_input)), get::ConvertToColumnMajor(get::Initializer(graph, var_input)));
-    layerParameters.push_back(arma::join_cols(get::ConvertToColumnMajor(get::Initializer(graph, scale_input)), get::ConvertToColumnMajor(get::Initializer(graph, B_input))));
+    batchNorm->TrainingMean() = arma::conv_to<arma::mat>::from(get::ConvertToColumnMajor(get::Initializer(graph, mean_input)));
+    batchNorm->TrainingVariance() = arma::conv_to<arma::mat>::from(get::ConvertToColumnMajor(get::Initializer(graph, var_input)));
+    // batchNorm->Parameters() = arma::join_cols(arma::conv_to<arma::mat>::from(get::ConvertToColumnMajor(get::Initializer(graph, mean_input))), arma::conv_to<arma::mat>::from(get::ConvertToColumnMajor(get::Initializer(graph, var_input))));
+    layerParameters.push_back(arma::join_cols(arma::conv_to<arma::mat>::from(get::ConvertToColumnMajor(get::Initializer(graph, scale_input))), arma::conv_to<arma::mat>::from(get::ConvertToColumnMajor(get::Initializer(graph, B_input)))));
     // experiment above
     ffn.Add(batchNorm);
     cout << "Added the BatchNormalization layer" << endl;

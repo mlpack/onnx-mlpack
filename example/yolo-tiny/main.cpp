@@ -10,6 +10,8 @@ int mul(vector<size_t> v){
 
 int main()
 {
+    std::cout << std::fixed << std::setprecision(10);
+
     // generating the onnx graph
     string onnxFilePath = "tinyyolo-v2.3-o8.onnx";
     onnx::GraphProto graph = getGraph(onnxFilePath);
