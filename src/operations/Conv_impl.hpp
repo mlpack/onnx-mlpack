@@ -40,6 +40,7 @@ void AddConv(mlpack::FFN<> &ffn, onnx::GraphProto graph,
     }
 
     layerParameters.push_back(arma::conv_to<arma::mat>::from(get::ConvertToColumnMajor(initializer)));
+    
     if(group == 1){
         mlpack::Convolution* convolution = new mlpack::Convolution(maps, kernelWidth, kernelHeight, strideWidth, strideHeight, padW, padH, paddingType, useBias);
         ffn.Add(convolution);

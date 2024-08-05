@@ -90,8 +90,7 @@ arma::fmat get::ConvertToColumnMajor(onnx::TensorProto initializer)
     vector<int> rowMajorDim(4, 1);
     int j = 3;
     int n_dims = initializer.dims().size();
-    for (int i = n_dims - 1; i >= 0; i--)
-    {
+    for (int i = n_dims - 1; i >= 0; i--){
         rowMajorDim[j] = initializer.dims(i);
         j--;
     }
@@ -101,37 +100,12 @@ arma::fmat get::ConvertToColumnMajor(onnx::TensorProto initializer)
     int H = rowMajorDim[2]; // j
     int W = rowMajorDim[3]; // i
     vector<float> colMajorData;
-    // for (int l = 0; l < W; l++)
-    // {
-    //     for (int k = 0; k < H; k++)
-    //     {
-    //         for (int j = 0; j < C; j++)
-    //         {
-    //             for (int i = 0; i < N; i++)
-    //             {
-    //                 // int colMajorIndex = l * (H * C * N) + k * (C * N) + j * (N) + i;
-    //                 int colMajorIndex = i + j * (N) + k * (C * N) + l * (H * C * N);
-    //                 int rowMajorIndex = i * (C * H * W) + j * (H * W) + k * (W) + l;
-    //                 colMajorData.push_back(initializer.float_data(rowMajorIndex));
-    //             }
-    //         }
-    //     }
-    // }
-    // vector<float> v;
-    // for(int i=0; i<initializer.float_data().size(); i++){
-    //     v.push_back(initializer.float_data(i));
-    // }
-    for (int l = 0; l < N; l++)
-    {
-        for (int k = 0; k < C; k++)
-        {
-            for (int j = 0; j < W; j++)
-            {
-                for (int i = 0; i < H; i++)
-                {
+
+    for (int l = 0; l < N; l++){
+        for (int k = 0; k < C; k++){
+            for (int j = 0; j < W; j++){
+                for (int i = 0; i < H; i++){
                     // int colMajorIndex = l * (H * C * N) + k * (C * N) + j * (N) + i;
-                    // int colMajorIndex = i + j * (N) + k * (C * N) + l * (H * C * N);
-                    // int rowMajorIndex = i + (j * H) + (k * H * W) + (l * W * H * C);
                     int rowMajorIndex = j + (i * W) + (k * W * H) + (l*C*W*H);
                     colMajorData.push_back(initializer.float_data(rowMajorIndex));
                 }

@@ -44,7 +44,6 @@ mlpack::FFN<> converter(onnx::GraphProto graph)
     // and then transferring the whole parameters to the model
     // at once
     // arma::mat flattenParameters = FlattenParameters(layerParameters);
-
     // ffn.Parameters() = flattenParameters;
 
     // mapping the parameters to the layers
@@ -53,28 +52,9 @@ mlpack::FFN<> converter(onnx::GraphProto graph)
     {
         if (layerParameters[i].n_elem)
         {
-            // making rounding
-            // int decimal_places = 20;
-            // Scaling factor
-            // double scale = std::pow(10.0, decimal_places);
-
-            // Scale, round, and then scale back
-            // arma::mat A = arma::round(layerParameters[i] * scale) / scale;
-            // arma::mat A = layerParameters[i];
-
-            // std::cout << std::fixed << std::setprecision(20);
-            // A.submat(0, 0, 10, 0).raw_print(std::cout);
-
-            // int rows = layer->Parameters().n_rows;
-            // int cols = layer->Parameters().n_cols;
-            // int _rows = layerParameters[i].n_rows;
-            // int _cols = layerParameters[i].n_cols;
-            // cout<< "layer parameters: [" << rows << ", "<< cols << " ] and stored parameters: [" <<_rows << ", " << _cols << " ]"<<endl;
             layer->Parameters() = layerParameters[i];
             cout << "layerParameters " << i << endl;
-            // A.submat(0, 0, 10, 0).print(" ");
         }
-        // cout<<i<<endl;
         i++;
     }
     return ffn;
