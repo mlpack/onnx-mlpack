@@ -3,12 +3,31 @@
 void AddConv(mlpack::FFN<> &ffn, onnx::GraphProto graph,
               onnx::NodeProto node, map<string, double> onnxOperatorAttribute, vector<arma::Mat<double>> &layerParameters)
 {
-    string initializerName = node.input(1);
-    onnx::TensorProto initializer = get::Initializer(graph, initializerName);
+    bool useBias = false;
+    onnx::TensorProto initializerWeights;
+    onnx::TensorProto initializerBias;
+
+    if(node.input().size() == 2){
+        string initializerWeightsName = node.input(1);
+        useBias = false;
+        initializerWeights = get::Initializer(graph, initializerWeightsName);
+        layerParameters.push_back(arma::conv_to<arma::mat>::from(get::ConvertToColumnMajor(initializerWeights)));
+    }
+    else if(node.input().size() == 3){
+        string initializerWeightsName = node.input(1);
+        string initializerBiasName = node.input(2);
+        useBias = true;
+        initializerWeights = get::Initializer(graph, initializerWeightsName);
+        initializerBias = get::Initializer(graph, initializerBiasName);
+        layerParameters.push_back(arma::join_cols(
+            arma::conv_to<arma::mat>::from(get::ConvertToColumnMajor(initializerWeights)), 
+            arma::conv_to<arma::mat>::from(get::ConvertToColumnMajor(initializerBias))
+            ));
+    }
 
     // converting the onnx attribute to mlpack layer parameters
     // size_t maps = FindConvMap(ffn, graph, node);
-    size_t maps = initializer.dims(0);
+    size_t maps = initializerWeights.dims(0);
     size_t kernelHeight = onnxOperatorAttribute["kernel_height"];
     size_t kernelWidth = onnxOperatorAttribute["kernel_width"];
     size_t strideHeight = onnxOperatorAttribute["stride_height"];
@@ -17,7 +36,6 @@ void AddConv(mlpack::FFN<> &ffn, onnx::GraphProto graph,
     size_t padW = 0;
     size_t padH = 0;
     string paddingType = "none";
-    bool useBias = false;
     if(onnxOperatorAttribute["auto_pad_or_pads"] == 0) // auto_pad
     {
         if(onnxOperatorAttribute["auto_pad"] == 0) // NOT_SET => explicit value will be used
@@ -39,7 +57,7 @@ void AddConv(mlpack::FFN<> &ffn, onnx::GraphProto graph,
         padH = (onnxOperatorAttribute["pad_top"] + onnxOperatorAttribute["pad_bottom"]) / 2;
     }
 
-    layerParameters.push_back(arma::conv_to<arma::mat>::from(get::ConvertToColumnMajor(initializer)));
+    // layerParameters.push_back(arma::conv_to<arma::mat>::from(get::ConvertToColumnMajor(initializer)));
     
     if(group == 1){
         mlpack::Convolution* convolution = new mlpack::Convolution(maps, kernelWidth, kernelHeight, strideWidth, strideHeight, padW, padH, paddingType, useBias);

@@ -184,3 +184,78 @@ vector<vector<int>> get::AdjencyMatrix(onnx::GraphProto graph)
 
     return adj;
 }
+
+vector<double> convertToRowMajor(arma::mat matrix, vector<size_t> outputDimension){
+    int C = outputDimension[2];
+    int H = outputDimension[1];
+    int W = outputDimension[0];
+
+    vector<double> returnValue;
+    for(int i=0; i<C; i++){
+        for(int j=0; j<H; j++){
+            for(int k=0; k<W; k++){
+                returnValue.push_back(matrix((j + (H*k) + (i*W*H)), 0));
+            }
+        }
+    }
+    return returnValue;
+}
+
+vector<double> convertToColMajor(arma::mat matrix, vector<size_t> outputDimension){
+    int C = outputDimension[2];
+    int H = outputDimension[1];
+    int W = outputDimension[0];
+
+    vector<double> returnValue;
+    for(int i=0; i<C; i++){
+        for(int j=0; j<W; j++){
+            for(int k=0; k<H; k++){
+                returnValue.push_back(matrix((j + (W*k) + (i*W*H)), 0));
+            }
+        }
+    }
+    return returnValue;
+}
+
+
+
+void DrawRectangle(string imagePath, string finalImagePath, int r1, int c1, int r2, int c2, vector<int> imageDimension){
+
+    // Extracting image, Input
+    int W = imageDimension[0];
+    int H = imageDimension[1];
+    int C = imageDimension[2];
+    mlpack::data::ImageInfo imageInfo(W, H, C, 1);
+    string fileName = imagePath;
+    arma::Mat<double> imageMat;
+    mlpack::data::Load<double>(fileName, imageMat, imageInfo, false);
+    // ImageMatrx => rgb rgb => along column
+    // we want int => rrr...ggg...bbb...
+
+    // r1
+    for(int i=c1; i<c2; i++){
+        imageMat(0 + (C*i) + (C*W*r1), 0) = 255;
+        imageMat(1 + (C*i) + (C*W*r1), 0) = 0;
+        imageMat(2 + (C*i) + (C*W*r1), 0) = 0;
+    }
+    // c1
+    for(int i=r1; i<r2; i++){
+        imageMat(0 + (C*c1) + (C*W*i), 0) = 255;
+        imageMat(1 + (C*c1) + (C*W*i), 0) = 0;
+        imageMat(2 + (C*c1) + (C*W*i), 0) = 0;
+    }
+    // r2
+    for(int i=c1; i<c2; i++){
+        imageMat(0 + (C*i) + (C*W*r2), 0) = 255;
+        imageMat(1 + (C*i) + (C*W*r2), 0) = 0;
+        imageMat(2 + (C*i) + (C*W*r2), 0) = 0;
+    }
+    // c2
+    for(int i=r1; i<r2; i++){
+        imageMat(0 + (C*c2) + (C*W*i), 0) = 255;
+        imageMat(1 + (C*c2) + (C*W*i), 0) = 0;
+        imageMat(2 + (C*c2) + (C*W*i), 0) = 0;
+    }
+
+    mlpack::data::Save(finalImagePath, imageMat, imageInfo, true);
+}

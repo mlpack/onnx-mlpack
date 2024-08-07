@@ -22,6 +22,11 @@ namespace get{
     // making the topological short with 
     vector<vector<int>> AdjencyMatrix(onnx::GraphProto graph);
     vector<int> TopologicallySortedNodes(onnx::GraphProto &graph);
+    vector<double> convertToRowMajor(arma::mat matrix, vector<size_t> outputDimension);
+    vector<double> convertToColMajor(arma::mat matrix, vector<size_t> outputDimension);
+    void DrawRectangle(string imagePath, string finalImagePath, int r1, int c1, int r2, int c2, vector<int> imageDimension);
+
+
 }
 void dfs(int node, int visitedNode[], vector<vector<int>> adj, stack<int> &st);
 

@@ -8,6 +8,10 @@ int mul(vector<size_t> v){
     return a;
 }
 
+
+
+
+
 int main()
 {
     std::cout << std::fixed << std::setprecision(10);
@@ -20,7 +24,7 @@ int main()
     mlpack::FFN<> generatedModel = converter(graph);
     cout<<generatedModel.Parameters().n_rows<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<endl;
 
-
+    /*
     // Extracting image, Input
     mlpack::data::ImageInfo imageInfo(416, 416, 3, 1);
     string fileName = "image(416-416)/10.jpg";
@@ -40,6 +44,24 @@ int main()
         }
     }
     arma::mat imageMatrix(imageVector);
+    imageVector = convertToRowMajor(imageMatrix, {W, H, C});
+    // cout<<"--->"<<imageVector<<endl;
+    for(int i=0; i<10; i++){
+        cout<<imageVector[i]<<endl;
+    }
+    */
+
+    string path = "/home/kumarutkarsh/Desktop/onnx-mlpack/example/yolo-tiny/matrix.csv";
+    arma::mat data;
+    bool load_status = data.load(path, arma::csv_ascii);
+    if(load_status){
+        cout<<"loaded successfully "<<endl;
+        data.submat(0,0,10,0).print("data");
+    }else{
+        cout<<"failed"<<endl;
+    }
+    vector<double> v = convertToColMajor(data, {416, 416, 3});
+    arma::mat imageMatrix(v);
 
     //---------------------------------------
     
@@ -58,7 +80,9 @@ int main()
         layer->Forward(input, output);
         input = output;
 
-        arma::mat A = input.submat(0, 0, 5, 0);
+        // arma::mat A = input.submat(0, 0, 5, 0);
+        vector<double> v = convertToRowMajor(input, layer->OutputDimensions());
+
 
         // printing the output dimension
         // Set precision to 10 decimal places
@@ -68,7 +92,11 @@ int main()
         // A.raw_print(std::cout);
         // cout << " output dimensions " << i << " " << output.n_rows << endl;
         cout<<"output Dimension "<<i<<layer->OutputDimensions()<<endl;
-        A.raw_print(std::cout);
+        // A.raw_print(std::cout);
+        for(int i=0; i<5; i++){
+            cout<<v[i]<<" ";
+        }
+        cout<<endl<<endl;
         // cout<<A<<endl<<endl;
         i++;
     }
@@ -78,10 +106,9 @@ int main()
     return 0;
 }
 
-// arma::Mat<double> input = imageMatrix;
-// arma::Mat<double> output;
-// for(auto layer : generatedModel.Network())
-// {
-//     layer->Forward(input, output);
-//     input = output;
+// int main(){
+//     string imagePath = "image(416-416)/4.jpg";
+//     string finalPath = "first.png";
+//     DrawRectangle(imagePath, finalPath, 100, 100, 300, 300, {416, 416, 3});
+//     return 0;
 // }
