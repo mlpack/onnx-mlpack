@@ -259,3 +259,41 @@ void DrawRectangle(string imagePath, string finalImagePath, int r1, int c1, int 
 
     mlpack::data::Save(finalImagePath, imageMat, imageInfo, true);
 }
+
+void DrawRectangle_onCsv(arma::mat &matrix, int r1, int c1, int r2, int c2, vector<int> imageDimension){
+    // Extracting image, Input
+    int W = imageDimension[0];
+    int H = imageDimension[1];
+    int C = imageDimension[2];
+    if(r1<0) r1=0;
+    if(r2>=H) r2 = H-1;
+    if(c1<0) c1=0;
+    if(c2>=W) c2=W-1;
+
+    // r1
+    for(int i=c1; i<c2; i++){
+        matrix((0*W*H) + (H*i) + (r1), 0) = 255;
+        matrix((1*W*H) + (H*i) + (r1), 0) = 0;
+        matrix((2*W*H) + (H*i) + (r1), 0) = 0;
+    }
+    // c1
+    for(int i=r1; i<r2; i++){
+        matrix((0*W*H) + (H*c1) + (i), 0) = 255;
+        matrix((1*W*H) + (H*c1) + (i), 0) = 0;
+        matrix((2*W*H) + (H*c1) + (i), 0) = 0;
+    }
+    // r2
+    for(int i=c1; i<c2; i++){
+        matrix((0*W*H) + (H*i) + (r2), 0) = 255;
+        matrix((1*W*H) + (H*i) + (r2), 0) = 0;
+        matrix((2*W*H) + (H*i) + (r2), 0) = 0;
+    }
+    // c2
+    for(int i=r1; i<r2; i++){
+        matrix((0*W*H) + (H*c2) + (i), 0) = 255;
+        matrix((1*W*H) + (H*c2) + (i), 0) = 0;
+        matrix((2*W*H) + (H*c2) + (i), 0) = 0;
+    }
+
+    // mlpack::data::Save(finalImagePath, imageMat, imageInfo, true);
+}
