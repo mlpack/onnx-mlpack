@@ -26,11 +26,6 @@ mlpack::FFN<> converter(onnx::GraphProto graph)
 
     for (int nodeIndex : topoSortedNode)
     {
-        if (nodeIndex == 117)
-        {
-            cout << "this is the point" << endl;
-            int i = 3;
-        }
         onnx::NodeProto node = graph.node(nodeIndex);
         // extracting the attributes and adding the layer to the ffn
         map<string, double> onnxOperatorAttribute = OnnxOperatorAttribute(graph, node);

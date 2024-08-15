@@ -275,6 +275,8 @@ for(int i=0; i<10; i++){
 }
 */
 
+
+
 // forward pass one by one
 /*
 arma::Mat<double> input = imageMatrix;
