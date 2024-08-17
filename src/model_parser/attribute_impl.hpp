@@ -70,7 +70,7 @@ std::map<std::string, int> AttributeType = {
 //     return value;
 // }
 
-map<string, double> OnnxOperatorAttribute(onnx::GraphProto graph, onnx::NodeProto node)
+map<string, double> OnnxOperatorAttribute(onnx::GraphProto &graph, onnx::NodeProto &node)
 {
     map<string, double> onnxOperatorAttribute;
     // set the default values of operator attributes

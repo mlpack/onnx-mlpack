@@ -12,15 +12,15 @@
 using namespace std;
 
 namespace get{
-    string ModelInput(onnx::GraphProto graph);
-    vector<size_t> InputDimension(onnx::GraphProto graph, string modelInput);
+    string ModelInput(onnx::GraphProto &graph);
+    vector<size_t> InputDimension(onnx::GraphProto &graph, string modelInput);
     // more than one node can take same input in a graph
-    vector<int> CurrentNode(onnx::GraphProto graph, string nodeInput);
-    onnx::TensorProto Initializer(onnx::GraphProto graph, string initializerName);
-    arma::fmat ConvertToColumnMajor(onnx::TensorProto initializer);
+    vector<int> CurrentNode(onnx::GraphProto &graph, string nodeInput);
+    const onnx::TensorProto &Initializer(onnx::GraphProto &graph, string initializerName);
+    arma::fmat ConvertToColumnMajor(const onnx::TensorProto &initializer);
 
     // making the topological short with 
-    vector<vector<int>> AdjencyMatrix(onnx::GraphProto graph);
+    vector<vector<int>> AdjencyMatrix(onnx::GraphProto &graph);
     vector<int> TopologicallySortedNodes(onnx::GraphProto &graph);
     vector<double> convertToRowMajor(arma::mat matrix, vector<size_t> outputDimension);
     vector<double> convertToColMajor(arma::mat matrix, vector<size_t> outputDimension);

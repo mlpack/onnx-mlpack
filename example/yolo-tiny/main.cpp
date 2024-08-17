@@ -43,16 +43,28 @@ vector<double> softmax(vector<double> v)
 
 // v1 = x1, y1, x2, y2
 // v2 = x3, y3, x4, y4
-float IOU(vector<int> v1, vector<int> v2)
+float IOU(const std::vector<int>& v1, const std::vector<int>& v2)
 {
-    int interior_x1 = max(v1[0], v2[0]);
-    int interior_y1 = max(v1[1], v2[1]);
-    int interior_x2 = min(v1[2], v2[2]);
-    int interior_y2 = min(v1[3], v2[3]);
+    int interior_x1 = std::max(v1[0], v2[0]);
+    int interior_y1 = std::max(v1[1], v2[1]);
+    int interior_x2 = std::min(v1[2], v2[2]);
+    int interior_y2 = std::min(v1[3], v2[3]);
 
-    int intersection_area = abs(interior_x2 - interior_x1) * abs(interior_y2 - interior_y1);
-    int union_area = abs((v1[0] - v1[2]) * (v1[1] - v1[3])) + abs((v2[0] - v2[2]) * (v2[1] - v2[3])) - intersection_area;
-    return intersection_area / union_area;
+    int intersection_width = interior_x2 - interior_x1;
+    int intersection_height = interior_y2 - interior_y1;
+
+    // Check if the rectangles actually overlap
+    if (intersection_width <= 0 || intersection_height <= 0)
+        return 0.0f;
+
+    int intersection_area = intersection_width * intersection_height;
+
+    int area1 = (v1[2] - v1[0]) * (v1[3] - v1[1]);
+    int area2 = (v2[2] - v2[0]) * (v2[3] - v2[1]);
+
+    int union_area = area1 + area2 - intersection_area;
+
+    return static_cast<float>(intersection_area) / static_cast<float>(union_area);
 }
 
 vector<pair<int, pair<float, vector<int>>>> NonMaxSupression(vector<vector<int>> &boxes,
@@ -102,7 +114,7 @@ vector<pair<int, pair<float, vector<int>>>> NonMaxSupression(vector<vector<int>>
 
         for (auto element : itr.second)
         {
-            if (IOU(element.second, maxCBox) > iouThresold)
+            if (IOU(element.second, maxCBox) < iouThresold || IOU(element.second, maxCBox)==1)
             {
                 pair<int, pair<float, vector<int>>> p;
                 p.first = id;
@@ -132,34 +144,34 @@ int main()
     int C = 3;
     for (int i = 1; i < 11; i++)
     {
-        /*
+        
         // // image from the csv file
         string loat_path = "/home/kumarutkarsh/Desktop/onnx-mlpack/example/yolo-tiny/csv_images/" + to_string(i) + ".csv";
         arma::mat data;
         bool load_status = data.load(loat_path, arma::csv_ascii);
         vector<double> v = convertToColMajor(data, {416, 416, 3});
         arma::mat imageMatrix(v);
-        */
+        
 
         //--------------------------------------------------
         mlpack::data::ImageInfo imageInfo(416, 416, 3, 1);
-        string fileName = "image(416-416)/" + to_string(i) + ".jpg";
-        arma::Mat<double> imageMat;
-        mlpack::data::Load<double>(fileName, imageMat, imageInfo, false);
-        // ImageMatrx => rgb rgb
-        //  we want int => rrr...ggg...bbb...
-        vector<double> imageVector(H * W * C, 0);
-        for (int i = 0; i < C; i++)
-        {
-            for (int j = 0; j < W; j++)
-            {
-                for (int k = 0; k < H; k++)
-                {
-                    imageVector[k + (j * H) + (i * H * W)] = imageMat(i + (C * W * k) + (C * j), 0);
-                }
-            }
-        }
-        arma::mat imageMatrix(imageVector);
+        // string fileName = "image(416-416)/" + to_string(i) + ".jpg";
+        // arma::Mat<double> imageMat;
+        // mlpack::data::Load<double>(fileName, imageMat, imageInfo, false);
+        // // ImageMatrx => rgb rgb
+        // //  we want int => rrr...ggg...bbb...
+        // vector<double> imageVector(H * W * C, 0);
+        // for (int i = 0; i < C; i++)
+        // {
+        //     for (int j = 0; j < W; j++)
+        //     {
+        //         for (int k = 0; k < H; k++)
+        //         {
+        //             imageVector[k + (j * H) + (i * H * W)] = imageMat(i + (C * W * k) + (C * j), 0);
+        //         }
+        //     }
+        // }
+        // arma::mat imageMatrix(imageVector);
         //--------------------------------------------------------
 
         // // // // getting the output from the prediction method
@@ -218,7 +230,7 @@ int main()
             }
         }
 
-        vector<pair<int, pair<float, vector<int>>>> result = NonMaxSupression(boxes, confidences, ids, 0.4, 0.5);
+        vector<pair<int, pair<float, vector<int>>>> result = NonMaxSupression(boxes, confidences, ids, 0.4, 0.4);
         for (auto output : result)
         {
             int r1 = output.second.second[0];

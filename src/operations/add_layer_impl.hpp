@@ -1,7 +1,7 @@
 #include "add_layer.hpp"
 
-void AddLayer(mlpack::FFN<> &ffn, onnx::GraphProto graph,
-              onnx::NodeProto node, std::map<string, double> onnxoperatorAttribute, vector<arma::Mat<double>> &layerParameters){
+void AddLayer(mlpack::FFN<> &ffn, onnx::GraphProto &graph,
+              onnx::NodeProto &node, std::map<string, double> onnxoperatorAttribute, vector<arma::Mat<double>> &layerParameters){
 
     if (node.op_type() == "Gemm")
     {

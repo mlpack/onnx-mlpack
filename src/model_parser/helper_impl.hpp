@@ -1,6 +1,6 @@
 #include "helper.hpp"
 
-string get::ModelInput(onnx::GraphProto graph)
+string get::ModelInput(onnx::GraphProto &graph)
 {
     vector<string> inputNames;
     vector<string> initializerNames;
@@ -25,7 +25,7 @@ string get::ModelInput(onnx::GraphProto graph)
     return "";
 }
 
-vector<size_t> get::InputDimension(onnx::GraphProto graph, string modelInput)
+vector<size_t> get::InputDimension(onnx::GraphProto &graph, string modelInput)
 {
     vector<size_t> dimension;
     for (auto input : graph.input())
@@ -42,7 +42,7 @@ vector<size_t> get::InputDimension(onnx::GraphProto graph, string modelInput)
     return dimension;
 }
 
-vector<int> get::CurrentNode(onnx::GraphProto graph, string nodeInput)
+vector<int> get::CurrentNode(onnx::GraphProto &graph, string nodeInput)
 {
     vector<int> nodes;
     for (int i = 0; i < graph.node().size(); i++)
@@ -71,9 +71,9 @@ vector<int> get::CurrentNode(onnx::GraphProto graph, string nodeInput)
     // return node;
 }
 
-onnx::TensorProto get::Initializer(onnx::GraphProto graph, string initializerName)
+const onnx::TensorProto &get::Initializer(onnx::GraphProto &graph, string initializerName)
 {
-    for (onnx::TensorProto init : graph.initializer())
+    for (const onnx::TensorProto &init : graph.initializer())
     {
         if (initializerName == init.name())
         {
@@ -83,7 +83,7 @@ onnx::TensorProto get::Initializer(onnx::GraphProto graph, string initializerNam
     throw std::runtime_error("No initializer found with name " + initializerName);
 }
 
-arma::fmat get::ConvertToColumnMajor(onnx::TensorProto initializer)
+arma::fmat get::ConvertToColumnMajor(const onnx::TensorProto &initializer)
 {
     // onnx initializer stores data in row major format
     // {N, C, H, W}
@@ -164,7 +164,7 @@ void dfs(int node, int visitedNode[], vector<vector<int>> adj, stack<int> &st)
     st.push(node);
 }
 
-vector<vector<int>> get::AdjencyMatrix(onnx::GraphProto graph)
+vector<vector<int>> get::AdjencyMatrix(onnx::GraphProto &graph)
 {
     int totalNodes = graph.node().size();
 

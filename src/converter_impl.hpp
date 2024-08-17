@@ -1,76 +1,106 @@
 #include "converter.hpp"
 
-onnx::GraphProto getGraph(string filePath)
+onnx::GraphProto getGraph(const std::string &filePath)
 {
+    // ModelProto contains the ONNX graph along with some metadata.
+    // We only need the graph from the ModelProto.
     onnx::ModelProto onnxModel;
     std::ifstream in(filePath, std::ios_base::binary);
+    if (!in.is_open())
+    {
+        throw std::runtime_error("Failed to open ONNX model file: " + filePath);
+    }
+    // Parse the ONNX model from the input stream.
     onnxModel.ParseFromIstream(&in);
     in.close();
+
+    // Return the graph from the ONNX model.
     return onnxModel.graph();
 }
 
-mlpack::FFN<> converter(onnx::GraphProto graph)
+/**
+ * @brief Convert an ONNX graph to an MLPack FFN model.
+ *
+ * We iterate through the nodes of the ONNX graph in topological order,
+ * adding the corresponding layers to the `mlpack::FFN` model and storing the
+ * parameters in `layerParameters`. After adding all the layers to the FFN,
+ * we call `ffn.Reset()` to ensure all layers adjust their input/output dimensions
+ * and check for compatibility.
+ *
+ * Finally, we iterate through the layers again, transferring the corresponding
+ * weights to the FFN layers.
+ */
+mlpack::FFN<> converter(onnx::GraphProto &graph)
 {
     mlpack::FFN<> ffn;
-    // at first layers will be added in ffn and corresponding parameters will be stored
-    // in layerParameters, and once the whole model is set, the parameters inside
-    // layerParameters will be transfered to ffn
-    vector<arma::Mat<double>> layerParameters;
-    string modelInput = get::ModelInput(graph);
-    vector<size_t> inputDimension = get::InputDimension(graph, modelInput);
+
+    // Buffer to store parameters of each layer for later use.
+    std::vector<arma::Mat<double>> layerParameters;
+
+    // Get the name of the first node to set the input dimensions of the FFN.
+    std::string modelInput = get::ModelInput(graph);
+    std::vector<size_t> inputDimension = get::InputDimension(graph, modelInput);
     ffn.InputDimensions() = inputDimension;
-    cout << "inputDimension " << inputDimension << endl;
 
-    // Iterating through nodes in topological order
-    vector<int> topoSortedNode = get::TopologicallySortedNodes(graph);
+    // Get the nodes in topologically sorted order.
+    std::vector<int> topoSortedNode = get::TopologicallySortedNodes(graph);
 
+    // Iterate through the topologically sorted nodes.
     for (int nodeIndex : topoSortedNode)
     {
+        // Get the actual node from its index.
         onnx::NodeProto node = graph.node(nodeIndex);
-        // extracting the attributes and adding the layer to the ffn
-        map<string, double> onnxOperatorAttribute = OnnxOperatorAttribute(graph, node);
+
+        // Extract the attributes from the node.
+        std::map<std::string, double> onnxOperatorAttribute = OnnxOperatorAttribute(graph, node);
+
+        // Use the attributes to generate an MLPack layer and add that layer to the FFN.
+        // This step adds the layer to the FFN and stores the parameters in `layerParameters`.
         AddLayer(ffn, graph, node, onnxOperatorAttribute, layerParameters);
     }
-    // -----------------------------
+    // Reset the FFN to ensure all layers adjust their input/output dimensions.
     ffn.Reset();
-    printParametersSize(layerParameters);
+    // printParametersSize(layerParameters);
 
-    // vectorising the layer prameters and putting all together
-    // and then transferring the whole parameters to the model
-    // at once
+    /*
+    Method 2: Flatten the layer parameters, put them all together,
+    and then transfer the whole parameters to the model at once.
+    */
     // arma::mat flattenParameters = FlattenParameters(layerParameters);
     // ffn.Parameters() = flattenParameters;
 
-    // mapping the parameters to the layers
-    int i = 0;
-    for (mlpack::Layer<> *layer : ffn.Network())
+    /*
+    Method 1: Transfer the parameters to each layer one by one.
+    */
+    for (size_t i = 0; i < ffn.Network().size(); ++i)
     {
         if (layerParameters[i].n_elem)
         {
-            layer->Parameters() = layerParameters[i];
-            cout << "layerParameters " << i << endl;
+            ffn.Network()[i]->Parameters() = layerParameters[i];
+            std::cout << "Transferred parameters to layer " << i << std::endl;
         }
-        i++;
     }
+
     return ffn;
 }
 
-// get the whole size of the parameters
-void printParametersSize(vector<arma::Mat<double>> layerParameters)
+
+void printParametersSize(const std::vector<arma::Mat<double>> &layerParameters)
 {
-    int count = 0;
-    for (auto element : layerParameters)
+    size_t count = 0;
+    for (const auto &element : layerParameters)
     {
-        count += (element.n_rows * element.n_cols);
+        count += element.n_rows * element.n_cols;
     }
-    cout << count << "<--------" << endl;
+    std::cout << "Total parameter size: " << count << std::endl;
 }
 
-arma::mat FlattenParameters(vector<arma::Mat<double>> layerParameters)
+arma::mat FlattenParameters(const std::vector<arma::Mat<double>> &layerParameters)
 {
     arma::vec flattenParameters;
-    for (auto layerParameter : layerParameters)
+    for (const auto &layerParameter : layerParameters)
     {
+        // Concatenate the vectorized layer parameters into a single vector.
         flattenParameters = arma::join_vert(flattenParameters, arma::vectorise(layerParameter));
     }
     return flattenParameters;

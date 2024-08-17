@@ -7,8 +7,8 @@
 
 using namespace std;
 
-void AddBatchNormalization(mlpack::FFN<> &ffn, onnx::GraphProto graph,
-              onnx::NodeProto node, map<string, double> onnxOperatorAttribute, vector<arma::Mat<double>> &layerParameters);
+void AddBatchNormalization(mlpack::FFN<> &ffn, onnx::GraphProto &graph,
+              onnx::NodeProto &node, map<string, double> onnxOperatorAttribute, vector<arma::Mat<double>> &layerParameters);
 
 
 #include "BatchNormalization_impl.hpp"

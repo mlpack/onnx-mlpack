@@ -1,7 +1,7 @@
 #include "BatchNormalization.hpp"
 
-void AddBatchNormalization(mlpack::FFN<> &ffn, onnx::GraphProto graph,
-                           onnx::NodeProto node, map<string, double> onnxOperatorAttribute, vector<arma::Mat<double>> &layerParameters)
+void AddBatchNormalization(mlpack::FFN<> &ffn, onnx::GraphProto &graph,
+                           onnx::NodeProto &node, map<string, double> onnxOperatorAttribute, vector<arma::Mat<double>> &layerParameters)
 {
     // experiment below 
     double eps = onnxOperatorAttribute["epsilon"];

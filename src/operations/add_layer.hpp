@@ -16,8 +16,8 @@
 #include "../model_parser/utils.hpp"
 
 void AddLayer(mlpack::FFN<> &ffn,
-              onnx::GraphProto graph,
-              onnx::NodeProto node,
+              onnx::GraphProto &graph,
+              onnx::NodeProto &node,
               std::map<string, double> onnxoperatorAttribute,
               vector<arma::Mat<double>> &layerParameters);
 
