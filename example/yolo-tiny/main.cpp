@@ -147,10 +147,10 @@ int main()
         
         // // image from the csv file
         string loat_path = "/home/kumarutkarsh/Desktop/onnx-mlpack/example/yolo-tiny/csv_images/" + to_string(i) + ".csv";
-        arma::mat data;
-        bool load_status = data.load(loat_path, arma::csv_ascii);
-        vector<double> v = convertToColMajor(data, {416, 416, 3});
-        arma::mat imageMatrix(v);
+        arma::mat imageMatrix;
+        bool load_status = imageMatrix.load(loat_path, arma::csv_ascii);
+        get::ImageToColumnMajor(imageMatrix, {416, 416, 3});
+        // arma::mat imageMatrix(v);
         
 
         //--------------------------------------------------
@@ -237,7 +237,7 @@ int main()
             int c1 = output.second.second[1];
             int r2 = output.second.second[2];
             int c2 = output.second.second[3];
-            DrawRectangle_onCsv(imageMatrix, r1, c1, r2, c2, {416, 416, 3});
+            get::DrawRectangleOnCsv(imageMatrix, r1, c1, r2, c2, {416, 416, 3});
         }
 
         vector<double> finalImage;
@@ -280,7 +280,7 @@ for(int i=0; i<C; i++){
     }
 }
 arma::mat imageMatrix_(imageVector);
-vector<double> v = convertToRowMajor(imageMatrix_, {W, H, C});
+vector<double> v = ConvertToRowMajor(imageMatrix_, {W, H, C});
 // cout<<"--->"<<imageVector<<endl;
 for(int i=0; i<10; i++){
     cout<<imageVector[i]<<endl;
@@ -300,7 +300,7 @@ for (auto layer : generatedModel.Network())
     input = output;
 
     // arma::mat A = input.submat(0, 0, 5, 0);
-    vector<double> v = convertToRowMajor(input, layer->OutputDimensions());
+    vector<double> v = ConvertToRowMajor(input, layer->OutputDimensions());
 
 
     // printing the output dimension
