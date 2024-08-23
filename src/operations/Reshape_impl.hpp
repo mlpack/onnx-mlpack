@@ -34,7 +34,7 @@ void AddReshape(mlpack::FFN<> &ffn, onnx::GraphProto graph,
     Reshape *reshape = new Reshape(outputDimension);
     layerParameters.push_back(arma::Mat<double>());
     ffn.Add(reshape);
-    cout << "Added the Reshape layer" << endl;
+    cout << "Added mlpack::Reshape Layer" << endl;
 }
 
 vector<int> FindReshapedDimension(onnx::GraphProto graph, onnx::NodeProto node)

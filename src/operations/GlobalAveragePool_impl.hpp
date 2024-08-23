@@ -21,5 +21,5 @@ void AddGlobalAveragePool(mlpack::FFN<> &ffn, vector<arma::Mat<double>> &layerPa
     mlpack::MeanPooling *meanPooling = new mlpack::MeanPooling(kernelWidth, kernelHeight, strideWidth, strideHeight, floor);
     layerParameters.push_back(arma::Mat<double>());
     ffn.Add(meanPooling);
-    cout << "Added the GlobalAveragePool layer" << endl;
+    cout << "Added mlpack::GlobalAveragePool Layer" << endl;
 }

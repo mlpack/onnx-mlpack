@@ -22,5 +22,5 @@ void AddBatchNormalization(mlpack::FFN<> &ffn, onnx::GraphProto &graph,
     layerParameters.push_back(arma::join_cols(arma::conv_to<arma::mat>::from(get::ConvertToColumnMajor(get::Initializer(graph, scale_input))), arma::conv_to<arma::mat>::from(get::ConvertToColumnMajor(get::Initializer(graph, B_input)))));
     // experiment above
     ffn.Add(batchNorm);
-    cout << "Added the BatchNormalization layer" << endl;
+    cout << "Added mlpack::BatchNormalization Layer" << endl;
 }

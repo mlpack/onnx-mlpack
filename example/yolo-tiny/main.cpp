@@ -1,15 +1,6 @@
 #include "converter.hpp"
 #include <cmath>
 
-int mul(vector<size_t> v)
-{
-    int ans = 1;
-    for (int element : v)
-    {
-        ans *= element;
-    }
-    return ans;
-}
 vector<string> class_names = {"Aeroplane", "Bicycle", "Bird", "Boat", "Bottle", "Bus", "Car", "Cat", "Chair", "Cow",
                               "Dining Table", "Dog", "Horse", "Motorbike", "Person", "Potted Plant", "Sheep", "Sofa",
                               "Train", "TV"};
@@ -43,7 +34,7 @@ vector<double> softmax(vector<double> v)
 
 // v1 = x1, y1, x2, y2
 // v2 = x3, y3, x4, y4
-float IOU(const std::vector<int>& v1, const std::vector<int>& v2)
+float IOU(const std::vector<int> &v1, const std::vector<int> &v2)
 {
     int interior_x1 = std::max(v1[0], v2[0]);
     int interior_y1 = std::max(v1[1], v2[1]);
@@ -77,11 +68,7 @@ vector<pair<int, pair<float, vector<int>>>> NonMaxSupression(vector<vector<int>>
     for (int i = 0; i < confidences.size(); i++)
     {
         if (confidences[i] < confidenceThresold)
-        {
-            // boxes.erase(boxes.end() - i);
-            // confidences.erase(confidences.end() - i);
             ids[i] = -1;
-        }
     }
 
     // seprating the same id element seprately
@@ -114,7 +101,7 @@ vector<pair<int, pair<float, vector<int>>>> NonMaxSupression(vector<vector<int>>
 
         for (auto element : itr.second)
         {
-            if (IOU(element.second, maxCBox) < iouThresold || IOU(element.second, maxCBox)==1)
+            if (IOU(element.second, maxCBox) < iouThresold || IOU(element.second, maxCBox) == 1)
             {
                 pair<int, pair<float, vector<int>>> p;
                 p.first = id;
@@ -137,23 +124,22 @@ int main()
 
     // getting the model from the graph
     mlpack::FFN<> generatedModel = converter(graph);
-    cout << generatedModel.Parameters().n_rows << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
 
     int H = 416;
     int W = 416;
     int C = 3;
     for (int i = 1; i < 11; i++)
     {
-        
-        // // image from the csv file
+        // mlpack::image load is little inaccurate so we are first converting the
+        // image into csv format using opencv externally and passing the image to the model
+
+        // loading image from the csv file
         string loat_path = "/home/kumarutkarsh/Desktop/onnx-mlpack/example/yolo-tiny/csv_images/" + to_string(i) + ".csv";
         arma::mat imageMatrix;
         bool load_status = imageMatrix.load(loat_path, arma::csv_ascii);
         get::ImageToColumnMajor(imageMatrix, {416, 416, 3});
-        // arma::mat imageMatrix(v);
-        
 
-        //--------------------------------------------------
+        //**  however image can be loaded from mlpack::imageLoad and used the data upto certain accuracy
         mlpack::data::ImageInfo imageInfo(416, 416, 3, 1);
         // string fileName = "image(416-416)/" + to_string(i) + ".jpg";
         // arma::Mat<double> imageMat;
@@ -174,11 +160,11 @@ int main()
         // arma::mat imageMatrix(imageVector);
         //--------------------------------------------------------
 
-        // // // // getting the output from the prediction method
+        // getting the output from the prediction method
         arma::mat output;
         generatedModel.Predict(imageMatrix, output);
         arma::cube finalOutput(output.memptr(), 13, 13, 125, false, true);
-        finalOutput.print("final output");
+        // finalOutput.print("final output");
 
         // get the most confident object
         int numClasses = 20;
@@ -230,16 +216,25 @@ int main()
             }
         }
 
-        vector<pair<int, pair<float, vector<int>>>> result = NonMaxSupression(boxes, confidences, ids, 0.4, 0.4);
+        // Removing all the least probable boxed and overlaping boxed
+        // <id, <confidence score, bonding box>>
+        vector<pair<int, pair<float, vector<int>>>> result =
+            NonMaxSupression(boxes, confidences, ids, 0.4, 0.4);
+
+        cout<<"for "<<i<<".png"<<endl;
         for (auto output : result)
         {
             int r1 = output.second.second[0];
             int c1 = output.second.second[1];
             int r2 = output.second.second[2];
             int c2 = output.second.second[3];
+            // modify the imageMatrix (draw rectangle)
             get::DrawRectangleOnCsv(imageMatrix, r1, c1, r2, c2, {416, 416, 3});
+            cout<<"Detedted-Object "<<class_names[output.first]<<"; Confidence-Score "<<output.second.first<<endl;
         }
+        cout<<endl;
 
+        // transforming the image so that it can be saved correctly by mlpack::save
         vector<double> finalImage;
         for (int i = 0; i < 416; i++)
         {
@@ -252,13 +247,25 @@ int main()
             }
         }
         arma::mat f(finalImage);
-        // mlpack::data::ImageInfo imageInfo(416, 416, 3, 1);
         string save_path = "yolo_output_image/" + to_string(i) + ".png";
         mlpack::data::Save(save_path, f, imageInfo, true);
     }
 
     return 0;
 }
+
+
+
+// // *** below code is for debugging purpose
+// int mul(vector<size_t> v)
+// {
+//     int ans = 1;
+//     for (int element : v)
+//     {
+//         ans *= element;
+//     }
+//     return ans;
+// }
 
 /*
 // Extracting image, Input
@@ -286,8 +293,6 @@ for(int i=0; i<10; i++){
     cout<<imageVector[i]<<endl;
 }
 */
-
-
 
 // forward pass one by one
 /*

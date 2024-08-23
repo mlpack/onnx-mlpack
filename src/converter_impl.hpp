@@ -46,6 +46,8 @@ mlpack::FFN<> converter(onnx::GraphProto &graph)
     std::vector<int> topoSortedNode = get::TopologicallySortedNodes(graph);
 
     // Iterate through the topologically sorted nodes.
+    cout << endl
+         << "****GENERATING THE GRAPH****" << endl;
     for (int nodeIndex : topoSortedNode)
     {
         // Get the actual node from its index.
@@ -72,6 +74,8 @@ mlpack::FFN<> converter(onnx::GraphProto &graph)
     /*
     Method 1: Transfer the parameters to each layer one by one.
     */
+    cout << endl;
+    cout << "****TRANSFERRING PARAMETERS TO THE LAYER****" << endl;
     for (size_t i = 0; i < ffn.Network().size(); ++i)
     {
         if (layerParameters[i].n_elem)
@@ -80,10 +84,10 @@ mlpack::FFN<> converter(onnx::GraphProto &graph)
             std::cout << "Transferred parameters to layer " << i << std::endl;
         }
     }
+    cout << endl;
 
     return ffn;
 }
-
 
 void printParametersSize(const std::vector<arma::Mat<double>> &layerParameters)
 {

@@ -32,5 +32,5 @@ void AddAdd(mlpack::FFN<> &ffn, onnx::GraphProto graph,
     // }
     layerParameters.push_back(arma::Mat<double>());
     ffn.Add(new mlpack::Identity());
-    cout << "Added the Add layer" << endl;
+    cout << "Added mlpack::Add Layer" << endl;
 }

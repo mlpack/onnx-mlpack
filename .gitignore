@@ -1,1 +1,6 @@
 notes.txt
+
+# Ignore all executable files
+*.exe
+*.out
+*.bin

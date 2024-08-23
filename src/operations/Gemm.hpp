@@ -9,7 +9,8 @@
 using namespace std;
 
 void AddGemm(mlpack::FFN<> &ffn, onnx::GraphProto graph,
-              onnx::NodeProto node, map<string, double> onnxOperatorAttribute, vector<arma::Mat<double>> &layerParameters);
+              onnx::NodeProto node, map<string, double> onnxOperatorAttribute,
+               vector<arma::Mat<double>> &layerParameters);
 
 size_t FindOutputDimension(onnx::GraphProto graph, onnx::NodeProto node);
 

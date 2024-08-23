@@ -6,5 +6,5 @@ void AddLeakyRelu(mlpack::FFN<> &ffn, onnx::GraphProto graph,
     double alpha = onnxOperatorAttribute["alpha"];
     layerParameters.push_back(arma::Mat<double>());
     ffn.Add(new mlpack::LeakyReLU(alpha));
-    cout << "Added the LeakyRelu layer" << endl;
+    cout << "Added mlpack::LeakyRelu Layer" << endl;
 }

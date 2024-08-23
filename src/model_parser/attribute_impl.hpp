@@ -4,6 +4,7 @@ map<string, double> OnnxOperatorAttribute(onnx::GraphProto &graph, onnx::NodePro
 {
     // Define default values for ONNX node attributes based on operator types.
     // If the node does not specify certain attributes, these default values will be used.
+    // link: https://github.com/Talmaj/onnx2pytorch/blob/master/onnx2pytorch/convert/attribute.py
     map<string, double> onnxOperatorAttribute;
     if (node.op_type() == "Gemm")
     {

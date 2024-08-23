@@ -32,14 +32,14 @@ void AddMaxPool(mlpack::FFN<> &ffn, onnx::GraphProto graph,
     // mlpack::Padding *padding = new mlpack::Padding(0, 0, 0, 0);
     layerParameters.push_back(arma::Mat<double>());
     ffn.Add(padding);
-    cout << "Added the Padding layer" << endl;
+    cout << "Added mlpack::Padding Layer" << endl;
 
 
     // max pooling part
     mlpack::MaxPooling *maxPooling = new mlpack::MaxPooling(kernelWidth, kernelHeight, strideWidth, strideHeight, floor);
     layerParameters.push_back(arma::Mat<double>());
     ffn.Add(maxPooling);
-    cout << "Added the MaxPool layer" << endl;
+    cout << "Added mlpack::MaxPool Layer" << endl;
     // vector<size_t> vec = {kernelWidth, kernelHeight, strideWidth, strideHeight};
     // cout << vec << endl;
 }

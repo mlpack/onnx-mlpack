@@ -62,11 +62,11 @@ void AddConv(mlpack::FFN<> &ffn, onnx::GraphProto graph,
     if(group == 1){
         mlpack::Convolution* convolution = new mlpack::Convolution(maps, kernelWidth, kernelHeight, strideWidth, strideHeight, padW, padH, paddingType, useBias);
         ffn.Add(convolution);
-        cout << "Added the Conv layer" << endl;
+        cout << "Added mlpack::Conv Layer" << endl;
     }else{
         mlpack::GroupedConvolution* convolution = new mlpack::GroupedConvolution(maps, kernelWidth, kernelHeight, group, strideWidth, strideHeight, padW, padH, paddingType, useBias);
         ffn.Add(convolution);
-        cout << "Added the GroupedConv layer" << endl;
+        cout << "Added mlpack::GroupedConv Layer" << endl;
     }
 }
 

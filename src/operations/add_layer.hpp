@@ -15,6 +15,9 @@
 
 #include "../model_parser/utils.hpp"
 
+/**
+ * @brief 
+ */
 void AddLayer(mlpack::FFN<> &ffn,
               onnx::GraphProto &graph,
               onnx::NodeProto &node,
