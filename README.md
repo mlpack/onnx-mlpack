@@ -32,12 +32,11 @@ and might undergo some major refactoring, please use with cautios.
 1. **ONNX Installation:**
     - If you don't have Protobuf installed, ONNX will internally download and build Protobuf during its build process. You only need to build ONNX. Refer to the [official ONNX build instructions](https://github.com/onnx/onnx#:~:text=conda%2Dforge%20onnx-,Build%20ONNX%20from%20Source,-Before%20building%20from) for more details.
     - However, to avoid potential version issues in the future, we have provided a zipped format of ONNX in the `build_onnx` repository along with a script that will directly install ONNX on your system.
-
-However to easily get this repository running on your system and to not have any version issue in future, we have provided the zipped format of onnx in build_onnx repository and a script file which will directly install onnx in you system. 
+    - 
 follow the below instruction to build onnx and make the repository running:
 
 
-### Steps to Build ONNX and mlpack
+### Steps to Build ONNX
 
 1. **Clone the Repository:**
     - Clone the `onnx-mlpack` repository to your local system and navigate to the repository directory.
@@ -49,7 +48,7 @@ follow the below instruction to build onnx and make the repository running:
         
     - This will generate all the necessary build files for ONNX inside the `build_onnx` folder.
     
-3. **Verify MLPack and ONNX Build:**
+3. **Verify mlpack and ONNX Build:**
     - With both ONNX and mlpack built, it's time to test the setup with an example repository.
 
 ### Running the Example Repository
