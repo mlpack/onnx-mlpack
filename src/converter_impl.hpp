@@ -19,7 +19,7 @@ onnx::GraphProto getGraph(const std::string &filePath)
 }
 
 /**
- * @brief Convert an ONNX graph to an MLPack FFN model.
+ * @brief Convert an ONNX graph to an mlpack FFN model.
  *
  * We iterate through the nodes of the ONNX graph in topological order,
  * adding the corresponding layers to the `mlpack::FFN` model and storing the
@@ -56,7 +56,7 @@ mlpack::FFN<> converter(onnx::GraphProto &graph)
         // Extract the attributes from the node.
         std::map<std::string, double> onnxOperatorAttribute = OnnxOperatorAttribute(graph, node);
 
-        // Use the attributes to generate an MLPack layer and add that layer to the FFN.
+        // Use the attributes to generate an mlpack layer and add that layer to the FFN.
         // This step adds the layer to the FFN and stores the parameters in `layerParameters`.
         AddLayer(ffn, graph, node, onnxOperatorAttribute, layerParameters);
     }

@@ -53,7 +53,7 @@ namespace get
     /**
      * @brief Convert ONNX initializer data from row-major to column-major format.
      * 
-     * ONNX stores weight data in row-major format, but MLPack expects the data in column-major format.
+     * ONNX stores weight data in row-major format, but mlpack expects the data in column-major format.
      * This function handles the conversion.
      * 
      * @param initializer Reference to the ONNX initializer.
@@ -62,12 +62,12 @@ namespace get
     arma::fmat ConvertToColumnMajor(const onnx::TensorProto& initializer);
 
     /**
-     * @brief Convert an MLPack column-major matrix into row-major format.
+     * @brief Convert an mlpack column-major matrix into row-major format.
      * 
-     * This utility function is useful for comparing MLPack layer outputs with ONNX runtime outputs
+     * This utility function is useful for comparing mlpack layer outputs with ONNX runtime outputs
      * to ensure successful weight transfer.
      * 
-     * @param matrix The MLPack matrix in column-major format.
+     * @param matrix The mlpack matrix in column-major format.
      * @param outputDimension The desired output dimensions {width, height, channels}.
      * @return A vector containing the data in row-major format.
      */
@@ -76,9 +76,9 @@ namespace get
     /**
      * @brief Convert a loaded image into column-major format.
      * 
-     * MLPack’s image loading does not inherently provide row-major or column-major formats,
+     * mlpack’s image loading does not inherently provide row-major or column-major formats,
      * so this function is necessary to convert the loaded image into the correct column-major
-     * format for MLPack models.
+     * format for mlpack models.
      * 
      * @param matrix The matrix containing image data.
      * @param outputDimension The dimensions of the loaded image {width, height, channels}.
@@ -88,7 +88,7 @@ namespace get
     /**
      * @brief Load an image, draw a rectangle on it, and save the modified image.
      * 
-     * Uses MLPack’s image load method to load the image, draws a rectangle with
+     * Uses mlpack’s image load method to load the image, draws a rectangle with
      * a two-pixel width, and saves the modified image.
      * 
      * @param imagePath The path to the image to be edited.

@@ -16,14 +16,14 @@
 onnx::GraphProto getGraph(const std::string& filePath);
 
 /**
- * @brief Convert an ONNX model graph to an MLPack FFN model.
+ * @brief Convert an ONNX model graph to an mlpack FFN model.
  * 
- * The core logic for converting an ONNX model into an MLPack FFN model
+ * The core logic for converting an ONNX model into an mlpack FFN model
  * is implemented in this function. Refer to the implementation for 
  * detailed steps.
  * 
  * @param graph The ONNX model's graph representation.
- * @return mlpack::FFN<> The equivalent MLPack FFN model.
+ * @return mlpack::FFN<> The equivalent mlpack FFN model.
  */
 mlpack::FFN<> converter(onnx::GraphProto& graph);
 
@@ -32,7 +32,7 @@ mlpack::FFN<> converter(onnx::GraphProto& graph);
  * 
  * This function checks whether the total number of parameters extracted 
  * from the ONNX model matches the total number required in the corresponding 
- * MLPack model.
+ * mlpack model.
  * 
  * @param layerParameters A vector of matrices representing the parameters 
  *                        of each layer.
@@ -43,7 +43,7 @@ void printParametersSize(const std::vector<arma::Mat<double>>& layerParameters);
  * @brief Flatten layer parameters for weight transfer.
  * 
  * There are two methods to transfer parameters from the ONNX model to the 
- * MLPack model:
+ * mlpack model:
  * 
  * Method 1: Transfer parameters one by one to each layer's `Parameters()` 
  *           function.

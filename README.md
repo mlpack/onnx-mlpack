@@ -26,8 +26,8 @@ and might undergo some major refactoring, please use with cautios.
 
 ### Prerequisites
 
-1. **MLPack Installation:**
-    - Ensure that MLPack is installed on your local system. Follow the [official MLPack build instructions](https://github.com/mlpack/mlpack#:~:text=3.%20Installing%20and%20using%20mlpack%20in%20C%2B%2B) to complete this step.
+1. **mlpack Installation:**
+    - Ensure that mlpack is installed on your local system. Follow the [official mlpack build instructions](https://github.com/mlpack/mlpack#:~:text=3.%20Installing%20and%20using%20mlpack%20in%20C%2B%2B) to complete this step.
     
 1. **ONNX Installation:**
     - If you don't have Protobuf installed, ONNX will internally download and build Protobuf during its build process. You only need to build ONNX. Refer to the [official ONNX build instructions](https://github.com/onnx/onnx#:~:text=conda%2Dforge%20onnx-,Build%20ONNX%20from%20Source,-Before%20building%20from) for more details.

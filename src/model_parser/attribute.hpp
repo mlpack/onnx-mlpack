@@ -8,7 +8,7 @@
 
  /**
  * @brief Extracts and maps the attributes associated with an ONNX node to a form 
- *        that can be used in MLPack layers.
+ *        that can be used in mlpack layers.
  *
  * This function extracts relevant attributes from an ONNX node within a graph 
  * and organizes them into a map where the keys are attribute names (as strings) 
