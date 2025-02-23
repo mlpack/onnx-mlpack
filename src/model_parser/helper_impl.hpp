@@ -99,7 +99,8 @@ vector<int> get::TopologicallySortedNodes(onnx::GraphProto &graph)
     //     i++;
     // }
 
-    int visitedNode[totalNodes] = {0};
+    vector<int> visitedNode(totalNodes, 0);
+
     stack<int> st;
 
     for (int i = 0; i < totalNodes; i++)
@@ -118,7 +119,7 @@ vector<int> get::TopologicallySortedNodes(onnx::GraphProto &graph)
     return topologicalShort;
 }
 
-void get::dfs(int node, int visited[],
+void get::dfs(int node, vector<int>& visited,
               const vector<vector<int>> &adj, stack<int> &st)
 {
     visited[node] = 1;
