@@ -3,7 +3,7 @@
 
 <div align="center">
   <a href="http://mlpack.org">
-    <img src="img/onnx-mlpack.png" alt="ONNX-mlpack Translator" height="90%" width="70%">
+	<img src="img/onnx-mlpack.png" alt="ONNX-mlpack Translator" style="max-width: 70%; height: auto;">
   </a>
   <br>
   <h2>Unlock the Power of Other Frameworks in mlpack</h2>
