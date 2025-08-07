@@ -7,7 +7,11 @@ int main()
     onnx::GraphProto graph = getGraph(onnxFilePath);
 
     // getting the model from the graph
-    mlpack::FFN<> generatedModel = converter(graph);
+    mlpack::DAGNetwork<> generatedModel = converter(graph);
+
+
+    cout<<"done till here"<<endl;
+    // return 0;
 
     //! Loading the csv data
     arma::mat data;

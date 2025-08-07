@@ -1,30 +1,50 @@
 #include "Gemm.hpp"
 
-void AddGemm(mlpack::FFN<> &ffn, onnx::GraphProto graph,
-             onnx::NodeProto node, map<string, double> onnxOperatorAttribute,
-             vector<arma::Mat<double>> &layerParameters)
+vector<size_t> AddGemm(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
+                       onnx::NodeProto node, map<string, double> onnxOperatorAttribute)
 {
-    mlpack::LinearNoBias *linearNoBias =
-        new mlpack::LinearNoBias(FindOutputDimension(graph, node));
+    // mlpack::LinearNoBias *linearNoBias = new mlpack::LinearNoBias(FindOutputDimension(graph, node));
+    // mlpack::Add *add = new mlpack::Add();
+
+    size_t a = dag.Add<mlpack::LinearNoBias>(FindOutputDimension(graph, node));
+    size_t b = dag.Add<mlpack::Add>();
+    dag.Connect(a, b);
+
+    cout << "Added Gemm Layer" << endl;
+    return {a, b};
 
     // getting the weights in correct dimension
-    arma::mat weights = onnxOperatorAttribute["alpha"] *
-                        ExtractWeights(graph, node, onnxOperatorAttribute["transB"]);
-    // weights.print("weights");
+    // arma::mat weights = onnxOperatorAttribute["alpha"] * ExtractWeights(graph, node, onnxOperatorAttribute["transB"]);
 
-    layerParameters.push_back(weights);
-    ffn.Add(linearNoBias);
-    cout << "Added mlpack::LinearNoBias Layer" << endl;
+    // layerParameters.push_back(weights);
+    // cout << "Added mlpack::LinearNoBias Layer" << endl;
 
+    // mlpack::Add *add = new mlpack::Add();
+    // // getting the biases in correct dimension
+    // arma::mat biases = ExtractBiases(graph, node);
+    // // biases.print("biases");
+    // layerParameters.push_back(biases);
 
-    mlpack::Add *add = new mlpack::Add();
-    // getting the biases in correct dimension
+    // mlpack::MultiLayer* multiLayer = new mlpack::MultiLayer();
+
+    // return dag.Add(add);
+    // cout << "Added mlpack::Add Layer" << endl;
+}
+
+void TransferWeightToGemm(mlpack::DAGNetwork<> &dag, 
+    vector<size_t> &layerIndex, 
+    onnx::GraphProto &graph, 
+    const onnx::NodeProto &node, 
+    std::map<std::string, double> onnxOperatorAttribute)
+{
+    // gemm layer will be a multilayer with LinearNoBias and Add layer
+    arma::mat weights = ExtractWeights(graph, node, onnxOperatorAttribute["transB"]);
+    dag.Network()[layerIndex[0]]->Parameters() = weights;
+    // layer->Network()[0].Parameters() = weights;
+
     arma::mat biases = ExtractBiases(graph, node);
-    // biases.print("biases");
-    layerParameters.push_back(biases);
-    ffn.Add(add);
-    cout << "Added mlpack::Add Layer" << endl;
-
+    dag.Network()[layerIndex[1]]->Parameters() = biases;
+    return;
 }
 
 size_t FindOutputDimension(onnx::GraphProto graph, onnx::NodeProto node)

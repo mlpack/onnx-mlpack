@@ -1,11 +1,11 @@
 #include "GlobalAveragePool.hpp"
 
-void AddGlobalAveragePool(mlpack::FFN<> &ffn, vector<arma::Mat<double>> &layerParameters)
+vector<size_t> AddGlobalAveragePool(mlpack::DAGNetwork<> &dag)
 {
     // just to get the dimension of the incoming i will be reseting the ffn
-    mlpack::FFN<> ffn_ = ffn;
-    ffn_.Reset();
-    vector<size_t> dims = ffn_.Network().back()->OutputDimensions();
+    mlpack::DAGNetwork<> dag_ = dag;
+    dag_.Reset();
+    vector<size_t> dims = dag_.Network().back()->OutputDimensions();
 
     size_t kernelWidth = dims[0];
     size_t kernelHeight = dims[1];
@@ -18,8 +18,9 @@ void AddGlobalAveragePool(mlpack::FFN<> &ffn, vector<arma::Mat<double>> &layerPa
     // }
 
     // max pooling part
-    mlpack::MeanPooling *meanPooling = new mlpack::MeanPooling(kernelWidth, kernelHeight, strideWidth, strideHeight, floor);
-    layerParameters.push_back(arma::Mat<double>());
-    ffn.Add(meanPooling);
+    // mlpack::MeanPooling *meanPooling = new mlpack::MeanPooling(kernelWidth, kernelHeight, strideWidth, strideHeight, floor);
+    // layerParameters.push_back(arma::Mat<double>());
+    size_t a = dag.Add<mlpack::MeanPooling>(kernelWidth, kernelHeight, strideWidth, strideHeight, floor);
     cout << "Added mlpack::GlobalAveragePool Layer" << endl;
+    return {a};
 }

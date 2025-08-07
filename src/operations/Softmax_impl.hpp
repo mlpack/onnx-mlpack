@@ -1,7 +1,10 @@
 #include "Softmax.hpp"
 
-void AddSoftmax(mlpack::FFN<> &ffn, vector<arma::Mat<double>> &layerParameters){
-    layerParameters.push_back(arma::Mat<double>());
-    ffn.Add(new mlpack::Softmax());
+vector<size_t> AddSoftmax(mlpack::DAGNetwork<> &dag){
+    // layerParameters.push_back(arma::Mat<double>());
+    size_t a = dag.Add<mlpack::Softmax>();
+
+    
     cout<<"Added mlpack::Softmax Layer"<<endl;
+    return {a};
 }

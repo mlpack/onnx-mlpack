@@ -3,6 +3,7 @@
 
 #include "operations/add_layer.hpp"
 #include "model_parser/attribute.hpp"
+#include "dag/dag_network.hpp"
 
 /**
  * @brief Load an ONNX model from the specified file path.
@@ -23,9 +24,9 @@ onnx::GraphProto getGraph(const std::string& filePath);
  * detailed steps.
  * 
  * @param graph The ONNX model's graph representation.
- * @return mlpack::FFN<> The equivalent mlpack FFN model.
+ * @return mlpack::DAGNetwork<> The equivalent mlpack FFN model.
  */
-mlpack::FFN<> converter(onnx::GraphProto& graph);
+mlpack::DAGNetwork<> converter(onnx::GraphProto& graph);
 
 /**
  * @brief Utility function to validate parameter sizes.

@@ -1,7 +1,8 @@
-#include "Relu.hpp"
+#include "Add.hpp"
 
-void AddAdd(mlpack::FFN<> &ffn, onnx::GraphProto graph,
-            onnx::NodeProto node, map<string, double> onnxOperatorAttribute, vector<arma::Mat<double>> &layerParameters)
+
+vector<size_t> AddAdd(mlpack::DAGNetwork<> &dag, onnx::GraphProto &graph,
+            const onnx::NodeProto &node, map<string, double> onnxOperatorAttribute)
 {
     // // input is in column major {W, H, C, N}
     // vector<int> inDimension(4, 1);
@@ -30,7 +31,8 @@ void AddAdd(mlpack::FFN<> &ffn, onnx::GraphProto graph,
     // {
     //     throw std::runtime_error("input and bias dimension does not match, error in Add_impl");
     // }
-    layerParameters.push_back(arma::Mat<double>());
-    ffn.Add(new mlpack::Identity());
+    size_t a =  dag.Add<mlpack::Identity>();
+    
     cout << "Added mlpack::Add Layer" << endl;
+    return {a};
 }

@@ -2,11 +2,12 @@
 #define SOFTMAX_HPP
 
 #include "mlpack.hpp"
+#include "dag_network.hpp"
 #include "onnx_pb.h"
 
 using namespace std;
 
-void AddSoftmax(mlpack::FFN<> &ffn, vector<arma::Mat<double>> &layerParameters);
+vector<size_t> AddSoftmax(mlpack::DAGNetwork<> &dag);
 
 
 #include "Softmax_impl.hpp"

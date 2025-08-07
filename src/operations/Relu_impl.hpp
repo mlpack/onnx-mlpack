@@ -1,7 +1,9 @@
 #include "Relu.hpp"
 
-void AddRelu(mlpack::FFN<> &ffn, vector<arma::Mat<double>> &layerParameters){
-    layerParameters.push_back(arma::Mat<double>());
-    ffn.Add(new mlpack::LeakyReLU(0));
+vector<size_t> AddRelu(mlpack::DAGNetwork<> &dag){
+    // layerParameters.push_back(arma::Mat<double>());
+    size_t a = dag.Add<mlpack::LeakyReLU>(0);
+    
     cout<<"Added mlpack::Relu Layer"<<endl;
+    return {a};
 }

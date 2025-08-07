@@ -38,7 +38,7 @@ namespace get
     // these methods are made to get the node in topological order
     vector<int> DependentNodes(onnx::GraphProto& graph, const string& nodeInput);
     vector<vector<int>> AdjacencyMatrix(onnx::GraphProto& graph);
-    vector<int> TopologicallySortedNodes(onnx::GraphProto& graph);
+    vector<int> TopologicallySortedNodes(onnx::GraphProto& graph, vector<vector<int>> &adj);
     void dfs(int node, int visited[], const vector<vector<int>>& adj, stack<int>& st);
 
     /**

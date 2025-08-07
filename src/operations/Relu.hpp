@@ -2,11 +2,12 @@
 #define RELU_HPP
 
 #include "mlpack.hpp"
+#include "dag_network.hpp"
 #include "onnx_pb.h"
 
 using namespace std;
 
-void AddRelu(mlpack::FFN<> &ffn, vector<arma::Mat<double>> &layerParameters);
+vector<size_t> AddRelu(mlpack::DAGNetwork<> &dag);
 
 
 #include "Relu_impl.hpp"

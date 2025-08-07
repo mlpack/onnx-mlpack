@@ -1,11 +1,12 @@
 #include "Mul.hpp"
 
-void AddMul(mlpack::FFN<> &ffn, onnx::GraphProto graph,
-              onnx::NodeProto node, map<string, double> onnxOperatorAttribute, vector<arma::Mat<double>> &layerParameters){
+vector<size_t> AddMul(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
+              onnx::NodeProto node, map<string, double> onnxOperatorAttribute){
     float scalar = FindScallingFactor(graph, node);
-    layerParameters.push_back(arma::Mat<double>());
-    ffn.Add(new ScaleLayer(scalar));
+
+    size_t a = dag.Add<ScaleLayer>(scalar);
     cout<<"Added ScalarMul layer"<<endl;
+    return {a};
 }
 
 float FindScallingFactor(onnx::GraphProto graph, onnx::NodeProto node){

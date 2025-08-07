@@ -18,11 +18,16 @@
 /**
  * @brief 
  */
-void AddLayer(mlpack::FFN<> &ffn,
+vector<size_t> AddLayer(mlpack::DAGNetwork<> &dag,
               onnx::GraphProto &graph,
-              onnx::NodeProto &node,
-              std::map<string, double> onnxoperatorAttribute,
-              vector<arma::Mat<double>> &layerParameters);
+              const onnx::NodeProto &node,
+              std::map<string, double> onnxoperatorAttribute);
+
+void TransferWeights(mlpack::DAGNetwork<> &dag, 
+    vector<size_t> &layerIndex, 
+    onnx::GraphProto &graph, 
+    const onnx::NodeProto &node, 
+    std::map<std::string, double> onnxOperatorAttribute);
 
 
 #include "add_layer_impl.hpp"

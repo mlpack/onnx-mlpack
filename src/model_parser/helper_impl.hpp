@@ -45,7 +45,7 @@ vector<size_t> get::InputDimension(onnx::GraphProto &graph,
     return dimension;
 }
 
-// to get the indexs of all the nodes which will be tkaing the output of the current node
+// to get the indexs of all the nodes which will be taking the output of the current node
 vector<int> get::DependentNodes(onnx::GraphProto &graph,
                                 const string &nodeInput)
 {
@@ -84,12 +84,12 @@ vector<vector<int>> get::AdjacencyMatrix(onnx::GraphProto &graph)
     return adj;
 }
 
-vector<int> get::TopologicallySortedNodes(onnx::GraphProto &graph)
+vector<int> get::TopologicallySortedNodes(onnx::GraphProto &graph, vector<vector<int>> &adj)
 {
     int totalNodes = graph.node().size();
 
     // creating the adjencList and inDegree
-    vector<vector<int>> adj = get::AdjacencyMatrix(graph);
+    // vector<vector<int>> adj = get::AdjacencyMatrix(graph);
 
     // ------ print the adj
     // int i = 0;

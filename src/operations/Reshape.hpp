@@ -2,14 +2,15 @@
 #define RESHAPE_HPP
 
 #include "mlpack.hpp"
+#include "dag_network.hpp"
 #include "onnx_pb.h"
 #include "../model_parser/utils.hpp"
 #include "../model_parser/helper.hpp"
 
 using namespace std;
 
-void AddReshape(mlpack::FFN<> &ffn, onnx::GraphProto graph,
-                onnx::NodeProto node, map<string, double> onnxOperatorAttribute, vector<arma::Mat<double>> &layerParameters);
+vector<size_t> AddReshape(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
+                onnx::NodeProto node, map<string, double> onnxOperatorAttribute);
 
 class Reshape : public mlpack::IdentityType<arma::mat>
 {

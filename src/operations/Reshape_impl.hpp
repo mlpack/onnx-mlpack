@@ -1,15 +1,15 @@
 #include "Reshape.hpp"
 
-void AddReshape(mlpack::FFN<> &ffn, onnx::GraphProto graph,
-                onnx::NodeProto node, map<string, double> onnxOperatorAttribute, vector<arma::Mat<double>> &layerParameters)
+vector<size_t> AddReshape(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
+                onnx::NodeProto node, map<string, double> onnxOperatorAttribute)
 {
     vector<int> requiredDimensions = FindReshapedDimension(graph, node);
     // vector<size_t> outputDimension(requireDimensions.begin() + 0, requireDimensions.begin() + 3);
     vector<size_t> outputDimension(3, 1);
     // just to get the dimension of the incoming i will be reseting the ffn
-    mlpack::FFN<> ffn_ = ffn;
-    ffn_.Reset();
-    vector<size_t> inputDimension = ffn_.Network().back()->OutputDimensions();
+    mlpack::DAGNetwork<> dag_ = dag;
+    dag_.Reset();
+    vector<size_t> inputDimension = dag_.Network().back()->OutputDimensions();
 
     for (int i = 0; i < 3; i++)
     {
@@ -31,10 +31,11 @@ void AddReshape(mlpack::FFN<> &ffn, onnx::GraphProto graph,
         }
     }
 
-    Reshape *reshape = new Reshape(outputDimension);
-    layerParameters.push_back(arma::Mat<double>());
-    ffn.Add(reshape);
+    // Reshape *reshape = new Reshape(outputDimension);
+    // layerParameters.push_back(arma::Mat<double>());
+    size_t a =  dag.Add<Reshape>(outputDimension);
     cout << "Added mlpack::Reshape Layer" << endl;
+    return {a};
 }
 
 vector<int> FindReshapedDimension(onnx::GraphProto graph, onnx::NodeProto node)

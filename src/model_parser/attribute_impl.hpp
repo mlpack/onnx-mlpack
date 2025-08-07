@@ -1,6 +1,6 @@
 #include "attribute.hpp"
 
-map<string, double> OnnxOperatorAttribute(onnx::GraphProto &graph, onnx::NodeProto &node)
+map<string, double> OnnxOperatorAttribute(onnx::GraphProto &graph, const onnx::NodeProto &node)
 {
     // Define default values for ONNX node attributes based on operator types.
     // If the node does not specify certain attributes, these default values will be used.
@@ -80,7 +80,7 @@ map<string, double> OnnxOperatorAttribute(onnx::GraphProto &graph, onnx::NodePro
         cout << "this operator is not been implemented yet" << endl;
     }
 
-    // iteratre throught the attribute and set the values in palce
+    // iteratre through the attribute and set the values in palce
     // of default value
     for (onnx::AttributeProto attr : node.attribute())
     {
