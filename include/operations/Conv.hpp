@@ -2,7 +2,6 @@
 #define CONV_HPP
 
 #include "mlpack.hpp"
-#include "dag_network.hpp"
 #include "onnx_pb.h"
 #include "../model_parser/helper.hpp"
 

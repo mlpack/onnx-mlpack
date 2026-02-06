@@ -2,7 +2,6 @@
 #define GLOBALAVERAGEPOOL_HPP
 
 #include "mlpack.hpp"
-#include "dag_network.hpp"
 #include "onnx_pb.h"
 
 using namespace std;

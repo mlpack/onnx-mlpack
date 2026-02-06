@@ -1,8 +1,7 @@
 #ifndef GEMM_HPP
 #define GEMM_HPP
 
-#include "mlpack.hpp"
-#include "dag_network.hpp"
+#include <mlpack.hpp>
 #include "onnx_pb.h"
 #include "../model_parser/utils.hpp"
 

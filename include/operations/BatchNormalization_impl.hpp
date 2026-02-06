@@ -1,6 +1,6 @@
 #include "BatchNormalization.hpp"
 
-class BatchNorm_ : public mlpack::BatchNormType<arma::mat>
+class BatchNorm_ : public mlpack::BatchNorm<arma::mat>
 {
 public:
     BatchNorm_(
@@ -10,7 +10,7 @@ public:
         const bool average,
         const double momentum,
         onnx::GraphProto &graph,
-        const onnx::NodeProto &node) : BatchNormType<arma::mat>(minAxis, maxAxis, eps, average, momentum)
+        const onnx::NodeProto &node) : BatchNorm<arma::mat>(minAxis, maxAxis, eps, average, momentum)
     {
         // setting the trained parameters
         string mean_input = node.input(3);

@@ -3,7 +3,6 @@
 
 #include "operations/add_layer.hpp"
 #include "model_parser/attribute.hpp"
-#include "dag/dag_network.hpp"
 
 /**
  * @brief Load an ONNX model from the specified file path.
