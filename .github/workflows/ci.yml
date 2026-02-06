@@ -21,7 +21,9 @@ name: onnx-mlpack
 
 jobs:
   linux:
-    runner: ubuntu-latest
+    name: "Linux build"
+    if: ${{ github.repository == 'mlpack/onnx-mlpack' }}
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v6
@@ -53,7 +55,9 @@ jobs:
         print_output: true
 
   macos:
-    runner: macOS-latest
+    name: "macOS build"
+    if: ${{ github.repository == 'mlpack/onnx-mlpack' }}
+    runs-on: macOS-latest
 
     steps:
     - uses: actions/checkout@v6
