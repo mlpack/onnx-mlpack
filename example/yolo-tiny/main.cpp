@@ -123,7 +123,7 @@ int main()
     onnx::GraphProto graph = getGraph(onnxFilePath);
 
     // getting the model from the graph
-    mlpack::FFN<> generatedModel = converter(graph);
+    mlpack::DAGNetwork<> generatedModel = converter(graph);
 
     int H = 416;
     int W = 416;

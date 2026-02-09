@@ -45,11 +45,7 @@ int main()
     // loading the onnx graph
     string onnxFilePath = "mobilenetv2-7.onnx";
     onnx::GraphProto graph = getGraph(onnxFilePath);
-    mlpack::FFN<> generatedModel = converter(graph);
-
-    // these are needed specificaly for mobilenet model for skip connection
-    vector<int> topoOrderedNodes = get::TopologicallySortedNodes(graph);
-    vector<vector<int>> adjencyMatrix = get::AdjacencyMatrix(graph);
+    mlpack::DAGNetwork<> generatedModel = converter(graph);
 
     for (int z = 1; z < 11; z++)
     {
@@ -69,41 +65,12 @@ int main()
         }
 
         // **** mobileNet spedific
-        // directly making the prediction will lead to wrong result bcoz
-        // while generating the ffn in mlpack, the converter has not considered
-        // the skip connection
-
-        // forward pass layer by layer
-        int i = 0;
-        // storing the output in case residual connection
-        map<int, arma::Mat<double>> bufferOutput;
         arma::mat input = arma::vectorise(finalImage);
-        for (auto layer : generatedModel.Network())
-        {
-            int nodeIndex = topoOrderedNodes[i];
-            // To store the output of the layer, we first have to specify the
-            // size of the output to the matrix that is going to store the output
-            arma::Mat<double> output(mul(layer->OutputDimensions()), 1,
-                                     arma::fill::ones);
-            layer->Forward(input, output);
 
-            // if the layer has incoming residual connection then add the output
-            // with the residual output
-            if (bufferOutput.find(nodeIndex) != bufferOutput.end())
-            {
-                output += bufferOutput[nodeIndex];
-            }
-            input = output;
 
-            // if the layer has out going residual connection then store the output
-            // of the layer in buffer
-            if (adjencyMatrix[nodeIndex].size() == 2)
-            {
-                bufferOutput[adjencyMatrix[nodeIndex][1]] = output;
-            }
-            i++;
-        }
-        arma::mat &finalOutput = input;
+        arma::mat finalOutput;
+        generatedModel.Predict(input, finalOutput);
+
         // converting the output of the model to probablity values
         vector<double> probs(finalOutput.n_elem);
         copy(finalOutput.begin(), finalOutput.end(), probs.begin());
