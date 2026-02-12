@@ -40,7 +40,7 @@ jobs:
         cmake ../
 
     - name: Build onnx-mlpack
-      run: cd build && make -j4
+      run: cd build && VERBOSE=1 make -j4
 
     - name: Run tests
       run: cd build && ./onnx_mlpack_test -r junit -o onnx_mlpack_test.junit.xml
