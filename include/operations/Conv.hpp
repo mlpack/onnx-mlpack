@@ -8,16 +8,16 @@
 
 using namespace std;
 
-vector<size_t> AddConv(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
+inline vector<size_t> AddConv(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
               onnx::NodeProto node, map<string, double> onnxOperatorAttribute);
 
-void TransferWeightToConv(mlpack::DAGNetwork<> &dag,
+inline void TransferWeightToConv(mlpack::DAGNetwork<> &dag,
                           vector<size_t> &layerIndex,
                           onnx::GraphProto &graph,
                           const onnx::NodeProto &node,
                           std::map<std::string, double> onnxOperatorAttribute);
 
-int FindConvMap(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph, onnx::NodeProto node);
+inline int FindConvMap(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph, onnx::NodeProto node);
 
 #include "Conv_impl.hpp"
 #endif

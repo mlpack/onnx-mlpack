@@ -6,7 +6,7 @@
 
 using namespace std;
 
-vector<size_t> AddGlobalAveragePool(mlpack::DAGNetwork<> &dag);
+inline vector<size_t> AddGlobalAveragePool(mlpack::DAGNetwork<> &dag);
 
 
 #include "GlobalAveragePool_impl.hpp"

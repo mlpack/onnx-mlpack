@@ -8,22 +8,22 @@
 
 using namespace std;
 
-vector<size_t> AddReshape(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
+inline vector<size_t> AddReshape(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
                 onnx::NodeProto node, map<string, double> onnxOperatorAttribute);
 
 class Reshape : public mlpack::Identity<arma::mat>
 {
 public:
     vector<size_t> modifiedDimension; // w, h, c
-    Reshape(vector<size_t> modifiedDimension) : modifiedDimension(modifiedDimension) {}
+    inline Reshape(vector<size_t> modifiedDimension) : modifiedDimension(modifiedDimension) {}
 
-    void ComputeOutputDimensions()
+    inline void ComputeOutputDimensions()
     {
         outputDimensions = modifiedDimension;
     }
 };
 
-vector<int> FindReshapedDimension(onnx::GraphProto graph, onnx::NodeProto node);
+inline vector<int> FindReshapedDimension(onnx::GraphProto graph, onnx::NodeProto node);
 
 //     void Forward(
 //         const arma::mat &input, arma::mat &output)
