@@ -30,7 +30,6 @@ add_definitions(-DONNX_ML=1)
 
 find_package(ONNX REQUIRED)
 include_directories(${ONNX_INCLUDE_DIRS})
-message(STATUS "ONNX libraries: ${ONNX_LIBRARIES}")
 
 # TODO: install headers to relevant location
 
