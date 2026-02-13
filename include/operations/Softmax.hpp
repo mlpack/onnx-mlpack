@@ -6,7 +6,7 @@
 
 using namespace std;
 
-vector<size_t> AddSoftmax(mlpack::DAGNetwork<> &dag);
+inline vector<size_t> AddSoftmax(mlpack::DAGNetwork<> &dag);
 
 
 #include "Softmax_impl.hpp"

@@ -1,6 +1,6 @@
 #include "helper.hpp"
 
-string get::ModelInput(onnx::GraphProto &graph)
+inline string get::ModelInput(onnx::GraphProto &graph)
 {
     vector<string> inputNames;
     vector<string> initializerNames;
@@ -27,7 +27,7 @@ string get::ModelInput(onnx::GraphProto &graph)
     return "";
 }
 
-vector<size_t> get::InputDimension(onnx::GraphProto &graph,
+inline vector<size_t> get::InputDimension(onnx::GraphProto &graph,
                                    const string &modelInput)
 {
     vector<size_t> dimension;
@@ -46,7 +46,7 @@ vector<size_t> get::InputDimension(onnx::GraphProto &graph,
 }
 
 // to get the indexs of all the nodes which will be taking the output of the current node
-vector<int> get::DependentNodes(onnx::GraphProto &graph,
+inline vector<int> get::DependentNodes(onnx::GraphProto &graph,
                                 const string &nodeInput)
 {
     vector<int> nodes;
@@ -63,7 +63,7 @@ vector<int> get::DependentNodes(onnx::GraphProto &graph,
     return nodes;
 }
 
-vector<vector<int>> get::AdjacencyMatrix(onnx::GraphProto &graph)
+inline vector<vector<int>> get::AdjacencyMatrix(onnx::GraphProto &graph)
 {
     int totalNodes = graph.node().size();
 
@@ -84,7 +84,7 @@ vector<vector<int>> get::AdjacencyMatrix(onnx::GraphProto &graph)
     return adj;
 }
 
-vector<int> get::TopologicallySortedNodes(onnx::GraphProto &graph, vector<vector<int>> &adj)
+inline vector<int> get::TopologicallySortedNodes(onnx::GraphProto &graph, vector<vector<int>> &adj)
 {
     int totalNodes = graph.node().size();
 
@@ -119,7 +119,7 @@ vector<int> get::TopologicallySortedNodes(onnx::GraphProto &graph, vector<vector
     return topologicalShort;
 }
 
-void get::dfs(int node, vector<int>& visited,
+inline void get::dfs(int node, vector<int>& visited,
               const vector<vector<int>> &adj, stack<int> &st)
 {
     visited[node] = 1;
@@ -133,7 +133,7 @@ void get::dfs(int node, vector<int>& visited,
     st.push(node);
 }
 
-const onnx::TensorProto &get::Initializer(onnx::GraphProto &graph,
+inline const onnx::TensorProto &get::Initializer(onnx::GraphProto &graph,
                                           const string &initializerName)
 {
     for (const onnx::TensorProto &init : graph.initializer())
@@ -147,7 +147,7 @@ const onnx::TensorProto &get::Initializer(onnx::GraphProto &graph,
                              initializerName);
 }
 
-arma::fmat get::ConvertToColumnMajor(const onnx::TensorProto &initializer)
+inline arma::fmat get::ConvertToColumnMajor(const onnx::TensorProto &initializer)
 {
     // onnx initializer stores data in row major format
     // {N, C, H, W}
@@ -186,7 +186,7 @@ arma::fmat get::ConvertToColumnMajor(const onnx::TensorProto &initializer)
     return matrix;
 }
 
-vector<double> get::ConvertToRowMajor(const arma::mat &matrix,
+inline vector<double> get::ConvertToRowMajor(const arma::mat &matrix,
                                       const vector<size_t> &outputDimension)
 {
     int C = outputDimension[2];
@@ -209,7 +209,7 @@ vector<double> get::ConvertToRowMajor(const arma::mat &matrix,
     return returnValue;
 }
 
-void get::ImageToColumnMajor(arma::mat &matrix,
+inline void get::ImageToColumnMajor(arma::mat &matrix,
                              const vector<size_t> &outputDimension)
 {
     int C = outputDimension[2];
@@ -235,7 +235,7 @@ void get::ImageToColumnMajor(arma::mat &matrix,
     // return returnValue;
 }
 
-void get::DrawRectangle(const string &imagePath, const string &finalImagePath,
+inline void get::DrawRectangle(const string &imagePath, const string &finalImagePath,
                         int r1, int c1, int r2, int c2, const vector<int> &imageDimension)
 {
     // Extracting image, Input
@@ -281,7 +281,7 @@ void get::DrawRectangle(const string &imagePath, const string &finalImagePath,
     mlpack::data::Save(finalImagePath, imageMat, imageInfo, true);
 }
 
-void get::DrawRectangleOnCsv(arma::mat &matrix, int r1, int c1,
+inline void get::DrawRectangleOnCsv(arma::mat &matrix, int r1, int c1,
                              int r2, int c2, const vector<int> &imageDimension)
 {
     // Extracting image, Input

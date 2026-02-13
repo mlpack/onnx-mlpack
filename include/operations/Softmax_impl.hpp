@@ -1,6 +1,6 @@
 #include "Softmax.hpp"
 
-vector<size_t> AddSoftmax(mlpack::DAGNetwork<> &dag){
+inline vector<size_t> AddSoftmax(mlpack::DAGNetwork<> &dag){
     // layerParameters.push_back(arma::Mat<double>());
     size_t a = dag.Add<mlpack::Softmax>();
 

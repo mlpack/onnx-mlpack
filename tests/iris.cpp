@@ -14,7 +14,7 @@
 
 using namespace std;
 
-TEST_CASE("test_onnx_load", "[iris]")
+TEST_CASE("test_iris_onnx_load", "[iris]")
 {
   // generating the onnx graph
   const string onnxFilePath = "iris_model.onnx";

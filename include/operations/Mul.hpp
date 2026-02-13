@@ -7,23 +7,23 @@
 
 using namespace std;
 
-vector<size_t> AddMul(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
+inline vector<size_t> AddMul(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
             onnx::NodeProto node, map<string, double> onnxOperatorAttribute);
 
 class ScaleLayer : public mlpack::Identity<arma::mat>
 {
 public:
     float scalar;
-    ScaleLayer(float scalar) : scalar(scalar) {}
+    inline ScaleLayer(float scalar) : scalar(scalar) {}
 
-    void Forward(
+    inline void Forward(
         const arma::mat &input, arma::mat &output)
     {
         output = input * scalar;
     }
 };
 
-float FindScallingFactor(onnx::GraphProto graph, onnx::NodeProto node);
+inline float FindScallingFactor(onnx::GraphProto graph, onnx::NodeProto node);
 
 #include "Mul_impl.hpp"
 #endif

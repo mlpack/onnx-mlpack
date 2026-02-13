@@ -37,7 +37,7 @@
  * }
  * @endcode
  */
-std::map<std::string, double> OnnxOperatorAttribute(onnx::GraphProto& graph, onnx::NodeProto& node);
+inline std::map<std::string, double> OnnxOperatorAttribute(onnx::GraphProto& graph, onnx::NodeProto& node);
 
 #include "attribute_impl.hpp"
 

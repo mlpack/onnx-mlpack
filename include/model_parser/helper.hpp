@@ -23,7 +23,7 @@ namespace get
      * @param graph The ONNX graph.
      * @return The name of the model input.
      */
-    string ModelInput(onnx::GraphProto& graph);
+    inline string ModelInput(onnx::GraphProto& graph);
 
     /**
      * @brief Get the dimensions of the input features using the name obtained from `ModelInput`.
@@ -32,14 +32,14 @@ namespace get
      * @param modelInput The name of the model input obtained from `ModelInput`.
      * @return A vector containing the dimensions {channels, height, width}.
      */
-    vector<size_t> InputDimension(onnx::GraphProto& graph, const string& modelInput);
+    inline vector<size_t> InputDimension(onnx::GraphProto& graph, const string& modelInput);
 
     // DependentNodes, AdjacencyMatrix, TopologicallySortedNodes, dfs
     // these methods are made to get the node in topological order
-    vector<int> DependentNodes(onnx::GraphProto& graph, const string& nodeInput);
-    vector<vector<int>> AdjacencyMatrix(onnx::GraphProto& graph);
-    vector<int> TopologicallySortedNodes(onnx::GraphProto& graph, vector<vector<int>> &adj);
-    void dfs(int node, vector<int> &visited, const vector<vector<int>>& adj, stack<int>& st);
+    inline vector<int> DependentNodes(onnx::GraphProto& graph, const string& nodeInput);
+    inline vector<vector<int>> AdjacencyMatrix(onnx::GraphProto& graph);
+    inline vector<int> TopologicallySortedNodes(onnx::GraphProto& graph, vector<vector<int>> &adj);
+    inline void dfs(int node, vector<int> &visited, const vector<vector<int>>& adj, stack<int>& st);
 
     /**
      * @brief Retrieve the initializer from the ONNX graph by its name.
@@ -48,7 +48,7 @@ namespace get
      * @param initializerName The name of the initializer.
      * @return A reference to the ONNX TensorProto representing the initializer.
      */
-    const onnx::TensorProto& Initializer(onnx::GraphProto& graph, const string& initializerName);
+    inline const onnx::TensorProto& Initializer(onnx::GraphProto& graph, const string& initializerName);
 
     /**
      * @brief Convert ONNX initializer data from row-major to column-major format.
@@ -59,7 +59,7 @@ namespace get
      * @param initializer Reference to the ONNX initializer.
      * @return The converted matrix in column-major format.
      */
-    arma::fmat ConvertToColumnMajor(const onnx::TensorProto& initializer);
+    inline arma::fmat ConvertToColumnMajor(const onnx::TensorProto& initializer);
 
     /**
      * @brief Convert an mlpack column-major matrix into row-major format.
@@ -71,7 +71,7 @@ namespace get
      * @param outputDimension The desired output dimensions {width, height, channels}.
      * @return A vector containing the data in row-major format.
      */
-    vector<double> ConvertToRowMajor(const arma::mat& matrix, const vector<size_t>& outputDimension);
+    inline vector<double> ConvertToRowMajor(const arma::mat& matrix, const vector<size_t>& outputDimension);
 
     /**
      * @brief Convert a loaded image into column-major format.
@@ -83,7 +83,7 @@ namespace get
      * @param matrix The matrix containing image data.
      * @param outputDimension The dimensions of the loaded image {width, height, channels}.
      */
-    void ImageToColumnMajor(arma::mat& matrix, const vector<size_t>& outputDimension);
+    inline void ImageToColumnMajor(arma::mat& matrix, const vector<size_t>& outputDimension);
 
     /**
      * @brief Load an image, draw a rectangle on it, and save the modified image.
@@ -96,7 +96,7 @@ namespace get
      * @param r1, c1, r2, c2 Coordinates of the diagonally opposite vertices of the rectangle.
      * @param imageDimension The dimensions of the image {width, height, channels}.
      */
-    void DrawRectangle(const string& imagePath, const string& finalImagePath, int r1, int c1, int r2, int c2, const vector<int>& imageDimension);
+    inline void DrawRectangle(const string& imagePath, const string& finalImagePath, int r1, int c1, int r2, int c2, const vector<int>& imageDimension);
 
     /**
      * @brief Draw a rectangle on an image matrix.
@@ -107,7 +107,7 @@ namespace get
      * @param r1, c1, r2, c2 Coordinates of the diagonally opposite vertices of the rectangle.
      * @param imageDimension The dimensions of the image {width, height, channels}.
      */
-    void DrawRectangleOnCsv(arma::mat& matrix, int r1, int c1, int r2, int c2, const vector<int>& imageDimension);
+    inline void DrawRectangleOnCsv(arma::mat& matrix, int r1, int c1, int r2, int c2, const vector<int>& imageDimension);
 } // namespace get
 
 #include "helper_impl.hpp"

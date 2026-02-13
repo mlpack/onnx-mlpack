@@ -8,20 +8,20 @@
 
 using namespace std;
 
-vector<size_t> AddGemm(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
+inline vector<size_t> AddGemm(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
               onnx::NodeProto node, map<string, double> onnxOperatorAttribute);
 
-void TransferWeightToGemm(mlpack::DAGNetwork<> &dag, 
+inline void TransferWeightToGemm(mlpack::DAGNetwork<> &dag, 
     vector<size_t> &layerIndex, 
     onnx::GraphProto &graph, 
     const onnx::NodeProto &node, 
     std::map<std::string, double> onnxOperatorAttribute);
 
-size_t FindOutputDimension(onnx::GraphProto graph, onnx::NodeProto node);
+inline size_t FindOutputDimension(onnx::GraphProto graph, onnx::NodeProto node);
 
-arma::mat ExtractWeights(onnx::GraphProto graph, onnx::NodeProto node, bool transposed);
+inline arma::mat ExtractWeights(onnx::GraphProto graph, onnx::NodeProto node, bool transposed);
 
-arma::mat ExtractBiases(onnx::GraphProto graph, onnx::NodeProto node);
+inline arma::mat ExtractBiases(onnx::GraphProto graph, onnx::NodeProto node);
 
 
 #include "Gemm_impl.hpp"

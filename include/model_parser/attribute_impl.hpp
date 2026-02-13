@@ -1,6 +1,6 @@
 #include "attribute.hpp"
 
-map<string, double> OnnxOperatorAttribute(onnx::GraphProto &graph, const onnx::NodeProto &node)
+inline map<string, double> OnnxOperatorAttribute(onnx::GraphProto &graph, const onnx::NodeProto &node)
 {
     // Define default values for ONNX node attributes based on operator types.
     // If the node does not specify certain attributes, these default values will be used.

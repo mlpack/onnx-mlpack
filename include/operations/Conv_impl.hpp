@@ -1,6 +1,6 @@
 #include "Conv.hpp"
 
-vector<size_t> AddConv(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
+inline vector<size_t> AddConv(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
                        onnx::NodeProto node, map<string, double> onnxOperatorAttribute)
 {
     bool useBias = false;
@@ -112,7 +112,7 @@ void TransferWeightToConv(mlpack::DAGNetwork<> &dag,
     }
 }
 
-int FindConvMap(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph, onnx::NodeProto node)
+inline int FindConvMap(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph, onnx::NodeProto node)
 {
     // return ffn.Network().back()->OutputDimensions()[2];
     return 16;

@@ -1,6 +1,6 @@
 #include "Reshape.hpp"
 
-vector<size_t> AddReshape(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
+inline vector<size_t> AddReshape(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
                 onnx::NodeProto node, map<string, double> onnxOperatorAttribute)
 {
     vector<int> requiredDimensions = FindReshapedDimension(graph, node);
@@ -38,7 +38,7 @@ vector<size_t> AddReshape(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
     return {a};
 }
 
-vector<int> FindReshapedDimension(onnx::GraphProto graph, onnx::NodeProto node)
+inline vector<int> FindReshapedDimension(onnx::GraphProto graph, onnx::NodeProto node)
 {
 
     string initializerName = node.input(1); // from this initializer we will be getting the dimension of the output of layer

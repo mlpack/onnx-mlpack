@@ -3,7 +3,7 @@
 class BatchNorm_ : public mlpack::BatchNorm<arma::mat>
 {
 public:
-    BatchNorm_(
+    inline BatchNorm_(
         const size_t minAxis,
         const size_t maxAxis,
         const double eps,
@@ -21,7 +21,7 @@ public:
     }
 };
 
-vector<size_t> AddBatchNormalization(mlpack::DAGNetwork<> &dag, onnx::GraphProto &graph,
+inline vector<size_t> AddBatchNormalization(mlpack::DAGNetwork<> &dag, onnx::GraphProto &graph,
                                      const onnx::NodeProto &node, map<string, double> onnxOperatorAttribute)
 {
     // experiment below
@@ -48,7 +48,7 @@ vector<size_t> AddBatchNormalization(mlpack::DAGNetwork<> &dag, onnx::GraphProto
     return {a};
 }
 
-void TransferWeightToBatchNormalization(mlpack::DAGNetwork<> &dag,
+inline void TransferWeightToBatchNormalization(mlpack::DAGNetwork<> &dag,
                                         vector<size_t> &layerIndex,
                                         onnx::GraphProto &graph,
                                         const onnx::NodeProto &node,

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-vector<size_t> AddLeakyRelu(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
+inline vector<size_t> AddLeakyRelu(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
               onnx::NodeProto node, map<string, double> onnxOperatorAttribute);
 
 

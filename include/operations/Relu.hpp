@@ -6,7 +6,7 @@
 
 using namespace std;
 
-vector<size_t> AddRelu(mlpack::DAGNetwork<> &dag);
+inline vector<size_t> AddRelu(mlpack::DAGNetwork<> &dag);
 
 
 #include "Relu_impl.hpp"
