@@ -32,12 +32,17 @@ find_library(ONNX_LIBRARY NAMES onnx
     PATHS /usr/lib /usr/lib64 /usr/local/lib /usr/local/lib64 /opt/local/lib/
     ENV LIBRARY_PATH ENV LD_LIBRARY_PATH)
 
+find_library(ONNX_PROTO_LIBRARY NAMES onnx_proto
+    PATHS /usr/lib /usr/lib64 /usr/local/lib /usr/local/lib64 /opt/local/lib/
+    ENV LIBRARY_PATH ENV LD_LIBRARY_PATH)
+
 include(FindPackageHandleStandardArgs)
 
 find_package_handle_standard_args(ONNX DEFAULT_MSG
   ONNX_LIBRARY
+  ONNX_PROTO_LIBRARY
   ONNX_INCLUDE_DIR)
 
 set(ONNX_INCLUDE_DIRS ${ONNX_INCLUDE_DIR} ${Protobuf_INCLUDE_DIRS})
-set(ONNX_LIBRARIES ${ONNX_LIBRARY} ${Protobuf_LIBRARIES})
+set(ONNX_LIBRARIES ${ONNX_LIBRARY} ${ONNX_PROTO_LIBRARY} ${Protobuf_LIBRARIES})
 mark_as_advanced(ONNX_INCLUDE_DIRS ONNX_LIBRARIES)
