@@ -6,7 +6,7 @@
 
 using namespace std;
 
-vector<size_t> AddAdd(mlpack::DAGNetwork<> &dag, onnx::GraphProto &graph,
+inline vector<size_t> AddAdd(mlpack::DAGNetwork<> &dag, onnx::GraphProto &graph,
             const onnx::NodeProto &node, map<string, double> onnxOperatorAttribute);
 
 

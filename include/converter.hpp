@@ -13,7 +13,7 @@
  * @param filepath The path to the .onnx file.
  * @return onnx::GraphProto The graph representation of the ONNX model.
  */
-onnx::GraphProto getGraph(const std::string& filePath);
+inline onnx::GraphProto getGraph(const std::string& filePath);
 
 /**
  * @brief Convert an ONNX model graph to an mlpack FFN model.
@@ -25,7 +25,7 @@ onnx::GraphProto getGraph(const std::string& filePath);
  * @param graph The ONNX model's graph representation.
  * @return mlpack::DAGNetwork<> The equivalent mlpack FFN model.
  */
-mlpack::DAGNetwork<> converter(onnx::GraphProto& graph);
+inline mlpack::DAGNetwork<> converter(onnx::GraphProto& graph);
 
 /**
  * @brief Utility function to validate parameter sizes.
@@ -37,7 +37,7 @@ mlpack::DAGNetwork<> converter(onnx::GraphProto& graph);
  * @param layerParameters A vector of matrices representing the parameters 
  *                        of each layer.
  */
-void printParametersSize(const std::vector<arma::Mat<double>>& layerParameters);
+inline void printParametersSize(const std::vector<arma::Mat<double>>& layerParameters);
 
 /**
  * @brief Flatten layer parameters for weight transfer.
@@ -60,7 +60,7 @@ void printParametersSize(const std::vector<arma::Mat<double>>& layerParameters);
  *                        of each layer.
  * @return arma::mat A flattened matrix of all layer parameters.
  */
-arma::mat FlattenParameters(const std::vector<arma::Mat<double>>& layerParameters);
+inline arma::mat FlattenParameters(const std::vector<arma::Mat<double>>& layerParameters);
 
 #include "converter_impl.hpp"
 

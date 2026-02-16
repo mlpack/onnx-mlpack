@@ -1,6 +1,6 @@
 #include "Gemm.hpp"
 
-vector<size_t> AddGemm(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
+inline vector<size_t> AddGemm(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
                        onnx::NodeProto node, map<string, double> onnxOperatorAttribute)
 {
     // mlpack::LinearNoBias *linearNoBias = new mlpack::LinearNoBias(FindOutputDimension(graph, node));
@@ -31,7 +31,7 @@ vector<size_t> AddGemm(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
     // cout << "Added mlpack::Add Layer" << endl;
 }
 
-void TransferWeightToGemm(mlpack::DAGNetwork<> &dag, 
+inline void TransferWeightToGemm(mlpack::DAGNetwork<> &dag, 
     vector<size_t> &layerIndex, 
     onnx::GraphProto &graph, 
     const onnx::NodeProto &node, 
@@ -47,7 +47,7 @@ void TransferWeightToGemm(mlpack::DAGNetwork<> &dag,
     return;
 }
 
-size_t FindOutputDimension(onnx::GraphProto graph, onnx::NodeProto node)
+inline size_t FindOutputDimension(onnx::GraphProto graph, onnx::NodeProto node)
 {
     // 3rd input name of Gemm node points to onnx Add operator initializer
     string addInitializerName = node.input(2);
@@ -61,7 +61,7 @@ size_t FindOutputDimension(onnx::GraphProto graph, onnx::NodeProto node)
     throw std::runtime_error("No initializer for the third input of Gemm node found");
 }
 
-arma::mat ExtractWeights(onnx::GraphProto graph, onnx::NodeProto node, bool transposed)
+inline arma::mat ExtractWeights(onnx::GraphProto graph, onnx::NodeProto node, bool transposed)
 {
     // finding the initializer in which the weights are stored
     string inputName = node.input(1);
@@ -92,7 +92,7 @@ arma::mat ExtractWeights(onnx::GraphProto graph, onnx::NodeProto node, bool tran
     throw std::runtime_error("error occured at weight extraction in gemm");
 }
 
-arma::mat ExtractBiases(onnx::GraphProto graph, onnx::NodeProto node)
+inline arma::mat ExtractBiases(onnx::GraphProto graph, onnx::NodeProto node)
 {
     // finding the initializer in which biases are stored
     string input_name = node.input(2);

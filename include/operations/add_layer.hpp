@@ -18,12 +18,12 @@
 /**
  * @brief 
  */
-vector<size_t> AddLayer(mlpack::DAGNetwork<> &dag,
+inline vector<size_t> AddLayer(mlpack::DAGNetwork<> &dag,
               onnx::GraphProto &graph,
               const onnx::NodeProto &node,
               std::map<string, double> onnxoperatorAttribute);
 
-void TransferWeights(mlpack::DAGNetwork<> &dag, 
+inline void TransferWeights(mlpack::DAGNetwork<> &dag, 
     vector<size_t> &layerIndex, 
     onnx::GraphProto &graph, 
     const onnx::NodeProto &node, 

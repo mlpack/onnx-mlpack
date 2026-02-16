@@ -1,6 +1,6 @@
 #include "converter.hpp"
 
-onnx::GraphProto getGraph(const std::string &filePath)
+inline onnx::GraphProto getGraph(const std::string &filePath)
 {
     // ModelProto contains the ONNX graph along with some metadata.
     // We only need the graph from the ModelProto.
@@ -30,7 +30,7 @@ onnx::GraphProto getGraph(const std::string &filePath)
  * Finally, we iterate through the layers again, transferring the corresponding
  * weights to the FFN layers.
  */
-mlpack::DAGNetwork<> converter(onnx::GraphProto &graph)
+inline mlpack::DAGNetwork<> converter(onnx::GraphProto &graph)
 {
     mlpack::DAGNetwork<> dag;
 

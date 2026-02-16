@@ -1,6 +1,6 @@
 #include "add_layer.hpp"
 
-vector<size_t> AddLayer(mlpack::DAGNetwork<> &dag, onnx::GraphProto &graph,
+inline vector<size_t> AddLayer(mlpack::DAGNetwork<> &dag, onnx::GraphProto &graph,
                         const onnx::NodeProto &node, std::map<string, double> onnxOperatorAttribute)
 {
 
@@ -55,7 +55,7 @@ vector<size_t> AddLayer(mlpack::DAGNetwork<> &dag, onnx::GraphProto &graph,
     return vector<size_t>();
 }
 
-void TransferWeights(mlpack::DAGNetwork<> &dag,
+inline void TransferWeights(mlpack::DAGNetwork<> &dag,
                      vector<size_t> &layerIndex,
                      onnx::GraphProto &graph,
                      const onnx::NodeProto &node,

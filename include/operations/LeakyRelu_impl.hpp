@@ -1,6 +1,6 @@
 #include "LeakyRelu.hpp"
 
-vector<size_t> AddLeakyRelu(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
+inline vector<size_t> AddLeakyRelu(mlpack::DAGNetwork<> &dag, onnx::GraphProto graph,
                   onnx::NodeProto node, map<string, double> onnxOperatorAttribute)
 {
     double alpha = onnxOperatorAttribute["alpha"];

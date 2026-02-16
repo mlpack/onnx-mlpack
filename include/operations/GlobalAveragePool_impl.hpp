@@ -1,6 +1,6 @@
 #include "GlobalAveragePool.hpp"
 
-vector<size_t> AddGlobalAveragePool(mlpack::DAGNetwork<> &dag)
+inline vector<size_t> AddGlobalAveragePool(mlpack::DAGNetwork<> &dag)
 {
     // just to get the dimension of the incoming i will be reseting the ffn
     mlpack::DAGNetwork<> dag_ = dag;
