@@ -13,4 +13,9 @@ add_custom_command(TARGET onnx_mlpack_test
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/test_models/ ${PROJECT_BINARY_DIR})
 
+# Copy test data to build directory.
+add_custom_command(TARGET onnx_mlpack_test
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/test_data/ ${PROJECT_BINARY_DIR})
+
 add_test(NAME onnx_mlpack_test COMMAND onnx_mlpack_test)
