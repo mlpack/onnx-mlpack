@@ -137,7 +137,9 @@ int main()
         string loat_path = "/home/kumarutkarsh/Desktop/onnx-mlpack/example/yolo-tiny/csv_images/" + to_string(i) + ".csv";
         arma::mat imageMatrix;
         bool load_status = imageMatrix.load(loat_path, arma::csv_ascii);
-        get::ImageToColumnMajor(imageMatrix, {416, 416, 3});
+        // TODO: this function has been removed; this should be replaced with
+        // mlpack loading functionality
+        //get::ImageToColumnMajor(imageMatrix, {416, 416, 3});
 
         //**  however image can be loaded from mlpack::imageLoad and used the data upto certain accuracy
         mlpack::data::ImageInfo imageInfo(416, 416, 3, 1);

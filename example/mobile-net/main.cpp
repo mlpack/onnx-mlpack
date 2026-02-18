@@ -53,7 +53,9 @@ int main()
         string loat_path = "/home/kumarutkarsh/Desktop/onnx-mlpack/example/mobile-net/csv_images/" + to_string(z) + ".csv";
         arma::mat img;
         bool load_status = img.load(loat_path, arma::csv_ascii);
-        get::ImageToColumnMajor(img, {224, 224, 3});
+        // TODO: this function has been removed; this should be replaced with
+        // mlpack loading functionality
+        //get::ImageToColumnMajor(img, {224, 224, 3});
 
         // normalizing the image
         arma::cube finalImage(img.memptr(), 224, 224, 3, false, true);

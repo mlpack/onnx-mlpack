@@ -208,29 +208,3 @@ inline vector<double> get::ConvertToRowMajor(const arma::mat &matrix,
     }
     return returnValue;
 }
-
-inline void get::ImageToColumnMajor(arma::mat &matrix,
-                             const vector<size_t> &outputDimension)
-{
-    int C = outputDimension[2];
-    int H = outputDimension[1];
-    int W = outputDimension[0];
-
-    vector<double> returnValue;
-    for (int i = 0; i < C; i++)
-    {
-        for (int j = 0; j < W; j++)
-        {
-            for (int k = 0; k < H; k++)
-            {
-                returnValue.push_back(matrix((j + (W * k) +
-                                              (i * W * H)),
-                                             0));
-            }
-        }
-    }
-
-    arma::mat newMat(returnValue);
-    matrix = newMat;
-    // return returnValue;
-}

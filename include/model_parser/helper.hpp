@@ -73,18 +73,6 @@ namespace get
      */
     inline vector<double> ConvertToRowMajor(const arma::mat& matrix, const vector<size_t>& outputDimension);
 
-    /**
-     * @brief Convert a loaded image into column-major format.
-     * 
-     * mlpack’s image loading does not inherently provide row-major or column-major formats,
-     * so this function is necessary to convert the loaded image into the correct column-major
-     * format for mlpack models.
-     * 
-     * @param matrix The matrix containing image data.
-     * @param outputDimension The dimensions of the loaded image {width, height, channels}.
-     */
-    inline void ImageToColumnMajor(arma::mat& matrix, const vector<size_t>& outputDimension);
-
 } // namespace get
 
 #include "helper_impl.hpp"
