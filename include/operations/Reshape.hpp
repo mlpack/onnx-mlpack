@@ -2,7 +2,7 @@
 #define RESHAPE_HPP
 
 #include "mlpack.hpp"
-#include "onnx_pb.h"
+#include <onnx/onnx_pb.h>
 #include "../onnx_mlpack/utils.hpp"
 #include "../onnx_mlpack/helper.hpp"
 
