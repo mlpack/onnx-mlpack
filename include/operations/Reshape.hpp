@@ -3,8 +3,8 @@
 
 #include "mlpack.hpp"
 #include "onnx_pb.h"
-#include "../model_parser/utils.hpp"
-#include "../model_parser/helper.hpp"
+#include "../onnx_mlpack/utils.hpp"
+#include "../onnx_mlpack/helper.hpp"
 
 using namespace std;
 

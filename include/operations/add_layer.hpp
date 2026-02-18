@@ -13,7 +13,7 @@
 #include "GlobalAveragePool.hpp"
 #include "Reshape.hpp"
 
-#include "../model_parser/utils.hpp"
+#include "../onnx_mlpack/utils.hpp"
 
 /**
  * @brief 

@@ -43,10 +43,11 @@ inline mlpack::DAGNetwork<> converter(onnx::GraphProto &graph)
     dag.InputDimensions() = inputDimension;
 
     // Get the nodes in topologically sorted order.
-    vector<vector<int>> adj = get::AdjacencyMatrix(graph);
-    std::vector<int> topoSortedNode = get::TopologicallySortedNodes(graph, adj);
+    vector<vector<size_t>> adj = get::AdjacencyMatrix(graph);
+    std::vector<size_t> topoSortedNode = get::TopologicallySortedNodes(graph,
+        adj);
     // std::vector<int> mlpackLayerIndex(topoSortedNode.size());
-    map<int, vector<size_t>> onnxLayerIndex_mlpackLayerIndex;
+    map<size_t, vector<size_t>> onnxLayerIndex_mlpackLayerIndex;
 
     // Iterate through the topologically sorted nodes.
     cout << endl
