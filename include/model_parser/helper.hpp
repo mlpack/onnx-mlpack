@@ -85,29 +85,6 @@ namespace get
      */
     inline void ImageToColumnMajor(arma::mat& matrix, const vector<size_t>& outputDimension);
 
-    /**
-     * @brief Load an image, draw a rectangle on it, and save the modified image.
-     * 
-     * Uses mlpack’s image load method to load the image, draws a rectangle with
-     * a two-pixel width, and saves the modified image.
-     * 
-     * @param imagePath The path to the image to be edited.
-     * @param finalImagePath The path to save the modified image.
-     * @param r1, c1, r2, c2 Coordinates of the diagonally opposite vertices of the rectangle.
-     * @param imageDimension The dimensions of the image {width, height, channels}.
-     */
-    inline void DrawRectangle(const string& imagePath, const string& finalImagePath, int r1, int c1, int r2, int c2, const vector<int>& imageDimension);
-
-    /**
-     * @brief Draw a rectangle on an image matrix.
-     * 
-     * This function modifies the image matrix by drawing a rectangle on it.
-     * 
-     * @param matrix The matrix containing the image pixel values in column-major format.
-     * @param r1, c1, r2, c2 Coordinates of the diagonally opposite vertices of the rectangle.
-     * @param imageDimension The dimensions of the image {width, height, channels}.
-     */
-    inline void DrawRectangleOnCsv(arma::mat& matrix, int r1, int c1, int r2, int c2, const vector<int>& imageDimension);
 } // namespace get
 
 #include "helper_impl.hpp"

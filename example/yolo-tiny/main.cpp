@@ -229,7 +229,11 @@ int main()
             int r2 = output.second.second[2];
             int c2 = output.second.second[3];
             // modify the imageMatrix (draw rectangle)
-            get::DrawRectangleOnCsv(imageMatrix, r1, c1, r2, c2, {416, 416, 3});
+            //
+            // NOTE: this function has been removed, as it is being added as a
+            // utility to mlpack; TODO: convert this to the mlpack function
+            //
+            //get::DrawRectangleOnCsv(imageMatrix, r1, c1, r2, c2, {416, 416, 3});
             cout<<"Detedted-Object "<<class_names[output.first]<<"; Confidence-Score "<<output.second.first<<endl;
         }
         cout<<endl;
