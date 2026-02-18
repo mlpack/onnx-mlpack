@@ -53,9 +53,9 @@ inline mlpack::DAGNetwork<> converter(onnx::GraphProto &graph)
     cout << endl
          << "****GENERATING THE GRAPH****" << endl;
 
-    int index = 1;
+    size_t index = 1;
 
-    for (int nodeIndex : topoSortedNode)
+    for (size_t nodeIndex : topoSortedNode)
     {
         // Get the actual node from its index.
         const onnx::NodeProto &node = graph.node(nodeIndex);
@@ -72,7 +72,7 @@ inline mlpack::DAGNetwork<> converter(onnx::GraphProto &graph)
     // exit(0);
 
     // make connection in the dag
-    for (int currOnnxNode = 0; currOnnxNode < adj.size(); currOnnxNode++)
+    for (size_t currOnnxNode = 0; currOnnxNode < adj.size(); currOnnxNode++)
     {
         vector<size_t> currMlpackLayer = onnxLayerIndex_mlpackLayerIndex[currOnnxNode];
 

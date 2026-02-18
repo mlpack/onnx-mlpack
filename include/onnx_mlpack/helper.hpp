@@ -92,7 +92,7 @@ inline arma::fmat ConvertToColumnMajor(const onnx::TensorProto& initializer);
  */
 inline std::vector<double> ConvertToRowMajor(
     const arma::mat& matrix,
-    const std::vector<size_t>& outputDimension);
+    const std::vector<int>& outputDimension);
 
 } // namespace get
 

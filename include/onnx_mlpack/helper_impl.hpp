@@ -64,8 +64,8 @@ inline std::vector<size_t> DependentNodes(onnx::GraphProto& graph,
 {
   std::vector<size_t> nodes;
 
-  for (size_t i = 0; i < graph.node().size(); i++)
-    for (size_t j = 0; j < graph.node(i).input().size(); j++)
+  for (int i = 0; i < graph.node().size(); i++)
+    for (int j = 0; j < graph.node(i).input().size(); j++)
       if (nodeInput == graph.node(i).input(j))
         nodes.push_back(i);
 
@@ -79,7 +79,7 @@ inline std::vector<std::vector<size_t>> AdjacencyMatrix(onnx::GraphProto& graph)
   // creating the adjacency list and inDegree
   std::vector<std::vector<size_t>> adj(totalNodes);
 
-  for (size_t i = 0; i < totalNodes; i++)
+  for (int i = 0; i < totalNodes; i++)
   {
     for (std::string output : graph.node(i).output())
       adj[i] = DependentNodes(graph, output);
@@ -92,12 +92,12 @@ inline std::vector<size_t> TopologicallySortedNodes(
     onnx::GraphProto& graph,
     std::vector<std::vector<size_t>>& adj)
 {
-  const size_t totalNodes = graph.node().size();
+  const int totalNodes = graph.node().size();
 
   std::vector<size_t> visitedNode(totalNodes, 0);
   std::stack<size_t> st;
 
-  for (size_t i = 0; i < totalNodes; i++)
+  for (int i = 0; i < totalNodes; i++)
   {
     if (!visitedNode[i])
       dfs(i, visitedNode, adj, st);
@@ -144,19 +144,19 @@ inline arma::fmat ConvertToColumnMajor(const onnx::TensorProto& initializer)
 {
   // onnx initializer stores data in row major format
   // {N, C, H, W}
-  std::vector<size_t> rowMajorDim(4, 1);
-  size_t j = 3;
-  const size_t nDims = initializer.dims().size();
-  for (size_t i = nDims - 1; i >= 0; i--)
+  std::vector<int> rowMajorDim(4, 1);
+  int j = 3;
+  const int nDims = initializer.dims().size();
+  for (int i = nDims - 1; i >= 0; i--)
   {
     rowMajorDim[j] = initializer.dims(i);
     j--;
   }
 
-  const size_t N = rowMajorDim[0]; // l
-  const size_t C = rowMajorDim[1]; // k
-  const size_t H = rowMajorDim[2]; // j
-  const size_t W = rowMajorDim[3]; // i
+  const int N = rowMajorDim[0]; // l
+  const int C = rowMajorDim[1]; // k
+  const int H = rowMajorDim[2]; // j
+  const int W = rowMajorDim[3]; // i
   std::vector<float> colMajorData;
 
   for (size_t l = 0; l < N; l++)
@@ -167,8 +167,8 @@ inline arma::fmat ConvertToColumnMajor(const onnx::TensorProto& initializer)
       {
         for (size_t i = 0; i < H; i++)
         {
-          // int colMajorIndex = l * (H * C * N) + k * (C * N) + j * (N) + i;
-          size_t rowMajorIndex = j + (i * W) + (k * W * H) + (l * C * W * H);
+          // size_t colMajorIndex = l * (H * C * N) + k * (C * N) + j * (N) + i;
+          int rowMajorIndex = j + (i * W) + (k * W * H) + (l * C * W * H);
           colMajorData.push_back(initializer.float_data(rowMajorIndex));
         }
       }
@@ -188,11 +188,11 @@ inline std::vector<double> ConvertToRowMajor(
   const size_t W = outputDimension[0];
 
   vector<double> returnValue;
-  for (int i = 0; i < C; i++)
+  for (size_t i = 0; i < C; i++)
   {
-    for (int j = 0; j < H; j++)
+    for (size_t j = 0; j < H; j++)
     {
-      for (int k = 0; k < W; k++)
+      for (size_t k = 0; k < W; k++)
       {
         returnValue.push_back(matrix((j + (H * k) + (i * W * H)), 0));
       }
