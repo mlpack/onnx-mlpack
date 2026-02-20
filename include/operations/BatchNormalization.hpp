@@ -2,8 +2,7 @@
 #define BATCHNORMALIZATION_HPP
 
 #include "mlpack.hpp"
-#include "onnx_pb.h"
-#include "../model_parser/helper.hpp"
+#include "../onnx_mlpack/helper.hpp"
 
 using namespace std;
 

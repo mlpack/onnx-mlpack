@@ -2,7 +2,7 @@
 #define CONVERTER_HPP
 
 #include "operations/add_layer.hpp"
-#include "model_parser/attribute.hpp"
+#include <onnx_mlpack/attribute.hpp>
 
 /**
  * @brief Load an ONNX model from the specified file path.

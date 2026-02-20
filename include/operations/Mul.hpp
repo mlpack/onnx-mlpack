@@ -2,8 +2,8 @@
 #define MUL_HPP
 
 #include "mlpack.hpp"
-#include "onnx_pb.h"
-#include "../model_parser/helper.hpp"
+#include <onnx/onnx_pb.h>
+#include "../onnx_mlpack/helper.hpp"
 
 using namespace std;
 
