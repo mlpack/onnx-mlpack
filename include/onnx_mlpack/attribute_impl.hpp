@@ -9,6 +9,8 @@
 
 #include "attribute.hpp"
 
+namespace onnx_mlpack {
+
 inline std::map<std::string, double> OnnxOperatorAttribute(
     onnx::GraphProto& graph, const onnx::NodeProto& node)
 {
@@ -17,7 +19,7 @@ inline std::map<std::string, double> OnnxOperatorAttribute(
   // used.
   //
   // https://github.com/Talmaj/onnx2pytorch/blob/master/onnx2pytorch/convert/attribute.py
-  map<string, double> onnxOperatorAttribute;
+  std::map<std::string, double> onnxOperatorAttribute;
   if (node.op_type() == "Gemm")
   {
     onnxOperatorAttribute["alpha"] = 1;
@@ -102,7 +104,7 @@ inline std::map<std::string, double> OnnxOperatorAttribute(
   else
   {
     // TODO: throw
-    cout << "this operator is not been implemented yet" << endl;
+    std::cout << "this operator is not been implemented yet" << std::endl;
   }
 
   // Iterate through the attributes and set the values in palce of default
@@ -198,5 +200,7 @@ inline std::map<std::string, double> OnnxOperatorAttribute(
 
   return onnxOperatorAttribute;
 }
+
+} // namespace onnx_mlpack
 
 #endif

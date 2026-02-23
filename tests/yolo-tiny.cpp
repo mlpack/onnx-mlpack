@@ -3,20 +3,21 @@
  *
  * Test that the YOLOv3-Tiny network can be loaded from ONNX correctly.
  */
-#include <converter.hpp>
+#include <onnx_mlpack.hpp>
 #include "catch.hpp"
 
 using namespace std;
 using namespace mlpack;
+using namespace onnx_mlpack;
 
 TEST_CASE("test_yolo-tiny_onnx_load", "[yolo-tiny]")
 {
   // Load the ONNX network.
   const string onnxFilePath = "tinyyolo-v2.3-o8.onnx";
-  onnx::GraphProto graph = getGraph(onnxFilePath);
+  onnx::GraphProto graph = GetGraph(onnxFilePath);
 
   // Convert to mlpack DAGNetwork.
-  DAGNetwork<> generatedModel = converter(graph);
+  DAGNetwork<> generatedModel = Convert(graph);
 
   REQUIRE(generatedModel.Network().size() > 0);
 }
@@ -31,8 +32,8 @@ TEST_CASE("test_yolo_accuracy", "[yolo-tiny]")
 {
   // Load the network and convert to mlpack format.
   const string onnxFilePath = "tinyyolo-v2.3-o8.onnx";
-  onnx::GraphProto graph = getGraph(onnxFilePath);
-  DAGNetwork<> generatedModel = converter(graph);
+  onnx::GraphProto graph = GetGraph(onnxFilePath);
+  DAGNetwork<> generatedModel = Convert(graph);
 
   // Now load images to test with.
   vector<string> filenames;

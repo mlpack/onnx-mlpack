@@ -12,6 +12,8 @@
 #include "utils.hpp"
 #include <onnx/onnx_pb.h>
 
+namespace onnx_mlpack {
+
  /**
  * Extract and map the attributes associated with an ONNX node to a form that
  * can be used in mlpack layers.
@@ -45,6 +47,8 @@
  */
 inline std::map<std::string, double> OnnxOperatorAttribute(
     onnx::GraphProto& graph, const onnx::NodeProto& node);
+
+} // namespace onnx_mlpack
 
 #include "attribute_impl.hpp"
 
