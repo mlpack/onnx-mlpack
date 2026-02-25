@@ -5,22 +5,23 @@
  * Information about the onnx mobilenet v7 model can be found at:
  * https://github.com/onnx/models/tree/main/validated/vision/classification/mobilenet
  */
-#include <converter.hpp>
+#include <onnx_mlpack.hpp>
 #include "catch.hpp"
 
 using namespace std;
+using namespace onnx_mlpack;
 
 TEST_CASE("test_mobilenet_onnx_load", "[mobilenet]")
 {
   const string onnxFilePath = "mobilenetv2-7.onnx";
-  onnx::GraphProto graph = getGraph(onnxFilePath);
+  onnx::GraphProto graph = GetGraph(onnxFilePath);
 
   // TODO: this currently fails:
   //
   // DAGNetwork::CheckGraph(): There should be exactly one input node, but this
   // network has 152 input nodes.
 
-  //mlpack::DAGNetwork<> generatedModel = converter(graph);
+  //mlpack::DAGNetwork<> generatedModel = Convert(graph);
 }
 
 // To get the product of element of vector
@@ -62,8 +63,8 @@ TEST_CASE("test_mobilenet_onnx_load", "[mobilenet]")
 //{
 //    // loading the onnx graph
 //    string onnxFilePath = "mobilenetv2-7.onnx";
-//    onnx::GraphProto graph = getGraph(onnxFilePath);
-//    mlpack::DAGNetwork<> generatedModel = converter(graph);
+//    onnx::GraphProto graph = GetGraph(onnxFilePath);
+//    mlpack::DAGNetwork<> generatedModel = Convert(graph);
 //
 //    for (int z = 1; z < 11; z++)
 //    {

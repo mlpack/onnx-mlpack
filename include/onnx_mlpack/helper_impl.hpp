@@ -9,7 +9,7 @@
 
 #include "helper.hpp"
 
-namespace get {
+namespace onnx_mlpack {
 
 inline std::string ModelInput(onnx::GraphProto& graph)
 {
@@ -32,7 +32,7 @@ inline std::string ModelInput(onnx::GraphProto& graph)
   }
 
   // **** have to put error condition here
-  cout << "error in finding the modelInput" << endl;
+  std::cout << "error in finding the modelInput" << std::endl;
   return "";
 }
 
@@ -187,7 +187,7 @@ inline std::vector<double> ConvertToRowMajor(
   const size_t H = outputDimension[1];
   const size_t W = outputDimension[0];
 
-  vector<double> returnValue;
+  std::vector<double> returnValue;
   for (size_t i = 0; i < C; i++)
   {
     for (size_t j = 0; j < H; j++)
@@ -201,6 +201,6 @@ inline std::vector<double> ConvertToRowMajor(
   return returnValue;
 }
 
-} // namespace get
+} // namespace onnx_mlpack
 
 #endif

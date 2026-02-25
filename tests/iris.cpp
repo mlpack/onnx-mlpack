@@ -9,11 +9,12 @@
  * 3-clause BSD license along with mlpack.  If not, see
  * http://www.opensource.org/licenses/BSD-3-Clause for more information.
  */
-#include <converter.hpp>
+#include <onnx_mlpack.hpp>
 #include "catch.hpp"
 
 using namespace std;
 using namespace mlpack;
+using namespace onnx_mlpack;
 
 // Check that we can load the ONNX iris network, and check the network
 // structure.
@@ -21,10 +22,10 @@ TEST_CASE("test_iris_onnx_load", "[iris]")
 {
   // Load the ONNX graph.
   const string onnxFilePath = "iris_model.onnx";
-  onnx::GraphProto graph = getGraph(onnxFilePath);
+  onnx::GraphProto graph = GetGraph(onnxFilePath);
 
   // Get the mlpack model from the graph.
-  DAGNetwork<> generatedModel = converter(graph);
+  DAGNetwork<> generatedModel = Convert(graph);
 
   REQUIRE(generatedModel.Network().size() == 6);
 
@@ -44,10 +45,10 @@ TEST_CASE("test_iris_convert_and_predict", "[iris]")
 {
   // Load the ONNX graph.
   const string onnxFilePath = "iris_model.onnx";
-  onnx::GraphProto graph = getGraph(onnxFilePath);
+  onnx::GraphProto graph = GetGraph(onnxFilePath);
 
   // Get the mlpack model from the graph.
-  DAGNetwork<> generatedModel = converter(graph);
+  DAGNetwork<> generatedModel = Convert(graph);
 
   // Load the iris data for classification.
   arma::mat data;

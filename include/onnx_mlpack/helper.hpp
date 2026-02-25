@@ -15,7 +15,7 @@
 #include <stack>
 #include <onnx/onnx_pb.h>
 
-namespace get {
+namespace onnx_mlpack {
 
 /**
  * Retrieve the name of the input node from an ONNX graph.  This input name is
@@ -94,7 +94,7 @@ inline std::vector<double> ConvertToRowMajor(
     const arma::mat& matrix,
     const std::vector<int>& outputDimension);
 
-} // namespace get
+} // namespace onnx_mlpack
 
 #include "helper_impl.hpp"
 
