@@ -11,6 +11,18 @@
 
 namespace onnx_mlpack {
 
+/**
+ * The ONNX GEMM implementation performs the operation
+ *
+ * Y = alpha * t(A) * t(B) + beta * C
+ *
+ * where t(A) is either the transposed or un-transposed version of A, depending
+ * on the parameters of the GEMM operator.
+ *
+ * In order to map this to either the mlpack Linear or LinearNoBias layer, we
+ * can only handle when beta = 0.
+ */
+
 inline std::vector<size_t> AddGemm(
     mlpack::DAGNetwork<>& dag,
     onnx::GraphProto graph,
