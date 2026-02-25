@@ -4,8 +4,8 @@
  *
  * Handling of ONNX Relu operator conversion.
  */
-#ifndef ONNX_MLPACK_OPERATIONS_RELU_HPP
-#define ONNX_MLPACK_OPERATIONS_RELU_HPP
+#ifndef ONNX_MLPACK_OPERATORS_RELU_HPP
+#define ONNX_MLPACK_OPERATORS_RELU_HPP
 
 namespace onnx_mlpack {
 

@@ -4,8 +4,8 @@
  *
  * Handling of ONNX LeakyReLU operator conversion.
  */
-#ifndef ONNX_MLPACK_OPERATIONS_LEAKY_RELU_HPP
-#define ONNX_MLPACK_OPERATIONS_LEAKY_RELU_HPP
+#ifndef ONNX_MLPACK_OPERATORS_LEAKY_RELU_HPP
+#define ONNX_MLPACK_OPERATORS_LEAKY_RELU_HPP
 
 namespace onnx_mlpack {
 
