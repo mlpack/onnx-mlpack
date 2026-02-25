@@ -4,8 +4,8 @@
  *
  * Handling of ONNX GEMM operation conversion.
  */
-#ifndef ONNX_MLPACK_OPERATIONS_GEMM_HPP
-#define ONNX_MLPACK_OPERATIONS_GEMM_HPP
+#ifndef ONNX_MLPACK_OPERATORS_GEMM_HPP
+#define ONNX_MLPACK_OPERATORS_GEMM_HPP
 
 #include "../utils.hpp"
 

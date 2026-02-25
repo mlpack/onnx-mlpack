@@ -4,8 +4,8 @@
  *
  * Handling of ONNX Conv operation conversion.
  */
-#ifndef ONNX_MLPACK_OPERATIONS_CONV_HPP
-#define ONNX_MLPACK_OPERATIONS_CONV_HPP
+#ifndef ONNX_MLPACK_OPERATORS_CONV_HPP
+#define ONNX_MLPACK_OPERATORS_CONV_HPP
 
 #include "../helper.hpp"
 
