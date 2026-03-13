@@ -11,10 +11,12 @@
 
 #include "matcher.hpp"
 #include "subgraph.hpp"
-#include "linear_no_bias.hpp"
+#include "linear_no_bias_gemm.hpp"
+#include "linear_no_bias_matmul.hpp"
 
 #include "matcher_impl.hpp"
 #include "subgraph_impl.hpp"
-#include "linear_no_bias_impl.hpp"
+#include "linear_no_bias_gemm_impl.hpp"
+#include "linear_no_bias_matmul_impl.hpp"
 
 #endif

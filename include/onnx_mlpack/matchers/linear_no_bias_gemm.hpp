@@ -1,20 +1,18 @@
 /**
- * @file linear_no_bias.hpp
+ * @file linear_no_bias_gemm.hpp
  * @author Ryan Curtin
  *
  * Candidate ONNX subgraphs that can match the LinearNoBias layer.
  */
-#ifndef ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_HPP
-#define ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_HPP
+#ifndef ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_GEMM_SUBGRAPH_HPP
+#define ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_GEMM_SUBGRAPH_HPP
 
 namespace onnx_mlpack {
 
-class LinearNoBiasSubgraph : public Subgraph
+class LinearNoBiasGemmSubgraph : public Subgraph
 {
  public:
-  LinearNoBiasSubgraph() : Subgraph() { }
-  LinearNoBiasSubgraph(const std::vector<std::string>& vertices) :
-      Subgraph(vertices) { }
+  LinearNoBiasGemmSubgraph() : Subgraph({ "Gemm" }) { }
 
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;
@@ -26,8 +24,6 @@ class LinearNoBiasSubgraph : public Subgraph
   inline void TransferWeights(const arma::uvec& indices,
                               const onnx::GraphProto& graph,
                               mlpack::Layer<>* layer) const override;
-
-  static inline std::vector<Subgraph*> Subgraphs();
 };
 
 } // namespace onnx_mlpack

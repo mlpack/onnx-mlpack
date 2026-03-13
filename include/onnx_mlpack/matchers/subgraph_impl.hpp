@@ -32,6 +32,7 @@ inline std::vector<Matching> Subgraph::Match(
     if (node.op_type() == vertices[0])
     {
       // This is a possible root for the subgraph.
+      //
 
       // TODO: actually match the subgraph!
 

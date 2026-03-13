@@ -121,17 +121,9 @@ inline std::vector<std::pair<size_t, size_t>> FindConnections(
   return result;
 }
 
-inline Matching Matcher(const onnx::GraphProto& graph)
+inline Matching Matcher(const onnx::GraphProto& graph,
+                        const std::vector<Subgraph*>& subgraphs)
 {
-  // First collect all of the subgraphs that we might be trying to match.
-  std::vector<Subgraph*> subgraphs;
-
-  std::vector<Subgraph*> s = LinearNoBiasSubgraph::Subgraphs();
-  subgraphs.insert(subgraphs.end(), s.begin(), s.end());
-
-  // TODO: support more than one matching operation...
-  assert(subgraphs.size() == 1);
-
   // Now iterate over all the ONNX nodes to try and match.
   std::stack<Matching> matchStack;
   matchStack.push(Matching(graph));
@@ -159,6 +151,7 @@ inline Matching Matcher(const onnx::GraphProto& graph)
   // Then, we need to rank the mappings by how good they are.  For starters, we
   // can just use the number of mlpack layers that are in the matching.
 
+  size_t i = 0;
   while (matchStack.size() > 0)
   {
     // Match each subgraph to the current state.
@@ -224,13 +217,6 @@ inline Matching Matcher(const onnx::GraphProto& graph)
     numLayers[i] = finalMatchings[i].matches.size();
 
   size_t bestMatch = numLayers.index_min();
-
-  // Clean up.
-  for (size_t s = 0; s < subgraphs.size(); ++s)
-  {
-    delete subgraphs[s];
-    subgraphs[s] = nullptr;
-  }
 
   return finalMatchings[bestMatch];
 }

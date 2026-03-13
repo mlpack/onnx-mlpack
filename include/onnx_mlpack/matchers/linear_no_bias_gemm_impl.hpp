@@ -1,20 +1,20 @@
 /**
- * @file linear_no_bias_impl.hpp
+ * @file linear_no_bias_gemm_impl.hpp
  * @author Ryan Curtin
  *
  * Candidate ONNX subgraphs that can match the LinearNoBias layer.
  */
-#ifndef ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_IMPL_HPP
-#define ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_IMPL_HPP
+#ifndef ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_GEMM_SUBGRAPH_IMPL_HPP
+#define ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_GEMM_SUBGRAPH_IMPL_HPP
 
-#include "linear_no_bias.hpp"
+#include "linear_no_bias_gemm.hpp"
 
 namespace onnx_mlpack {
 
 /**
  * Check that a given matching can feasibly convert to a LinearNoBias layer.
  */
-inline bool LinearNoBiasSubgraph::Validate(
+inline bool LinearNoBiasGemmSubgraph::Validate(
     const arma::uvec& nodes,
     const onnx::GraphProto& graph) const
 {
@@ -26,7 +26,7 @@ inline bool LinearNoBiasSubgraph::Validate(
   // Sanity check the attributes of the gemm to ensure that we actually can do
   // the conversion.
   const onnx::NodeProto& gemm = graph.node(nodes[0]);
-  if (gemm.name() != "Gemm")
+  if (gemm.op_type() != "Gemm")
     return false;
   if (gemm.input_size() != 2 && gemm.input_size() != 3)
     return false;
@@ -93,7 +93,7 @@ inline bool LinearNoBiasSubgraph::Validate(
 /**
  * Create a LinearNoBias layer with the same metadata as the given ONNX graph.
  */
-inline void LinearNoBiasSubgraph::Convert(
+inline void LinearNoBiasGemmSubgraph::Convert(
     const arma::uvec& nodes,
     const onnx::GraphProto& graph,
     mlpack::DAGNetwork<>& network) const
@@ -153,14 +153,14 @@ inline void LinearNoBiasSubgraph::Convert(
 
   if (outputDims == 0)
   {
-    throw std::runtime_error("LinearNoBiasConvert(): cannot infer output size "
-        "of ONNX Gemm operation!");
+    throw std::runtime_error("LinearNoBiasGemmSubgraph::Convert(): cannot "
+        "infer output size of ONNX Gemm operation!");
   }
 
   network.Add<mlpack::LinearNoBias>(outputDims);
 }
 
-inline void LinearNoBiasSubgraph::TransferWeights(
+inline void LinearNoBiasGemmSubgraph::TransferWeights(
     const arma::uvec& nodes,
     const onnx::GraphProto& graph,
     mlpack::Layer<>* layer) const
@@ -205,24 +205,18 @@ inline void LinearNoBiasSubgraph::TransferWeights(
       else
       {
         // TODO: implement support for other types...
-        throw std::runtime_error("LinearNoBiasTransferWeights(): no support for"
-            " non-double weights... yet!");
+        throw std::runtime_error("LinearNoBiasGemmSubgraph::TransferWeights(): "
+            "no support for non-double weights... yet!");
       }
+
+      // The weight is successfully transferred, so, nothing else to do.
+      return;
     }
   }
 
   // If we got to here, then we failed!
-  throw std::runtime_error("LinearNoBiasTransferWeights(): failed to find "
-      "weight tensor in ONNX graph!");
-}
-
-inline std::vector<Subgraph*> LinearNoBiasSubgraph::Subgraphs()
-{
-  // The only subgraph that matches a LinearNoBias layer is a simple GEMM
-  // operator.
-  LinearNoBiasSubgraph* s = new LinearNoBiasSubgraph({ "Gemm" });
-
-  return { s };
+  throw std::runtime_error("LinearNoBiasGemmSubgraph::TransferWeights(): "
+      "failed to find weight tensor in ONNX graph!");
 }
 
 } // namespace onnx_mlpack

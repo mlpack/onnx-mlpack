@@ -133,8 +133,13 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
         "one and only one input!");
   }
 
-  // First, find the best subgraph match.
-  const Matching m = Matcher(graph);
+  // First collect all of the subgraphs that we might be trying to match.
+  std::vector<Subgraph*> subgraphs;
+  subgraphs.push_back(new LinearNoBiasGemmSubgraph());
+  subgraphs.push_back(new LinearNoBiasMatMulSubgraph());
+
+  // Find the best subgraph match.
+  const Matching m = Matcher(graph, subgraphs);
 
   // Next, for each subgraph match, we will convert the relevant layers to the
   // mlpack layer equivalent.
@@ -187,6 +192,13 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
   {
     m.matches[i].second->TransferWeights(m.matches[i].first, graph,
         result.Network()[i]);
+  }
+
+  // Clean up.
+  for (size_t s = 0; s < subgraphs.size(); ++s)
+  {
+    delete subgraphs[s];
+    subgraphs[s] = nullptr;
   }
 
   return result;
