@@ -10,17 +10,17 @@
 
 #include "utils.hpp"
 
-#include "operations/gemm.hpp"
-#include "operations/relu.hpp"
-#include "operations/softmax.hpp"
-#include "operations/batch_normalization.hpp"
-#include "operations/leaky_relu.hpp"
-#include "operations/conv.hpp"
-#include "operations/mul.hpp"
-#include "operations/add.hpp"
-#include "operations/max_pool.hpp"
-#include "operations/global_average_pool.hpp"
-#include "operations/reshape.hpp"
+#include "operators/gemm.hpp"
+#include "operators/relu.hpp"
+#include "operators/softmax.hpp"
+#include "operators/batch_normalization.hpp"
+#include "operators/leaky_relu.hpp"
+#include "operators/conv.hpp"
+#include "operators/mul.hpp"
+#include "operators/add.hpp"
+#include "operators/max_pool.hpp"
+#include "operators/global_average_pool.hpp"
+#include "operators/reshape.hpp"
 
 namespace onnx_mlpack {
 

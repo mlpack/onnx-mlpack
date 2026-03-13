@@ -4,8 +4,8 @@
  *
  * Handling of ONNX Softmax operator conversion.
  */
-#ifndef ONNX_MLPACK_OPERATIONS_SOFTMAX_HPP
-#define ONNX_MLPACK_OPERATIONS_SOFTMAX_HPP
+#ifndef ONNX_MLPACK_OPERATORS_SOFTMAX_HPP
+#define ONNX_MLPACK_OPERATORS_SOFTMAX_HPP
 
 namespace onnx_mlpack {
 

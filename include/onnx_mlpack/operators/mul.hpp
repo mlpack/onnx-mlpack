@@ -4,8 +4,8 @@
  *
  * Handling of ONNX Mul operator conversion.
  */
-#ifndef ONNX_MLPACK_OPERATIONS_MUL_HPP
-#define ONNX_MLPACK_OPERATIONS_MUL_HPP
+#ifndef ONNX_MLPACK_OPERATORS_MUL_HPP
+#define ONNX_MLPACK_OPERATORS_MUL_HPP
 
 #include "../helper.hpp"
 

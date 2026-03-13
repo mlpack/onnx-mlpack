@@ -4,8 +4,8 @@
  *
  * Implementation of ONNX Reshape operator conversion.
  */
-#ifndef ONNX_MLPACK_OPERATIONS_RESHAPE_IMPL_HPP
-#define ONNX_MLPACK_OPERATIONS_RESHAPE_IMPL_HPP
+#ifndef ONNX_MLPACK_OPERATORS_RESHAPE_IMPL_HPP
+#define ONNX_MLPACK_OPERATORS_RESHAPE_IMPL_HPP
 
 #include "reshape.hpp"
 

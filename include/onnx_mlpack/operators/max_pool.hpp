@@ -4,8 +4,8 @@
  *
  * Handling of ONNX MaxPool operator conversion.
  */
-#ifndef ONNX_MLPACK_OPERATIONS_MAX_POOL_HPP
-#define ONNX_MLPACK_OPERATIONS_MAX_POOL_HPP
+#ifndef ONNX_MLPACK_OPERATORS_MAX_POOL_HPP
+#define ONNX_MLPACK_OPERATORS_MAX_POOL_HPP
 
 #include "../utils.hpp"
 
