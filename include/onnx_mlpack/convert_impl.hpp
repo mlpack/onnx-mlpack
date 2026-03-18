@@ -9,6 +9,7 @@
 #define ONNX_MLPACK_CONVERT_IMPL_HPP
 
 #include "convert.hpp"
+#include "matchers/match.hpp"
 
 namespace onnx_mlpack {
 
@@ -120,6 +121,87 @@ inline mlpack::DAGNetwork<> Convert(onnx::GraphProto& graph)
   }
 
   return dag;
+}
+
+// Eventually this will replace Convert() overall.
+inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
+{
+  // Before we start, we need to ensure that the graph has only one input.
+  if (graph.input_size() != 1)
+  {
+    throw std::runtime_error("SubgraphConvert(): input ONNX graph must have "
+        "one and only one input!");
+  }
+
+  // First collect all of the subgraphs that we might be trying to match.
+  std::vector<Subgraph*> subgraphs;
+  subgraphs.push_back(new LinearNoBiasGemmSubgraph());
+  subgraphs.push_back(new LinearNoBiasMatMulSubgraph());
+
+  // Find the best subgraph match.
+  const Matching m = Matcher(graph, subgraphs);
+
+  // Next, for each subgraph match, we will convert the relevant layers to the
+  // mlpack layer equivalent.
+  //
+  // TODO: handle template parameters for loss function?
+  mlpack::DAGNetwork<> result;
+
+  // Extract all the vertices of the mlpack network.
+  for (size_t i = 0; i < m.matches.size(); ++i)
+  {
+    m.matches[i].second->Convert(m.matches[i].first, graph, result);
+  }
+
+  // Now make connections between each of the vertices.
+  std::vector<std::pair<size_t, size_t>> connections =
+      FindConnections(m, graph);
+  for (const std::pair<size_t, size_t>& p : connections)
+    result.Connect(p.first, p.second);
+
+  // Extract the size of the input.
+  const onnx::ValueInfoProto& input = graph.input(0);
+  if (!input.has_type() || !input.type().has_tensor_type())
+  {
+    throw std::runtime_error("SubgraphConvert(): ONNX graph input must be of "
+        "tensor type!");
+  }
+
+  // ONNX generally uses the first dimension as the batch size; we need to
+  // ignore that!
+  std::vector<size_t> inputDims(
+      input.type().tensor_type().shape().dim_size() - 1);
+
+  for (size_t i = 1; i < input.type().tensor_type().shape().dim_size(); ++i)
+  {
+    if (!input.type().tensor_type().shape().dim(i).has_dim_value())
+    {
+      std::ostringstream oss;
+      oss << "SubgraphConvert(): ONNX graph input dimension " << i << " does "
+          << "not have specified size; cannot convert!";
+      throw std::runtime_error(oss.str());
+    }
+    inputDims[i - 1] = input.type().tensor_type().shape().dim(i).dim_value();
+  }
+
+  result.InputDimensions() = std::move(inputDims);
+  result.Reset(); // Propagate the dimensions through the network.
+
+  // Transfer all of the weights of each layer.
+  for (size_t i = 0; i < m.matches.size(); ++i)
+  {
+    m.matches[i].second->TransferWeights(m.matches[i].first, graph,
+        result.Network()[i]);
+  }
+
+  // Clean up.
+  for (size_t s = 0; s < subgraphs.size(); ++s)
+  {
+    delete subgraphs[s];
+    subgraphs[s] = nullptr;
+  }
+
+  return result;
 }
 
 } // namespace onnx_mlpack
