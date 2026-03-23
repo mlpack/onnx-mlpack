@@ -4,10 +4,11 @@
  *
  * Candidate ONNX subgraphs that can match the LinearNoBias layer.
  */
-#ifndef ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_GEMM_SUBGRAPH_IMPL_HPP
-#define ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_GEMM_SUBGRAPH_IMPL_HPP
+#ifndef ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_GEMM_IMPL_HPP
+#define ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_GEMM_IMPL_HPP
 
 #include "linear_no_bias_gemm.hpp"
+#include "../tensor_to_arma.hpp"
 
 namespace onnx_mlpack {
 
@@ -182,33 +183,14 @@ inline void LinearNoBiasGemmSubgraph::TransferWeights(
     }
   }
 
+  mlpack::LinearNoBias<>* l = dynamic_cast<mlpack::LinearNoBias<>*>(layer);
   for (size_t i = 0; i < graph.initializer_size(); ++i)
   {
     if (graph.initializer(i).has_name() &&
         graph.initializer(i).name() == bName &&
         graph.initializer(i).dims_size() == 2)
     {
-      // Found the weight.
-      const onnx::TensorProto& weights = graph.initializer(i);
-      if (weights.data_type() == onnx::TensorProto::FLOAT)
-      {
-        const size_t rows = (transB == 0) ? weights.dims(1) : weights.dims(0);
-        const size_t cols = (transB == 0) ? weights.dims(0) : weights.dims(1);
-
-        // TODO: this might be reversed ordering...
-        arma::fmat rawWeights((float*) weights.raw_data().data(), rows, cols);
-        mlpack::LinearNoBias<>* l =
-            dynamic_cast<mlpack::LinearNoBias<>*>(layer);
-
-        l->Parameters() = arma::conv_to<arma::mat>::from(rawWeights);
-      }
-      else
-      {
-        // TODO: implement support for other types...
-        throw std::runtime_error("LinearNoBiasGemmSubgraph::TransferWeights(): "
-            "no support for non-double weights... yet!");
-      }
-
+      l->Parameters() = TensorToArma(graph.initializer(i));
       // The weight is successfully transferred, so, nothing else to do.
       return;
     }

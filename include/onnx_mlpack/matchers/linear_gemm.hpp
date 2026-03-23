@@ -1,18 +1,19 @@
 /**
- * @file linear_no_bias_gemm.hpp
+ * @file linear_gemm.hpp
  * @author Ryan Curtin
  *
- * Candidate ONNX subgraphs that can match the LinearNoBias layer.
+ * Candidate ONNX subgraph that can match the Linear layer with a Gemm ONNX
+ * operation..
  */
-#ifndef ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_GEMM_HPP
-#define ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_GEMM_HPP
+#ifndef ONNX_MLPACK_MATCHERS_LINEAR_GEMM_HPP
+#define ONNX_MLPACK_MATCHERS_LINEAR_GEMM_HPP
 
 namespace onnx_mlpack {
 
-class LinearNoBiasGemmSubgraph : public Subgraph
+class LinearGemmSubgraph : public Subgraph
 {
  public:
-  LinearNoBiasGemmSubgraph() : Subgraph({ "Gemm" }) { }
+  LinearGemmSubgraph() : Subgraph({ "Gemm" }) { }
 
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;

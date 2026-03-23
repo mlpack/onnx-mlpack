@@ -137,6 +137,8 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
   std::vector<Subgraph*> subgraphs;
   subgraphs.push_back(new LinearNoBiasGemmSubgraph());
   subgraphs.push_back(new LinearNoBiasMatMulSubgraph());
+  subgraphs.push_back(new LinearGemmSubgraph());
+  subgraphs.push_back(new LinearMatMulAddSubgraph());
 
   // Find the best subgraph match.
   const Matching m = Matcher(graph, subgraphs);
