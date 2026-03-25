@@ -190,7 +190,11 @@ inline void LinearNoBiasGemmSubgraph::TransferWeights(
         graph.initializer(i).name() == bName &&
         graph.initializer(i).dims_size() == 2)
     {
-      l->Parameters() = TensorToArma(graph.initializer(i));
+      if (transB == 1)
+        l->Parameters() = TensorToArma(graph.initializer(i)).t();
+      else
+        l->Parameters() = TensorToArma(graph.initializer(i));
+
       // The weight is successfully transferred, so, nothing else to do.
       return;
     }

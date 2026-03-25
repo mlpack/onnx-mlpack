@@ -160,7 +160,10 @@ inline void LinearGemmSubgraph::TransferWeights(
         graph.initializer(i).name() == bName &&
         graph.initializer(i).dims_size() == 2)
     {
-      l->Weight() = TensorToArma(graph.initializer(i)).t();
+      if (transB == 1)
+        l->Weight() = TensorToArma(graph.initializer(i)).t();
+      else
+        l->Weight() = TensorToArma(graph.initializer(i));
       weightsDone = true;
     }
 
