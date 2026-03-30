@@ -1,18 +1,20 @@
 /**
- * @file linear_no_bias_gemm.hpp
+ * @file linear_matmul_add.hpp
  * @author Ryan Curtin
  *
- * Candidate ONNX subgraphs that can match the LinearNoBias layer.
+ * Candidate ONNX subgraph that can match the Linear layer to a GEMM combined
+ * MatMul/Add operation.
  */
-#ifndef ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_GEMM_HPP
-#define ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_GEMM_HPP
+#ifndef ONNX_MLPACK_MATCHERS_LINEAR_MATMUL_ADD_HPP
+#define ONNX_MLPACK_MATCHERS_LINEAR_MATMUL_ADD_HPP
 
 namespace onnx_mlpack {
 
-class LinearNoBiasGemmSubgraph : public Subgraph
+class LinearMatMulAddSubgraph : public Subgraph
 {
  public:
-  LinearNoBiasGemmSubgraph() : Subgraph({ "Gemm" }) { }
+  // Required structure: MatMul -> Add.
+  LinearMatMulAddSubgraph() : Subgraph({ "MatMul", "Add" }, { { 0, 1 } }) { }
 
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;
