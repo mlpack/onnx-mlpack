@@ -133,7 +133,7 @@ arma::Mat<eT> TensorToArma(const onnx::TensorProto& tensor)
 
     default:
       {
-        std::string type;
+        std::string type = "unknown";
         switch (tensor.data_type())
         {
           case onnx::TensorProto::FLOAT16:
@@ -163,24 +163,26 @@ arma::Mat<eT> TensorToArma(const onnx::TensorProto& tensor)
           case onnx::TensorProto::FLOAT8E5M2FNUZ:
             type = "float8e5m2fnuz";
             break;
-          case onnx::TensorProto::UINT4:
-            type = "uint4";
-            break;
-          case onnx::TensorProto::INT4:
-            type = "int4";
-            break;
-          case onnx::TensorProto::FLOAT4E2M1:
-            type = "float4e2m1";
-            break;
-          case onnx::TensorProto::FLOAT8E8M0:
-            type = "float8e8m0";
-            break;
-          case onnx::TensorProto::UINT2:
-            type = "uint2";
-            break;
-          case onnx::TensorProto::INT2:
-            type = "int2";
-            break;
+          // TODO: ifdef gating for these types, which are not available in
+          // every ONNX version.
+          //case onnx::TensorProto::UINT4:
+          //  type = "uint4";
+          //  break;
+          //case onnx::TensorProto::INT4:
+          //  type = "int4";
+          //  break;
+          //case onnx::TensorProto::FLOAT4E2M1:
+          //  type = "float4e2m1";
+          //  break;
+          //case onnx::TensorProto::FLOAT8E8M0:
+          //  type = "float8e8m0";
+          //  break;
+          //case onnx::TensorProto::UINT2:
+          //  type = "uint2";
+          //  break;
+          //case onnx::TensorProto::INT2:
+          //  type = "int2";
+          //  break;
         }
 
         std::ostringstream oss;
