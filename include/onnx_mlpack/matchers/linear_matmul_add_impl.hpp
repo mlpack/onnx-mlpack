@@ -55,7 +55,7 @@ inline bool LinearMatMulAddSubgraph::Validate(
     if (graph.initializer(i).has_name() &&
         (graph.initializer(i).name() == addName1 ||
          graph.initializer(i).name() == addName2) &&
-        graph.initializer(i).dims_size() == 2)
+        graph.initializer(i).dims_size() == 1)
     {
       addInitializersFound += 1;
     }
@@ -133,9 +133,9 @@ inline void LinearMatMulAddSubgraph::TransferWeights(
     if (graph.initializer(i).has_name() &&
         (graph.initializer(i).name() == addName1 ||
          graph.initializer(i).name() == addName2) &&
-        graph.initializer(i).dims_size() == 2)
+        graph.initializer(i).dims_size() == 1)
     {
-      l->Bias() = TensorToArma(graph.initializer(i));
+      l->Bias() = TensorToArma(graph.initializer(i)).t();
       biasesDone = true;
     }
   }

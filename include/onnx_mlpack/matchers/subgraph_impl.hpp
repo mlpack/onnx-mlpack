@@ -38,7 +38,8 @@ inline std::vector<Matching> Subgraph::Match(
         if (this->Validate(matches[i], graph))
         {
           Matching m(parentMatch);
-          m.matchedNodes[n] = 1;
+          for (size_t j = 0; j < matches[i].n_elem; ++j)
+            m.matchedNodes[matches[i][j]] = 1;
           m.matches.push_back(std::make_pair<arma::uvec, const Subgraph*>(
               std::move(matches[i]), this));
           results.push_back(std::move(m));
@@ -58,7 +59,7 @@ inline std::vector<arma::uvec> Subgraph::MatchNode(
 {
   std::vector<arma::uvec> result;
 
-  if (currentMatching.n_elem != 0 && currentMatching[n] != vertices.size())
+  if (currentMatching.n_elem != 0 && currentMatching[v] != graph.node_size())
     return result; // This node is already matched.
 
   // Check that this node matches the vertex.
@@ -76,7 +77,10 @@ inline std::vector<arma::uvec> Subgraph::MatchNode(
     result.push_back(currentMatching);
     // Initialize the matching if it is empty.
     if (result.back().n_elem == 0)
-      result.back() = vertices.size() * arma::ones<arma::uvec>(vertices.size());
+    {
+      result.back() = graph.node_size() *
+          arma::ones<arma::uvec>(vertices.size());
+    }
     result.back()[v] = n;
 
     // Compute matchings on each child, maintaining a list of matchings that are
@@ -86,15 +90,35 @@ inline std::vector<arma::uvec> Subgraph::MatchNode(
       std::vector<arma::uvec> updatedCandidates;
       for (size_t m = 0; m < result.size(); ++m)
       {
-        for (size_t k = 0; k < graph.node_size(); ++k)
+        for (size_t k = 0; k < node.output_size(); ++k)
         {
-          // Only try with node k if it isn't already assigned.
-          if (result[m][k] == vertices.size())
+          // Longer-term TODO: replace this search with a precomputation of the
+          // ONNX graph's network structure.
+          const std::string& outTensorName = node.output(k);
+          size_t outIndex = graph.node_size();
+          for (size_t kk = 0; kk < graph.node_size(); ++kk)
           {
-            std::vector<arma::uvec> childMatch = MatchNode(outEdges[v][i], k,
-                graph, result[m]);
-            updatedCandidates.insert(updatedCandidates.end(),
-                childMatch.begin(), childMatch.end());
+            bool hasInput = false;
+            for (size_t ll = 0; ll < graph.node(kk).input_size(); ++ll)
+            {
+              if (graph.node(kk).input(ll) == outTensorName)
+              {
+                hasInput = true;
+                break;
+              }
+            }
+
+            if (!hasInput)
+              continue;
+
+            // Only try with node kk if it isn't already assigned.
+            if (result[m][outEdges[v][i]] == graph.node_size())
+            {
+              std::vector<arma::uvec> childMatch = MatchNode(outEdges[v][i], kk,
+                  graph, result[m]);
+              updatedCandidates.insert(updatedCandidates.end(),
+                  childMatch.begin(), childMatch.end());
+            }
           }
         }
       }

@@ -110,7 +110,11 @@ inline std::vector<std::pair<size_t, size_t>> FindConnections(
           const onnx::NodeProto& n2 = graph.node(l);
           for (size_t k2 = 0; k2 < n2.input_size(); ++k2)
           {
-            if (n2.input(k2) == outputName)
+            // TODO for later: this might accidentally connect the internals of
+            // a network to another layer.  We need to enforce that we can only
+            // make connections between the inputs and outputs of a matched
+            // subgraph.
+            if (n2.input(k2) == outputName && i != layerMap[l])
               result.push_back(std::make_pair(i, layerMap[l]));
           }
         }
