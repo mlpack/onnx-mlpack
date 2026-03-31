@@ -204,3 +204,65 @@ TEST_CASE("test_pytorch_linear_dynamo", "[matching]")
 
   REQUIRE(approx_equal(output, outputRef, "both", 0.001, 0.001));
 }
+
+TEST_CASE("test_tf_linear_no_bias", "[matching]")
+{
+  // Load the ONNX graph.
+  onnx::GraphProto graph = GetGraph("tf_linear_no_bias.onnx");
+  DAGNetwork<> dag = SubgraphConvert(graph);
+
+  REQUIRE(dag.Network().size() == 3);
+
+  vector<Layer<>*> sortedLayers = dag.SortedNetwork();
+
+  REQUIRE(sortedLayers.size() == 3);
+  REQUIRE(dynamic_cast<LinearNoBias<>*>(sortedLayers[0]) != nullptr);
+  REQUIRE(sortedLayers[0]->OutputDimensions().size() == 1);
+  REQUIRE(sortedLayers[0]->OutputDimensions()[0] == 25);
+  REQUIRE(dynamic_cast<LinearNoBias<>*>(sortedLayers[1]) != nullptr);
+  REQUIRE(sortedLayers[1]->OutputDimensions().size() == 1);
+  REQUIRE(sortedLayers[1]->OutputDimensions()[0] == 10);
+  REQUIRE(dynamic_cast<LinearNoBias<>*>(sortedLayers[2]) != nullptr);
+  REQUIRE(sortedLayers[2]->OutputDimensions().size() == 1);
+  REQUIRE(sortedLayers[2]->OutputDimensions()[0] == 3);
+
+  arma::mat input, outputRef;
+  mlpack::Load("tf_linear_no_bias_inputs.csv", input, Fatal);
+  mlpack::Load("tf_linear_no_bias_outputs.csv", outputRef, Fatal);
+
+  arma::mat output;
+  dag.Predict(input, output);
+
+  REQUIRE(approx_equal(output, outputRef, "both", 0.001, 0.001));
+}
+
+TEST_CASE("test_tf_linear", "[matching]")
+{
+  // Load the ONNX graph.
+  onnx::GraphProto graph = GetGraph("tf_linear.onnx");
+  DAGNetwork<> dag = SubgraphConvert(graph);
+
+  REQUIRE(dag.Network().size() == 3);
+
+  vector<Layer<>*> sortedLayers = dag.SortedNetwork();
+
+  REQUIRE(sortedLayers.size() == 3);
+  REQUIRE(dynamic_cast<Linear<>*>(sortedLayers[0]) != nullptr);
+  REQUIRE(sortedLayers[0]->OutputDimensions().size() == 1);
+  REQUIRE(sortedLayers[0]->OutputDimensions()[0] == 25);
+  REQUIRE(dynamic_cast<Linear<>*>(sortedLayers[1]) != nullptr);
+  REQUIRE(sortedLayers[1]->OutputDimensions().size() == 1);
+  REQUIRE(sortedLayers[1]->OutputDimensions()[0] == 10);
+  REQUIRE(dynamic_cast<Linear<>*>(sortedLayers[2]) != nullptr);
+  REQUIRE(sortedLayers[2]->OutputDimensions().size() == 1);
+  REQUIRE(sortedLayers[2]->OutputDimensions()[0] == 3);
+
+  arma::mat input, outputRef;
+  mlpack::Load("tf_linear_inputs.csv", input, Fatal);
+  mlpack::Load("tf_linear_outputs.csv", outputRef, Fatal);
+
+  arma::mat output;
+  dag.Predict(input, output);
+
+  REQUIRE(approx_equal(output, outputRef, "both", 0.001, 0.001));
+}
