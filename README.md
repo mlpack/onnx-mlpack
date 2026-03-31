@@ -3,64 +3,68 @@
 
 <div align="center">
   <a href="http://mlpack.org">
-	<img src="img/onnx-mlpack.png" alt="ONNX-mlpack Translator" style="max-width: 45%; height: auto;">
+    <img src="img/onnx-mlpack.png" alt="ONNX-mlpack Translator" style="max-width: 45%; height: auto;">
   </a>
   <br>
-  <h2>Unlock the Power of Other Frameworks in mlpack</h2>
 </div>
 
+The ONNX-mlpack converter can take any ONNX graph and convert it to an mlpack
+neural network.  This is done by matching individual mlpack layers to subgraphs
+of the ONNX network using a rule matching engine, and then selecting the overall
+best match of the network.
 
-This repository contains a converter for certain machine learning models from
-onnx to mlpack format. Currently this repository is still under construction
-and might undergo some major refactoring, please use with cautios.
+## Setup
 
-### The repository is in developing phase and its been tested on the following models.
+1. Dependencies: make sure that you have, available on your system,
+ - [mlpack](https://www.mlpack.org) and its dependencies
+   [ensmallen](https://www.ensmallen.org),
+   [cereal](https://github.com/USCILab/cereal), and
+   Armadillo](https://arma.sourceforge.net); if not installed, these will be
+   autodownloaded during the CMake comnfiguration
+ - ONNX (on Debian, `libonnx-dev` is sufficient)
+ - Protobuf (on Debian, `libprotobuf-dev` is sufficient)
 
-| Models              | Graph Generation | Weight Transfer |
-| ------------------- | ---------------- | --------------- |
-| mobileNet           | ✔️               | ✔️              |
-| yolo-tiny v2        | ✔️               | ✔️              |
-| Iris classification | ✔️               | ✔️              |
+2. Configuration: create a build directory and use CMake to configure:
 
-## ONNX-mlpack Repository Setup Guide:
+```sh
+mkdir build/
+cd build/
+cmake ../
+```
 
-### Prerequisites
+3. Build the converter:
 
-1. **mlpack Installation:**
-    - Ensure that mlpack is installed on your local system. Follow the [official mlpack build instructions](https://github.com/mlpack/mlpack#:~:text=3.%20Installing%20and%20using%20mlpack%20in%20C%2B%2B) to complete this step.
-    
-1. **ONNX Installation:**
-    - If you don't have Protobuf installed, ONNX will internally download and build Protobuf during its build process. You only need to build ONNX. Refer to the [official ONNX build instructions](https://github.com/onnx/onnx#:~:text=conda%2Dforge%20onnx-,Build%20ONNX%20from%20Source,-Before%20building%20from) for more details.
-    - However, to avoid potential version issues in the future, we have provided a zipped format of ONNX in the `build_onnx` repository along with a script that will directly install ONNX on your system.
-    - 
-follow the below instruction to build onnx and make the repository running:
+```sh
+make onnx_mlpack_converter
+```
 
+4. Run the converter:
 
-### Steps to Build ONNX
+```sh
+src/onnx_mlpack_converter <input_network.onnx> <output_mlpack_network.bin>
+```
 
-1. **Clone the Repository:**
-    - Clone the `onnx-mlpack` repository to your local system and navigate to the repository directory.
-    
-2. **Build ONNX:**
-    - Run the following commands to build ONNX:
-        `chmod +x run.sh` 
-	    `./run.sh`
-        
-    - This will generate all the necessary build files for ONNX inside the `build_onnx` folder.
-    
-3. **Verify mlpack and ONNX Build:**
-    - With both ONNX and mlpack built, it's time to test the setup with an example repository.
+Once the converter has been run, you can load the network into mlpack as a
+`DAGNetwork`:
 
-### Running the Example Repository
+```c++
+#define MLPACK_ENABLE_ANN_SERIALIZATION
+#include <mlpack.hpp>
 
-1. Go to the `example/iris-classification` folder.
-    
-2. In the Makefile, update the mlpack header path to match your mlpack build path. For example:
-      `-I/home/your_username/mlpack/build/installdir/include`
-        
-3. Run the make command and check the console output to verify that everything is working correctly.
-   If everythig goes fine you can similarly run the other example as well.
+using namespace mlpack;
 
+int main()
+{
+  DAGNetwork<> network;
+  Load("output_mlpack_network.bin", network);
 
+  // now you can use network.Predict(), network.Train(), etc.
+}
+```
 
+## Notes
 
+This repository is under active development!  At this particular moment, support
+is pretty primitive, but it is actively being expanded.  If you have a network
+that does not match properly, or encounter other problems, please feel free to
+open a bug report and we will look into the issue.

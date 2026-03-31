@@ -33,6 +33,6 @@ include_directories(${ONNX_INCLUDE_DIRS})
 
 # TODO: install headers to relevant location
 
-#add_executable(mlpack_onnx_converter "src/mlpack_onnx_converter.cpp")
 include_directories(include/)
+add_subdirectory(src/)
 add_subdirectory(tests/)
