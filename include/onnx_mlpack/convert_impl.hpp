@@ -11,6 +11,12 @@
 #include "convert.hpp"
 #include "matchers/match.hpp"
 
+#include <onnx/onnx_pb.h>
+#include <onnx/onnx-ml.pb.h>
+// It is deeply absurd that I have to do this.
+#define ONNX_NAMESPACE onnx
+#include <onnx/shape_inference/implementation.h>
+
 namespace onnx_mlpack {
 
 // Load an ONNX model from the specified path.
@@ -28,6 +34,9 @@ inline onnx::GraphProto GetGraph(const std::string &filePath)
   // Parse the ONNX model from the input stream.
   onnxModel.ParseFromIstream(&in);
   in.close();
+
+  // Perform shape inference on the model.
+  onnx::shape_inference::InferShapes(onnxModel);
 
   // Return the graph from the ONNX model.
   return onnxModel.graph();
