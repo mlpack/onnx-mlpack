@@ -2,7 +2,7 @@
  * @file mish_impl.hpp
  * @author Ryan Curtin
  *
- * Candidate ONNX subgraphs that can match the ReLU layer.
+ * Candidate ONNX subgraphs that can match the Mish layer.
  */
 #ifndef ONNX_MLPACK_MATCHERS_MISH_IMPL_HPP
 #define ONNX_MLPACK_MATCHERS_MISH_IMPL_HPP
