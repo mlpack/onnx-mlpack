@@ -282,6 +282,9 @@ TEST_CASE("test_pytorch_activations", "[matching]")
   arma::mat output;
   dag.Predict(input, output);
 
+  output.print("output");
+  outputRef.print("output_ref");
+
   REQUIRE(approx_equal(output, outputRef, "both", 0.001, 0.001));
 }
 
