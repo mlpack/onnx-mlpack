@@ -266,3 +266,38 @@ TEST_CASE("test_tf_linear", "[matching]")
 
   REQUIRE(approx_equal(output, outputRef, "both", 0.001, 0.001));
 }
+
+// Check that a network full of different activations can be converted.
+TEST_CASE("test_pytorch_activations", "[matching]")
+{
+  onnx::GraphProto graph = GetGraph("pytorch_activations.onnx");
+  DAGNetwork<> dag = SubgraphConvert(graph);
+
+  REQUIRE(dag.Network().size() == 21);
+
+  arma::mat input, outputRef;
+  mlpack::Load("pytorch_activations_inputs.csv", input, Fatal);
+  mlpack::Load("pytorch_activations_outputs.csv", outputRef, Fatal);
+
+  arma::mat output;
+  dag.Predict(input, output);
+
+  REQUIRE(approx_equal(output, outputRef, "both", 0.001, 0.001));
+}
+
+TEST_CASE("test_pytorch_dynamo_activations", "[matching]")
+{
+  onnx::GraphProto graph = GetGraph("pytorch_activations_dynamo.onnx");
+  DAGNetwork<> dag = SubgraphConvert(graph);
+
+  REQUIRE(dag.Network().size() == 21);
+
+  arma::mat input, outputRef;
+  mlpack::Load("pytorch_activations_inputs.csv", input, Fatal);
+  mlpack::Load("pytorch_activations_outputs.csv", outputRef, Fatal);
+
+  arma::mat output;
+  dag.Predict(input, output);
+
+  REQUIRE(approx_equal(output, outputRef, "both", 0.001, 0.001));
+}
