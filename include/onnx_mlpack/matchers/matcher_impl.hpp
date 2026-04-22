@@ -122,6 +122,10 @@ inline std::vector<std::pair<size_t, size_t>> FindConnections(
     }
   }
 
+  // Filter out any duplicate connections.
+  const auto last = std::unique(result.begin(), result.end());
+  result.erase(last, result.end());
+
   return result;
 }
 
@@ -164,9 +168,51 @@ inline Matching Matcher(const onnx::GraphProto& graph,
     {
       std::vector<Matching> subMatchings = subgraphs[s]->Match(graph,
           matchStack.top());
-      matchings.insert(matchings.end(), subMatchings.begin(),
-          subMatchings.end());
+
+      // If any new sub-matching did not match any nodes that another
+      // sub-matching did, then we can coalesce.
+      const arma::uvec& origMatch = matchStack.top().matchedNodes;
+      for (Matching& m1 : subMatchings)
+      {
+        bool anyOverlap = false;
+        for (const Matching& m2 : matchings)
+        {
+          if (accu((m1.matchedNodes - origMatch) %
+                   (m2.matchedNodes - origMatch)) != 0)
+          {
+            anyOverlap = true;
+          }
+          else
+          {
+            // Update the existing submatching.
+            m1.matchedNodes += (m2.matchedNodes - origMatch);
+            for (size_t j = matchStack.top().matches.size();
+                 j < m2.matches.size(); ++j)
+            {
+              m1.matches.push_back(m2.matches[j]);
+            }
+          }
+        }
+
+        // When there is overlap, we have to add this submatching exactly as-is.
+        if (anyOverlap || matchings.size() == 0)
+        {
+          matchings.push_back(m1);
+        }
+        else
+        {
+          std::cout << "Coalesced all for subgraph " << s << " with "
+              << accu(origMatch) << " originally matched of "
+              << origMatch.n_elem << "." << std::endl;
+          std::cout << "Final matching: " << m1.matchedNodes.t();
+        }
+      }
     }
+
+    // If we have multiple matchings that do not touch the same nodes, we
+    // consider them fully independent and treat them as though they were
+    // applied at the same time.
+
     matchStack.pop();
 
     // Look through each matching we received.
