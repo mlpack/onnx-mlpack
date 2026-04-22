@@ -61,9 +61,11 @@ class Subgraph
                        const onnx::GraphProto& graph,
                        mlpack::DAGNetwork<>& network) const = 0;
 
+  // This is not needed by every subgraph, and can be left un-overloaded if
+  // the layer has no weights.
   virtual void TransferWeights(const arma::uvec& indices,
                                const onnx::GraphProto& graph,
-                               mlpack::Layer<>* layer) const = 0;
+                               mlpack::Layer<>* layer) const { }
 
  private:
   std::vector<std::string> vertices;
