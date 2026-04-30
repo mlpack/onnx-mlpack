@@ -54,7 +54,6 @@ inline std::vector<Matching> Subgraph::Match(
   matchStack.push(parentMatching);
   for (size_t i = 0; i < numInputs; ++i)
   {
-    std::cout << "input " << i << "\n";
     // This will hold all of the elements on the stack that have been further
     // matched to input node i.
     std::vector<arma::uvec> outputMatches;
@@ -86,8 +85,6 @@ inline std::vector<Matching> Subgraph::Match(
     // anything in the stack has those sub-DAG nodes matched, so we can update
     // matchedNodes.
     UpdateMatchedNodes(i, matchedNodes);
-
-    std::cout << "done!\n";
   }
 
   // Process the results into Matching objects.
