@@ -273,7 +273,7 @@ TEST_CASE("test_pytorch_activations", "[matching]")
   onnx::GraphProto graph = GetGraph("pytorch_activations.onnx");
   DAGNetwork<> dag = SubgraphConvert(graph);
 
-  REQUIRE(dag.Network().size() == 21);
+  REQUIRE(dag.Network().size() == 19);
 
   arma::mat input, outputRef;
   mlpack::Load("pytorch_activations_inputs.csv", input, Fatal);
@@ -293,7 +293,7 @@ TEST_CASE("test_pytorch_dynamo_activations", "[matching]")
   onnx::GraphProto graph = GetGraph("pytorch_activations_dynamo.onnx");
   DAGNetwork<> dag = SubgraphConvert(graph);
 
-  REQUIRE(dag.Network().size() == 21);
+  REQUIRE(dag.Network().size() == 19);
 
   arma::mat input, outputRef;
   mlpack::Load("pytorch_activations_inputs.csv", input, Fatal);

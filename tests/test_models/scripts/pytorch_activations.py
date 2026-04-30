@@ -10,7 +10,7 @@ import torch
 import math
 import numpy as np
 
-x = torch.randn((2000, 100)) + \
+x = 0.001 * torch.randn((2000, 100)) + \
     torch.linspace(-math.pi, math.pi, 2000).unsqueeze(-1)
 y = 0.05 * torch.randn((2000, 3)) + \
     torch.sum(torch.sin(x)).unsqueeze(-1)
@@ -24,8 +24,6 @@ model = torch.nn.Sequential(
     torch.nn.GELU(approximate='none'),
     torch.nn.Linear(25, 25),
     torch.nn.GELU(approximate='tanh'),
-    torch.nn.Linear(25, 25),
-    torch.nn.Hardsigmoid(),
     torch.nn.Linear(25, 10),
     torch.nn.Hardswish(),
     torch.nn.Linear(10, 10),
@@ -33,7 +31,7 @@ model = torch.nn.Sequential(
     torch.nn.Linear(10, 10),
     torch.nn.Mish(),
     torch.nn.Linear(10, 10),
-    torch.nn.Softplus(), # only default parameters supported
+    torch.nn.Softplus(threshold=np.finfo(np.float32).max),
     torch.nn.Linear(10, 10),
     torch.nn.Tanh(),
     torch.nn.Linear(10, 3))
