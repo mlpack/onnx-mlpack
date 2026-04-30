@@ -28,21 +28,26 @@ inline bool MishMultiOpSubgraph::Validate(
     return false;
   if (nodes[2] >= graph.node_size())
     return false;
+  std::cout << "valid check 1\n";
 
   const onnx::NodeProto& softplus = graph.node(nodes[0]);
   if (softplus.op_type() != "Softplus")
     return false;
+  std::cout << "valid check 2\n";
   const onnx::NodeProto& tanh = graph.node(nodes[1]);
   if (tanh.op_type() != "Tanh")
     return false;
+  std::cout << "valid check 3\n";
   const onnx::NodeProto& mul = graph.node(nodes[2]);
   if (mul.op_type() != "Mul")
     return false;
+  std::cout << "valid check 4\n";
 
   // We must ensure that the input to the Softplus is also one of the inputs to
   // the Mul.
   if (softplus.input(0) != mul.input(0) && softplus.input(0) != mul.input(1))
     return false;
+  std::cout << "valid check 5\n";
 
   // We cannot have broadcasting in the mul operation, so we need to ensure that
   // both inputs have the same dimensions.
@@ -58,6 +63,7 @@ inline bool MishMultiOpSubgraph::Validate(
     if (t.has_name() && t.name() == mulB)
       mulBDims = t.dims_size();
   }
+  std::cout << "mulADims " << mulADims << " mulBDims " << mulBDims << "\n";
 
   // Now check the ValueInfoProtos too.  Hopefully shape inference was
   // successful!
@@ -78,10 +84,12 @@ inline bool MishMultiOpSubgraph::Validate(
       mulBDims = v.type().tensor_type().shape().dim_size();
     }
   }
+  std::cout << "second mulADims " << mulADims << " mulBDims " << mulBDims << "\n";
 
   // Make sure we found the initializers.
   if (mulADims == 0 || mulBDims == 0)
     return false;
+  std::cout << "valid check 6\n";
 
   // Make sure they have the same number of dimensions: if so, we are not
   // broadcasting.
