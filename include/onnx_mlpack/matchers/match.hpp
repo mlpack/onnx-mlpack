@@ -30,6 +30,7 @@
 #include "selu.hpp"
 #include "sigmoid.hpp"
 #include "softplus.hpp"
+#include "softplus_threshold.hpp"
 #include "swish.hpp"
 #include "tanh.hpp"
 
@@ -54,6 +55,7 @@
 #include "selu_impl.hpp"
 #include "sigmoid_impl.hpp"
 #include "softplus_impl.hpp"
+#include "softplus_threshold_impl.hpp"
 #include "swish_impl.hpp"
 #include "tanh_impl.hpp"
 

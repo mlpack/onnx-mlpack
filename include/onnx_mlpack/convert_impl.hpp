@@ -162,6 +162,7 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
   subgraphs.push_back(new SELUSubgraph());
   subgraphs.push_back(new SigmoidSubgraph());
   subgraphs.push_back(new SoftplusSubgraph());
+  subgraphs.push_back(new SoftplusThresholdSubgraph());
   subgraphs.push_back(new SwishSubgraph());
   subgraphs.push_back(new TanhSubgraph());
 
