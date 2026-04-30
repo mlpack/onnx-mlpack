@@ -21,7 +21,7 @@ inline bool HardSigmoidSubgraph::Validate(
 {
   if (nodes.n_elem != 1)
     return false;
-  if (nodes[0] > graph.node_size())
+  if (nodes[0] >= graph.node_size())
     return false;
 
   const onnx::NodeProto& hs = graph.node(nodes[0]);

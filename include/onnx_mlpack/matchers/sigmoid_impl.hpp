@@ -20,7 +20,7 @@ inline bool SigmoidSubgraph::Validate(
 {
   if (nodes.n_elem != 1)
     return false;
-  if (nodes[0] > graph.node_size())
+  if (nodes[0] >= graph.node_size())
     return false;
 
   // There are no parameters to the sigmoid layer, so if the name is right then

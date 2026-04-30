@@ -22,11 +22,11 @@ inline bool MishMultiOpSubgraph::Validate(
   std::cout << "validating MishMultiOpSubgraph\n";
   if (nodes.n_elem != 3)
     return false;
-  if (nodes[0] > graph.node_size())
+  if (nodes[0] >= graph.node_size())
     return false;
-  if (nodes[1] > graph.node_size())
+  if (nodes[1] >= graph.node_size())
     return false;
-  if (nodes[2] > graph.node_size())
+  if (nodes[2] >= graph.node_size())
     return false;
 
   const onnx::NodeProto& softplus = graph.node(nodes[0]);

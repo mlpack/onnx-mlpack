@@ -21,7 +21,7 @@ inline bool CELUSubgraph::Validate(
 {
   if (nodes.n_elem != 1)
     return false;
-  if (nodes[0] > graph.node_size())
+  if (nodes[0] >= graph.node_size())
     return false;
 
   // We only need to check that we have a Celu node; any alpha value will be

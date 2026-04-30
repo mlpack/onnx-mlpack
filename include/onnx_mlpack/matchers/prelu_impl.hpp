@@ -20,7 +20,7 @@ inline bool PReLUSubgraph::Validate(
 {
   if (nodes.n_elem != 1)
     return false;
-  if (nodes[0] > graph.node_size())
+  if (nodes[0] >= graph.node_size())
     return false;
 
   // Sanity check the attributes of the PReLU to ensure that we actually can do

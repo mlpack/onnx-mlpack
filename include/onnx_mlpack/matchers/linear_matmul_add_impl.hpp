@@ -21,9 +21,9 @@ inline bool LinearMatMulAddSubgraph::Validate(
 {
   if (nodes.n_elem != 2)
     return false;
-  if (nodes[0] > graph.node_size())
+  if (nodes[0] >= graph.node_size())
     return false;
-  if (nodes[1] > graph.node_size())
+  if (nodes[1] >= graph.node_size())
     return false;
 
   // Sanity check the attributes of the gemm to ensure that we actually can do

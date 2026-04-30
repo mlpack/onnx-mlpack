@@ -20,7 +20,7 @@ inline bool ELUSubgraph::Validate(
 {
   if (nodes.n_elem != 1)
     return false;
-  if (nodes[0] > graph.node_size())
+  if (nodes[0] >= graph.node_size())
     return false;
 
   // We only need to check the name of the layer; any alpha value will work.
