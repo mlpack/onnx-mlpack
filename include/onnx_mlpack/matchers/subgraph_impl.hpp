@@ -35,18 +35,11 @@ inline std::vector<Matching> Subgraph::Match(
 
   // General matching strategy:
   //
-  // 1. Try to match all input nodes, regardless of connections.  This can
-  //    result in multiple possible initial matchings.
-  //
-  // 2. For each initial matching, traverse the subset of the DAG starting at
-  //    each matched input node.  This can also result in multiple matchings.
-  //
-  // During this process, in the `matching` `arma::uvec` objects, we take the
-  // values `vertices.size()` to mean that the ONNX graph node is matched to
-  // another subgraph, and `vertices.size() + 1` to mean that the ONNX graph
-  // node is unmatched.
-  //
-  // TODO before PR: this comment is no longer accurate
+  // For each input node in the subgraph, we will match the entire sub-DAG
+  // rooted at that input node.  There can be multiple matches of this sub-DAG.
+  // For each match we find, we then proceed to the next input node in the
+  // subgraph and match the parts of its sub-DAG that have not already been
+  // matched.
 
   std::vector<bool> matchedNodes(graph.node_size(), false);
   arma::uvec parentMatching = (vertices.size() + 1) * arma::ones<arma::uvec>(
@@ -61,6 +54,7 @@ inline std::vector<Matching> Subgraph::Match(
   matchStack.push(parentMatching);
   for (size_t i = 0; i < numInputs; ++i)
   {
+    std::cout << "input " << i << "\n";
     // This will hold all of the elements on the stack that have been further
     // matched to input node i.
     std::vector<arma::uvec> outputMatches;
@@ -92,6 +86,8 @@ inline std::vector<Matching> Subgraph::Match(
     // anything in the stack has those sub-DAG nodes matched, so we can update
     // matchedNodes.
     UpdateMatchedNodes(i, matchedNodes);
+
+    std::cout << "done!\n";
   }
 
   // Process the results into Matching objects.
@@ -139,10 +135,17 @@ inline std::vector<arma::uvec> Subgraph::MatchSubDAG(
   std::vector<arma::uvec> matchings;
   if (matchedNodes[i])
   {
-    // This node has already been matched by another branch of the DAG, so the
-    // matching is valid and there's nothing else for us to do.
-    matchings.push_back(currentMatching);
-    return matchings;
+    // This node has already been matched by another branch of the DAG, so all
+    // we need to do is ensure that the matching we have is using one of the
+    // possible graph nodes that i can be matched to.
+    for (const size_t& n : possibleGraphNodes)
+    {
+      if (currentMatching[n] == i)
+      {
+        matchings.push_back(currentMatching);
+        return matchings;
+      }
+    }
   }
 
   // Try to match node i to a node in the graph.  We assume that
@@ -173,8 +176,9 @@ inline std::vector<arma::uvec> Subgraph::MatchSubDAG(
         std::vector<size_t> childPossibleGraphNodes;
         for (const size_t& k : nodeMap.at(vertices[j]))
         {
-          // type.
-          if (m[k] == vertices.size() + 1)
+          // Note we allow both unmatched nodes, and nodes where the out-edge is
+          // already successfully matched.
+          if (m[k] == vertices.size() + 1 || (matchedNodes[j] && m[k] == j))
           {
             // ONNX graph node k is not matched; is it connected to an output of
             // node i?  TODO: this should be cleaned up and precomputed, or put
