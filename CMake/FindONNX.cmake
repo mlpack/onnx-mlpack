@@ -23,10 +23,13 @@ find_path(ONNX_INCLUDE_DIR NAMES onnx_pb.h
 if (NOT ONNX_INCLUDE_DIR)
   find_path(ONNX_INCLUDE_DIR NAMES onnx/onnx_pb.h
       PATHS /usr/include /usr/local/include /opt/local/include /opt/include)
-  if (ONNX_INCLUDE_DIR)
-    set(ONNX_INCLUDE_DIR "${ONNX_INCLUDE_DIR}/onnx")
-  endif ()
 endif ()
+
+# Extract the version.
+file(STRINGS "${ONNX_INCLUDE_DIR}/onnx/common/version.h" _ONNX_VERSION_CONTENTS
+    REGEX "LAST_RELEASE_VERSION")
+string(REGEX REPLACE "^.*\"([0-9.]+)\".*$"
+    "\\1" ONNX_VERSION "${_ONNX_VERSION_CONTENTS}")
 
 find_library(ONNX_LIBRARY NAMES onnx
     PATHS /usr/lib /usr/lib64 /usr/local/lib /usr/local/lib64 /opt/local/lib/
@@ -38,10 +41,9 @@ find_library(ONNX_PROTO_LIBRARY NAMES onnx_proto
 
 include(FindPackageHandleStandardArgs)
 
-find_package_handle_standard_args(ONNX DEFAULT_MSG
-  ONNX_LIBRARY
-  ONNX_PROTO_LIBRARY
-  ONNX_INCLUDE_DIR)
+find_package_handle_standard_args(ONNX
+    REQUIRED_VARS ONNX_LIBRARY ONNX_PROTO_LIBRARY ONNX_INCLUDE_DIR
+    VERSION_VAR ONNX_VERSION)
 
 set(ONNX_INCLUDE_DIRS ${ONNX_INCLUDE_DIR} ${Protobuf_INCLUDE_DIRS})
 set(ONNX_LIBRARIES ${ONNX_LIBRARY} ${ONNX_PROTO_LIBRARY} ${Protobuf_LIBRARIES})
