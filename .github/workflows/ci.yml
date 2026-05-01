@@ -37,7 +37,7 @@ jobs:
 
     - name: Build minimum-supported ONNX version
       run: |
-        curl -k -L https://github.com/onnx/onnx/archive/refs/tags/v1.15.0.tar.gz| tar -xvJ
+        curl -k -L https://github.com/onnx/onnx/archive/refs/tags/v1.15.0.tar.gz| tar -xvz
         mv onnx-* onnx
         cd onnx/
         mkdir build/
