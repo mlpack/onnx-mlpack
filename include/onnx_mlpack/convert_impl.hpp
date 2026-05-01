@@ -168,24 +168,28 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
 
   // Find the best subgraph match.
   const Matching m = Matcher(graph, subgraphs);
+  std::cout << "matching complete\n";
 
   // Next, for each subgraph match, we will convert the relevant layers to the
   // mlpack layer equivalent.
   //
   // TODO: handle template parameters for loss function?
   mlpack::DAGNetwork<> result;
+  std::cout << "created DAGNetwork\n";
 
   // Extract all the vertices of the mlpack network.
   for (size_t i = 0; i < m.matches.size(); ++i)
   {
     m.matches[i].second->Convert(m.matches[i].first, graph, result);
   }
+  std::cout << "conversions done\n";
 
   // Now make connections between each of the vertices.
   std::vector<std::pair<size_t, size_t>> connections =
       FindConnections(m, graph);
   for (const std::pair<size_t, size_t>& p : connections)
     result.Connect(p.first, p.second);
+  std::cout << "connections done\n";
 
   // Extract the size of the input.
   const onnx::ValueInfoProto& input = graph.input(0);
@@ -211,9 +215,11 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
     }
     inputDims[i - 1] = input.type().tensor_type().shape().dim(i).dim_value();
   }
+  std::cout << "got inputDims\n";
 
   result.InputDimensions() = std::move(inputDims);
   result.Reset(); // Propagate the dimensions through the network.
+  std::cout << "network reset\n";
 
   // Transfer all of the weights of each layer.
   for (size_t i = 0; i < m.matches.size(); ++i)
@@ -221,6 +227,7 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
     m.matches[i].second->TransferWeights(m.matches[i].first, graph,
         result.Network()[i]);
   }
+  std::cout << "transferred weights\n";
 
   // Clean up.
   for (size_t s = 0; s < subgraphs.size(); ++s)
@@ -228,6 +235,7 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
     delete subgraphs[s];
     subgraphs[s] = nullptr;
   }
+  std::cout << "cleaned up\n";
 
   return result;
 }
