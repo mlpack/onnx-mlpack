@@ -37,9 +37,9 @@ jobs:
 
     - name: Build minimum-supported ONNX version
       run: |
-        curl -O onnx-1.15.0.tar.gz https://github.com/onnx/onnx/archive/refs/tags/v1.15.0.tar.gz
-        tar -xvzpf onnx-1.15.0.tar.gz
-        cd onnx-1.15.0/
+        curl -k -L https://github.com/onnx/onnx/archive/refs/tags/v1.15.0.tar.gz| tar -xvJ
+        mv onnx-* onnx
+        cd onnx/
         mkdir build/
         cd build/
         cmake \
@@ -56,9 +56,9 @@ jobs:
       run: |
         mkdir build && cd build
         cmake \
-            -DONNX_INCLUDE_DIR=../onnx-1.15.0/inst/include/ \
-            -DONNX_LIBRARY=../onnx-1.15.0/inst/lib/libonnx.so \
-            -DONNX_PROTO_LIBRARY=../onnx-1.15.0/inst/lib/libonnx_proto.so ../
+            -DONNX_INCLUDE_DIR=../onnx/inst/include/ \
+            -DONNX_LIBRARY=../onnx/inst/lib/libonnx.so \
+            -DONNX_PROTO_LIBRARY=../onnx/inst/lib/libonnx_proto.so ../
 
     - name: Build onnx-mlpack
       run: cd build && make -j4
