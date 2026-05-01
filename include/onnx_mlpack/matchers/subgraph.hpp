@@ -58,6 +58,8 @@ class Subgraph
       numInputs = vertices.size();
   }
 
+  virtual ~Subgraph() { }
+
   const size_t NumVertices() const { return vertices.size(); }
   const size_t NumEdges() const { return edges.size(); }
   const size_t NumInputs() const { return numInputs; }
