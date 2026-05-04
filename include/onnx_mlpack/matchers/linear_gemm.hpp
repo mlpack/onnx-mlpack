@@ -15,6 +15,8 @@ class LinearGemmSubgraph : public Subgraph
  public:
   LinearGemmSubgraph() : Subgraph({ "Gemm" }) { }
 
+  inline const char* Name() { return "LinearGEMM"; }
+
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;
 

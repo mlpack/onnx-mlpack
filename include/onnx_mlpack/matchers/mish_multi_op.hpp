@@ -16,6 +16,8 @@ class MishMultiOpSubgraph : public Subgraph
   MishMultiOpSubgraph() : Subgraph(
       { "Softplus", "Tanh", "Mul" }, { { 0, 1 }, { 1, 2 } } ) { }
 
+  inline const char* Name() { return "MishMultiOp"; }
+
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;
 

@@ -14,6 +14,8 @@ class LeakyReLUSubgraph : public Subgraph
  public:
   LeakyReLUSubgraph() : Subgraph({ "LeakyRelu" }) { }
 
+  inline const char* Name() { return "LeakyReLU"; }
+
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;
 

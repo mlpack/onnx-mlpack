@@ -15,6 +15,8 @@ class HardSwishSubgraph : public Subgraph
  public:
   HardSwishSubgraph() : Subgraph({ "HardSwish" }) { }
 
+  inline const char* Name() { return "HardSwish"; }
+
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;
 

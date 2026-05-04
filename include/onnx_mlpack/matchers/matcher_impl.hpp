@@ -182,8 +182,9 @@ inline Matching Matcher(const onnx::GraphProto& graph,
       if (subMatchings.size() > 0)
       {
         // TODO: get name of actual subgraph.
-        std::cout << "  Subgraph " << s << " matched to " << subMatchings.size()
-            << " candidates:" << std::endl;
+        std::cout << "  Subgraph " << s << " (" << subgraphs[s]->Name()
+            << ") matched to " << subMatchings.size() << " candidates:"
+            << std::endl;
         for (size_t k = 0; k < subMatchings.size(); ++k)
         {
           const Matching& m = subMatchings[k];
