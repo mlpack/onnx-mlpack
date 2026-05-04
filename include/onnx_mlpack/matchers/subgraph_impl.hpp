@@ -169,6 +169,13 @@ inline std::vector<arma::uvec> Subgraph::MatchSubDAG(
       // Try this with all current matchings.
       for (const arma::uvec& m : nodeMatchings)
       {
+        // If the out-edge is already matched, don't recurse.
+        if (arma::any(m == j))
+        {
+          edgeMatchings.push_back(m);
+          continue;
+        }
+
         // Collect the set of possible nodes that could be children.
         std::vector<size_t> childPossibleGraphNodes;
         for (const size_t& k : nodeMap.at(vertices[j]))
@@ -183,23 +190,17 @@ inline std::vector<arma::uvec> Subgraph::MatchSubDAG(
             bool isOutput = false;
             for (size_t l = 0; l < graph.node(n).output_size(); ++l)
             {
-              size_t outIndex = graph.node_size();
-              for (size_t nn = 0; nn < graph.node_size(); ++nn)
+              bool found = false;
+              for (size_t kk = 0; kk < graph.node(k).input_size(); ++kk)
               {
-                for (size_t kk = 0; kk < graph.node(nn).input_size(); ++kk)
+                if (graph.node(k).input(kk) == graph.node(n).output(l))
                 {
-                  if (graph.node(nn).input(kk) == graph.node(n).output(l))
-                  {
-                    outIndex = nn;
-                    break;
-                  }
-                }
-
-                if (outIndex != graph.node_size())
+                  found = true;
                   break;
+                }
               }
 
-              if (k == outIndex)
+              if (found)
                 childPossibleGraphNodes.push_back(k);
             }
           }
