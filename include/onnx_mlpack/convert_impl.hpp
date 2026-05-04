@@ -150,6 +150,7 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
   subgraphs.push_back(new LinearMatMulAddSubgraph());
   subgraphs.push_back(new CELUSubgraph());
   subgraphs.push_back(new ELUSubgraph());
+  subgraphs.push_back(new ELUPiecewiseSubgraph());
   subgraphs.push_back(new GELUExactSubgraph());
   subgraphs.push_back(new GELUSubgraph());
   subgraphs.push_back(new HardSigmoidSubgraph());
