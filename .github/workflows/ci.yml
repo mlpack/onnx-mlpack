@@ -32,12 +32,33 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install --yes --allow-unauthenticated \
-            libopenblas-dev libstb-dev libonnx-dev libprotobuf-dev
+            libopenblas-dev libstb-dev libprotobuf-dev libprotoc-dev \
+            protobuf-compiler
+
+    - name: Build minimum-supported ONNX version
+      run: |
+        curl -k -L https://github.com/onnx/onnx/archive/refs/tags/v1.15.0.tar.gz| tar -xvz
+        mv onnx-* onnx
+        cd onnx/
+        mkdir build/
+        cd build/
+        cmake \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DONNX_USE_PROTOBUF_SHARED_LIBS=ON \
+            -DBUILD_SHARED_LIBS=ON \
+            -DONNX_BUILD_TESTS=OFF \
+            -DCMAKE_INSTALL_PREFIX=../inst/ \
+            -DPYTHON_EXECUTABLE=`which python3` ../
+        make -j4 install
+        cd ../../
 
     - name: Configure onnx-mlpack with CMake
       run: |
         mkdir build && cd build
-        cmake ../
+        cmake \
+            -DONNX_INCLUDE_DIR=../onnx/inst/include/ \
+            -DONNX_LIBRARY=../onnx/inst/lib/libonnx.so \
+            -DONNX_PROTO_LIBRARY=../onnx/inst/lib/libonnx_proto.so ../
 
     - name: Build onnx-mlpack
       run: cd build && make -j4

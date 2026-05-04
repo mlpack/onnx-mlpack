@@ -11,6 +11,12 @@
 #include "convert.hpp"
 #include "matchers/match.hpp"
 
+#include <onnx/onnx_pb.h>
+#include <onnx/onnx-ml.pb.h>
+// It is deeply absurd that I have to do this.
+#define ONNX_NAMESPACE onnx
+#include <onnx/shape_inference/implementation.h>
+
 namespace onnx_mlpack {
 
 // Load an ONNX model from the specified path.
@@ -28,6 +34,9 @@ inline onnx::GraphProto GetGraph(const std::string &filePath)
   // Parse the ONNX model from the input stream.
   onnxModel.ParseFromIstream(&in);
   in.close();
+
+  // Perform shape inference on the model.
+  onnx::shape_inference::InferShapes(onnxModel);
 
   // Return the graph from the ONNX model.
   return onnxModel.graph();
@@ -139,6 +148,23 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
   subgraphs.push_back(new LinearNoBiasMatMulSubgraph());
   subgraphs.push_back(new LinearGemmSubgraph());
   subgraphs.push_back(new LinearMatMulAddSubgraph());
+  subgraphs.push_back(new CELUSubgraph());
+  subgraphs.push_back(new ELUSubgraph());
+  subgraphs.push_back(new GELUExactSubgraph());
+  subgraphs.push_back(new GELUSubgraph());
+  subgraphs.push_back(new HardSigmoidSubgraph());
+  subgraphs.push_back(new HardSwishSubgraph());
+  subgraphs.push_back(new LeakyReLUSubgraph());
+  subgraphs.push_back(new MishSubgraph());
+  subgraphs.push_back(new MishMultiOpSubgraph());
+  subgraphs.push_back(new PReLUSubgraph());
+  subgraphs.push_back(new ReLUSubgraph());
+  subgraphs.push_back(new SELUSubgraph());
+  subgraphs.push_back(new SigmoidSubgraph());
+  subgraphs.push_back(new SoftplusSubgraph());
+  subgraphs.push_back(new SoftplusThresholdSubgraph());
+  subgraphs.push_back(new SwishSubgraph());
+  subgraphs.push_back(new TanhSubgraph());
 
   // Find the best subgraph match.
   const Matching m = Matcher(graph, subgraphs);

@@ -122,6 +122,10 @@ inline std::vector<std::pair<size_t, size_t>> FindConnections(
     }
   }
 
+  // Filter out any duplicate connections.
+  const auto last = std::unique(result.begin(), result.end());
+  result.erase(last, result.end());
+
   return result;
 }
 
@@ -155,26 +159,106 @@ inline Matching Matcher(const onnx::GraphProto& graph,
   // Then, we need to rank the mappings by how good they are.  For starters, we
   // can just use the number of mlpack layers that are in the matching.
 
+  std::cout << "Matcher::Match(): starting matching process on ONNX graph with "
+      << graph.node_size() << " nodes and " << subgraphs.size() << " subgraph "
+      << "candidates." << std::endl << std::endl;
+
   size_t i = 0;
   while (matchStack.size() > 0)
   {
+    std::cout << "Matching subgraphs with unmatched ONNX nodes: { ";
+    for (size_t j = 0; j < matchStack.top().matchedNodes.n_elem; ++j)
+      if (matchStack.top().matchedNodes[j] == 0)
+        std::cout << j << " ";
+    std::cout << "}" << std::endl;
+
     // Match each subgraph to the current state.
     std::vector<Matching> matchings;
     for (size_t s = 0; s < subgraphs.size(); ++s)
     {
       std::vector<Matching> subMatchings = subgraphs[s]->Match(graph,
           matchStack.top());
-      matchings.insert(matchings.end(), subMatchings.begin(),
-          subMatchings.end());
+
+      if (subMatchings.size() > 0)
+      {
+        // TODO: get name of actual subgraph.
+        std::cout << "  Subgraph " << s << " matched to " << subMatchings.size()
+            << " candidates:" << std::endl;
+        for (size_t k = 0; k < subMatchings.size(); ++k)
+        {
+          const Matching& m = subMatchings[k];
+          std::cout << "   - " << k << ": { ";
+          for (size_t j = 0; j < m.matches.back().first.n_elem; ++j)
+            std::cout << m.matches.back().first[j] << " ";
+          std::cout << "}" << std::endl;
+        }
+      }
+
+      // If any new sub-matching did not match any nodes that another
+      // sub-matching did, then we can coalesce.
+      const arma::uvec& origMatch = matchStack.top().matchedNodes;
+      for (size_t i1 = 0; i1 < subMatchings.size(); ++i1)
+      {
+        const Matching& m1 = subMatchings[i1];
+        bool anyOverlap = false;
+        for (size_t i2 = 0; i2 < matchings.size(); ++i2)
+        {
+          Matching& m2 = matchings[i2];
+          if (accu((m1.matchedNodes - origMatch) %
+                   (m2.matchedNodes - origMatch)) != 0)
+          {
+            anyOverlap = true;
+          }
+          else
+          {
+            // Update the existing submatching.
+            m2.matchedNodes += (m1.matchedNodes - origMatch);
+            for (size_t j = matchStack.top().matches.size();
+                 j < m1.matches.size(); ++j)
+            {
+              std::cout << "   * Subgraph match " << i1 << " can be coalesced "
+                  << "with candidate matching " << i2 << "." << std::endl;
+              m2.matches.push_back(m1.matches[j]);
+            }
+          }
+        }
+
+        // When there is overlap, we have to add this submatching exactly as-is.
+        if (anyOverlap || matchings.size() == 0)
+        {
+          std::cout << "   * Subgraph match " << i1 << " added to list of "
+              << "candidate matchings." << std::endl;
+          matchings.push_back(m1);
+        }
+      }
     }
+
+    // If we have multiple matchings that do not touch the same nodes, we
+    // consider them fully independent and treat them as though they were
+    // applied at the same time.
+
     matchStack.pop();
+
+    std::cout << std::endl << "Received " << matchings.size() << " matching "
+        << "candidates." << std::endl;
 
     // Look through each matching we received.
     for (size_t m = 0; m < matchings.size(); ++m)
     {
+      std::cout << "  - Candidate matching " << m << ": " << std::endl;
+      for (size_t k = 0; k < matchings[m].matches.size(); ++k)
+      {
+        std::cout << "    * { ";
+        for (size_t j = 0; j < matchings[m].matches[k].first.n_elem; ++j)
+          std::cout << matchings[m].matches[k].first[j] << " ";
+        std::cout << "}" << std::endl;
+      }
+
       // Is the matching complete?
       if (arma::all(matchings[m].matchedNodes == 1))
       {
+        std::cout << "    * Matching is complete!  Adding to final results."
+            << std::endl;
         fullMatchings.push_back(std::move(matchings[m]));
       }
       else
@@ -212,6 +296,19 @@ inline Matching Matcher(const onnx::GraphProto& graph,
   for (size_t i = 0; i < fullMatchings.size(); ++i)
     if (keep[i])
       finalMatchings.push_back(std::move(fullMatchings[i]));
+
+  std::cout << "Final matchings:\n";
+  for (size_t i = 0; i < finalMatchings.size(); ++i)
+  {
+    std::cout << "  * Matching " << i << ":" << std::endl;
+    for (size_t j = 0; j < finalMatchings[i].matches.size(); ++j)
+    {
+      std::cout << "    - { ";
+      for (size_t k = 0; k < finalMatchings[i].matches[j].first.size(); ++k)
+        std::cout << finalMatchings[i].matches[j].first[k] << " ";
+      std::cout << "}" << std::endl;
+    }
+  }
 
   // Lastly, we need to rank the mappings.
   // As a very simple first heuristic, we will just count the number of layers

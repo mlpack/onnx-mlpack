@@ -28,7 +28,8 @@ include_directories(${MLPACK_INCLUDE_DIRS})
 # TODO: integrate into the converter itself before include
 add_definitions(-DONNX_ML=1)
 
-find_package(ONNX REQUIRED)
+# Shape inference does not succeed in all cases before ONNX 1.15.0.
+find_package(ONNX 1.15.0 REQUIRED)
 include_directories(${ONNX_INCLUDE_DIRS})
 
 # TODO: install headers to relevant location

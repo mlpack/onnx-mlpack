@@ -21,116 +21,207 @@ inline std::vector<Matching> Subgraph::Match(
     return results;
   }
 
-  // Iterate over each of the nodes in the graph, and try to use that as the
-  // root of a potential subgraph.
+  // Build a mapping from ONNX node types to a list of nodes in the graph, for
+  // easy lookup.
+  std::unordered_map<std::string, std::vector<size_t>> nodeMap;
   for (size_t n = 0; n < graph.node_size(); ++n)
   {
-    if (parentMatch.matchedNodes[n] == 1)
-      continue; // This can't be a match---it's already matched.
+    const std::string& op = graph.node(n).op_type();
+    if (nodeMap.count(op) == 0)
+      nodeMap[op] = std::vector<size_t>();
 
-    // Try to match the subgraph to the root of the subgraph.
-    std::vector<arma::uvec> matches = MatchNode(0, n, graph);
-    if (matches.size() > 0)
+    nodeMap[op].push_back(n);
+  }
+
+  // General matching strategy:
+  //
+  // For each input node in the subgraph, we will match the entire sub-DAG
+  // rooted at that input node.  There can be multiple matches of this sub-DAG.
+  // For each match we find, we then proceed to the next input node in the
+  // subgraph and match the parts of its sub-DAG that have not already been
+  // matched.
+
+  std::vector<bool> matchedNodes(graph.node_size(), false);
+  arma::uvec parentMatching = (vertices.size() + 1) * arma::ones<arma::uvec>(
+      graph.node_size());
+  for (size_t i = 0; i < parentMatch.matchedNodes.n_elem; ++i)
+    if (parentMatch.matchedNodes[i] == 1)
+      parentMatching[i] = vertices.size();
+
+  // Match all input nodes to a set of candidates.  The arma::uvec maps an input
+  // vertex to the graph node it has been matched to.
+  std::stack<arma::uvec> matchStack;
+  matchStack.push(parentMatching);
+  for (size_t i = 0; i < numInputs; ++i)
+  {
+    // This will hold all of the elements on the stack that have been further
+    // matched to input node i.
+    std::vector<arma::uvec> outputMatches;
+    while (!matchStack.empty())
     {
-      for (size_t i = 0; i < matches.size(); ++i)
+      const arma::uvec& matching = matchStack.top();
+      // Try to match to any nodes of the right type.  If we have none, we can
+      // terminate early.
+      if (nodeMap.count(vertices[i]) > 0)
       {
-        // Validate the subgraph against any extra restrictions of the layer.
-        if (this->Validate(matches[i], graph))
-        {
-          Matching m(parentMatch);
-          for (size_t j = 0; j < matches[i].n_elem; ++j)
-            m.matchedNodes[matches[i][j]] = 1;
-          m.matches.push_back(std::make_pair<arma::uvec, const Subgraph*>(
-              std::move(matches[i]), this));
-          results.push_back(std::move(m));
-        }
+        std::vector<size_t> possibleGraphNodes;
+        for (size_t j = 0; j < nodeMap[vertices[i]].size(); ++j)
+          if (matching[nodeMap[vertices[i]][j]] == vertices.size() + 1)
+            possibleGraphNodes.push_back(nodeMap[vertices[i]][j]);
+
+        std::vector<arma::uvec> matches = MatchSubDAG(i, matching, matchedNodes,
+            graph, nodeMap, possibleGraphNodes);
+        for (size_t k = 0; k < matches.size(); ++k)
+          outputMatches.push_back(std::move(matches[k]));
       }
+
+      matchStack.pop();
     }
+
+    for (size_t j = 0; j < outputMatches.size(); ++j)
+      matchStack.push(std::move(outputMatches[j]));
+
+    // Since we have recursed the DAG for input node i, we are guaranteed that
+    // anything in the stack has those sub-DAG nodes matched, so we can update
+    // matchedNodes.
+    UpdateMatchedNodes(i, matchedNodes);
+  }
+
+  // Process the results into Matching objects.
+  while (!matchStack.empty())
+  {
+    const arma::uvec& matching = matchStack.top();
+    arma::uvec subgraphIndices(vertices.size());
+    for (size_t i = 0; i < matching.n_elem; ++i)
+      if (matching[i] < vertices.size())
+        subgraphIndices[matching[i]] = i;
+
+    // Before accepting, first validate.
+    if (this->Validate(subgraphIndices, graph))
+    {
+      results.push_back(parentMatch);
+      results.back().matchedNodes = (matching != (vertices.size() + 1));
+      results.back().matches.push_back(
+          std::make_pair(std::move(subgraphIndices), this));
+    }
+
+    matchStack.pop();
   }
 
   return results;
 }
 
-inline std::vector<arma::uvec> Subgraph::MatchNode(
-    const size_t v,
-    const size_t n,
-    const onnx::GraphProto& graph,
-    const arma::uvec& currentMatching) const
+// Any nodes reachable in the DAG from node i will have their values in
+// `matched` set to true.
+inline void Subgraph::UpdateMatchedNodes(size_t i, std::vector<bool>& matched)
+    const
 {
-  std::vector<arma::uvec> result;
+  matched[i] = true;
+  for (const size_t& j : outEdges[i])
+    UpdateMatchedNodes(j, matched);
+}
 
-  if (currentMatching.n_elem != 0 && currentMatching[v] != graph.node_size())
-    return result; // This node is already matched.
-
-  // Check that this node matches the vertex.
-  const onnx::NodeProto& node = graph.node(n);
-  if (node.op_type() == vertices[v])
+inline std::vector<arma::uvec> Subgraph::MatchSubDAG(
+    const size_t i,
+    const arma::uvec& currentMatching,
+    const std::vector<bool>& matchedNodes,
+    const onnx::GraphProto& graph,
+    const std::unordered_map<std::string, std::vector<size_t>>& nodeMap,
+    const std::vector<size_t>& possibleGraphNodes) const
+{
+  std::vector<arma::uvec> matchings;
+  if (matchedNodes[i])
   {
-    // If this is not the end of the DAG, we need to make sure the out degree
-    // matches what we are looking for.
-    if (outEdges[v].size() != 0 &&
-        node.output_size() != outEdges[v].size())
+    // This node has already been matched by another branch of the DAG, so all
+    // we need to do is ensure that the matching we have is using one of the
+    // possible graph nodes that i can be matched to.
+    for (const size_t& n : possibleGraphNodes)
     {
-      return result;
-    }
-
-    result.push_back(currentMatching);
-    // Initialize the matching if it is empty.
-    if (result.back().n_elem == 0)
-    {
-      result.back() = graph.node_size() *
-          arma::ones<arma::uvec>(vertices.size());
-    }
-    result.back()[v] = n;
-
-    // Compute matchings on each child, maintaining a list of matchings that are
-    // still valid.
-    for (size_t i = 0; i < outEdges[v].size(); ++i)
-    {
-      std::vector<arma::uvec> updatedCandidates;
-      for (size_t m = 0; m < result.size(); ++m)
+      if (currentMatching[n] == i)
       {
-        for (size_t k = 0; k < node.output_size(); ++k)
-        {
-          // Longer-term TODO: replace this search with a precomputation of the
-          // ONNX graph's network structure.
-          const std::string& outTensorName = node.output(k);
-          size_t outIndex = graph.node_size();
-          for (size_t kk = 0; kk < graph.node_size(); ++kk)
-          {
-            bool hasInput = false;
-            for (size_t ll = 0; ll < graph.node(kk).input_size(); ++ll)
-            {
-              if (graph.node(kk).input(ll) == outTensorName)
-              {
-                hasInput = true;
-                break;
-              }
-            }
-
-            if (!hasInput)
-              continue;
-
-            // Only try with node kk if it isn't already assigned.
-            if (result[m][outEdges[v][i]] == graph.node_size())
-            {
-              std::vector<arma::uvec> childMatch = MatchNode(outEdges[v][i], kk,
-                  graph, result[m]);
-              updatedCandidates.insert(updatedCandidates.end(),
-                  childMatch.begin(), childMatch.end());
-            }
-          }
-        }
+        matchings.push_back(currentMatching);
+        return matchings;
       }
-
-      // Now we can replace our results with the updated matches.
-      result = std::move(updatedCandidates);
-      if (result.size() == 0)
-        break; // Shortcut... nothing matched, so we can't match the rest.
     }
   }
 
-  return result;
+  // Try to match node i to a node in the graph.  We assume that
+  // possibleGraphNodes only contains nodes of the right operation type that
+  // have not been matched already.
+  for (const size_t& n : possibleGraphNodes)
+  {
+    std::vector<arma::uvec> nodeMatchings;
+
+    // Match vertex i to node n.
+    arma::uvec matching = currentMatching;
+    matching[n] = i;
+    nodeMatchings.push_back(std::move(matching));
+
+    // This will hold all child matchings based on this matching.
+    for (const size_t j : outEdges[i])
+    {
+      std::vector<arma::uvec> edgeMatchings;
+      // If there are no nodes with the right operation in the graph, we can
+      // terminate early.
+      if (nodeMap.count(vertices[j]) == 0)
+        return matchings; // This will be empty.
+
+      // Try this with all current matchings.
+      for (const arma::uvec& m : nodeMatchings)
+      {
+        // Collect the set of possible nodes that could be children.
+        std::vector<size_t> childPossibleGraphNodes;
+        for (const size_t& k : nodeMap.at(vertices[j]))
+        {
+          // Note we allow both unmatched nodes, and nodes where the out-edge is
+          // already successfully matched.
+          if (m[k] == vertices.size() + 1 || (matchedNodes[j] && m[k] == j))
+          {
+            // ONNX graph node k is not matched; is it connected to an output of
+            // node i?  TODO: this should be cleaned up and precomputed, or put
+            // somewhere else.
+            bool isOutput = false;
+            for (size_t l = 0; l < graph.node(n).output_size(); ++l)
+            {
+              size_t outIndex = graph.node_size();
+              for (size_t nn = 0; nn < graph.node_size(); ++nn)
+              {
+                for (size_t kk = 0; kk < graph.node(nn).input_size(); ++kk)
+                {
+                  if (graph.node(nn).input(kk) == graph.node(n).output(l))
+                  {
+                    outIndex = nn;
+                    break;
+                  }
+                }
+
+                if (outIndex != graph.node_size())
+                  break;
+              }
+
+              if (k == outIndex)
+                childPossibleGraphNodes.push_back(k);
+            }
+          }
+        }
+
+        std::vector<arma::uvec> results = MatchSubDAG(j, m, matchedNodes, graph,
+            nodeMap, childPossibleGraphNodes);
+
+        for (size_t l = 0; l < results.size(); ++l)
+          edgeMatchings.push_back(std::move(results[l]));
+      }
+
+      // Update the set of matchings and proceed to the next out-edge.
+      nodeMatchings = std::move(edgeMatchings);
+    }
+
+    // Add all valid matchings for this node to the final result.
+    for (size_t k = 0; k < nodeMatchings.size(); ++k)
+      matchings.push_back(std::move(nodeMatchings[k]));
+  }
+
+  return matchings;
 }
 
 } // namespace onnx_mlpack
