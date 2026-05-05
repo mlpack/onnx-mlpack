@@ -14,6 +14,8 @@ class GELUExactSubgraph : public Subgraph
  public:
   GELUExactSubgraph() : Subgraph({ "Gelu" }) { }
 
+  inline const char* Name() { return "GELUExact"; }
+
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;
 

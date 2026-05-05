@@ -14,6 +14,8 @@ class LinearNoBiasGemmSubgraph : public Subgraph
  public:
   LinearNoBiasGemmSubgraph() : Subgraph({ "Gemm" }) { }
 
+  inline const char* Name() { return "LinearNoBiasGEMM"; }
+
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;
 

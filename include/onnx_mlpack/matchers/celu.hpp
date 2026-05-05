@@ -14,6 +14,8 @@ class CELUSubgraph : public Subgraph
  public:
   CELUSubgraph() : Subgraph({ "Celu" }) { }
 
+  inline const char* Name() { return "CELU"; }
+
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;
 

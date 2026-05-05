@@ -14,6 +14,8 @@ class SigmoidSubgraph : public Subgraph
  public:
   SigmoidSubgraph() : Subgraph({ "Sigmoid" }) { }
 
+  inline const char* Name() { return "Sigmoid"; }
+
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;
 
