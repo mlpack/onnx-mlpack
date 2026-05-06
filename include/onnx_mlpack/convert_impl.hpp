@@ -152,13 +152,17 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
   subgraphs.push_back(new ELUSubgraph());
   subgraphs.push_back(new ELUPiecewiseSubgraph());
   subgraphs.push_back(new GELUExactSubgraph());
+  subgraphs.push_back(new GELUExactMultiOpSubgraph());
   subgraphs.push_back(new GELUSubgraph());
+  subgraphs.push_back(new GELUMultiOpSubgraph());
   subgraphs.push_back(new HardSigmoidSubgraph());
+  subgraphs.push_back(new HardSigmoidMultiOpSubgraph());
   subgraphs.push_back(new HardSwishSubgraph());
   subgraphs.push_back(new LeakyReLUSubgraph());
   subgraphs.push_back(new MishSubgraph());
   subgraphs.push_back(new MishMultiOpSubgraph());
   subgraphs.push_back(new PReLUSubgraph());
+  subgraphs.push_back(new PReLUMultiOpSubgraph());
   subgraphs.push_back(new ReLUSubgraph());
   subgraphs.push_back(new SELUSubgraph());
   subgraphs.push_back(new SigmoidSubgraph());
