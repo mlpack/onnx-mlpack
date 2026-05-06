@@ -172,7 +172,31 @@ inline std::vector<arma::uvec> Subgraph::MatchSubDAG(
         // If the out-edge is already matched, don't recurse.
         if (arma::any(m == j))
         {
-          edgeMatchings.push_back(m);
+          // Check that the matching of node j is actually an out-edge of the
+          // current ONNX node.
+          bool matched = false;
+          const size_t matchIndex = arma::index_max(m == j);
+          // TODO: this should be cleaned up and put somewhere else.
+          for (size_t l = 0; l < graph.node(n).output_size(); ++l)
+          {
+            if (matched)
+              break;
+
+            for (size_t kk = 0; kk < graph.node(matchIndex).input_size(); ++kk)
+            {
+              if (graph.node(n).output(l) == graph.node(matchIndex).input(kk))
+              {
+                matched = true;
+                break;
+              }
+            }
+          }
+
+          // If the out-edge is properly matched, then keep this matching;
+          // otherwise, it's invalid, so return.
+          if (matched)
+            edgeMatchings.push_back(m);
+
           continue;
         }
 
