@@ -154,7 +154,7 @@ template<typename eT>
 inline bool ExtractEitherScalar(const onnx::GraphProto& graph,
                                 const std::string& tensor1Name,
                                 const std::string& tensor2Name,
-                                eT value)
+                                eT& value)
 {
   const bool e1 = ExtractScalar(graph, tensor1Name, value);
   const bool e2 = ExtractScalar(graph, tensor2Name, value);
