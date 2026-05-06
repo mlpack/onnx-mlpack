@@ -32,7 +32,7 @@ class ELUPiecewiseSubgraph : public Subgraph
         { 1, 7 }, { 4, 7 }, // Elu(x) * Cast(x > 0, Int)
         { 6, 8 }, { 7, 8 } /* final addition */ }) { }
 
-  inline const char* Name() { return "ELUPiecewise"; }
+  inline const char* Name() const { return "ELUPiecewise"; }
 
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;

@@ -14,7 +14,7 @@ class SwishSubgraph : public Subgraph
  public:
   SwishSubgraph() : Subgraph({ "Swish" }) { }
 
-  inline const char* Name() { return "Swish"; }
+  inline const char* Name() const { return "Swish"; }
 
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;

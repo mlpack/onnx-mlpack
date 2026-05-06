@@ -14,7 +14,7 @@ class ReLUSubgraph : public Subgraph
  public:
   ReLUSubgraph() : Subgraph({ "Relu" }) { }
 
-  inline const char* Name() { return "ReLU"; }
+  inline const char* Name() const { return "ReLU"; }
 
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;

@@ -14,7 +14,7 @@ class TanhSubgraph : public Subgraph
  public:
   TanhSubgraph() : Subgraph({ "Tanh" }) { }
 
-  inline const char* Name() { return "Tanh"; }
+  inline const char* Name() const { return "Tanh"; }
 
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;
