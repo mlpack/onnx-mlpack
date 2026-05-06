@@ -30,23 +30,9 @@ inline bool PReLUSubgraph::Validate(
     return false;
 
   // We require that the slope parameter is of size 1.
-  const std::string slopeName = prelu.input(1);
-  bool foundInitializer = false;
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
-  {
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == slopeName)
-    {
-      for (size_t d = 0; d < graph.initializer(i).dims_size(); ++d)
-      {
-        // All dimensions must be 1 (the slope must be a scalar).
-        if (graph.initializer(i).dims(d) != 1)
-          return false;
-      }
-
-      break;
-    }
-  }
+  double slope;
+  if (!ExtractScalar(graph, prelu.input(1), slope))
+    return false;
 
   return true;
 }
@@ -75,74 +61,14 @@ inline void PReLUSubgraph::TransferWeights(
   const std::string slopeName = prelu.input(1);
   mlpack::PReLU<>* l = dynamic_cast<mlpack::PReLU<>*>(layer);
 
-  double alpha = 0.0;
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
+  double alpha = DBL_MAX;
+  if (!ExtractScalar(graph, slopeName, alpha))
   {
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == slopeName &&
-        graph.initializer(i).dims_size() == 2)
-    {
-      const onnx::TensorProto& t = graph.initializer(i);
-      switch (t.data_type())
-      {
-        case onnx::TensorProto::FLOAT:
-          alpha = (double) (t.has_raw_data() ?
-              ((const float*) t.raw_data().data())[0] :
-              t.float_data().data()[0]);
-          break;
-
-        case onnx::TensorProto::UINT8:
-        case onnx::TensorProto::UINT16:
-          alpha = (double) (t.has_raw_data() ?
-              ((const uint32_t*) t.raw_data().data())[0] :
-              t.int32_data().data()[0]);
-          break;
-
-        case onnx::TensorProto::INT8:
-        case onnx::TensorProto::INT16:
-        case onnx::TensorProto::INT32:
-          alpha = (double) (t.has_raw_data() ?
-              ((const int32_t*) t.raw_data().data())[0] :
-              t.int32_data().data()[0]);
-          break;
-
-        case onnx::TensorProto::INT64:
-          alpha = (double) (t.has_raw_data() ?
-              ((const int64_t*) t.raw_data().data())[0] :
-              t.int64_data().data()[0]);
-          break;
-
-        case onnx::TensorProto::DOUBLE:
-          alpha = (t.has_raw_data() ?
-              ((const double*) t.raw_data().data())[0] :
-              t.double_data().data()[0]);
-          break;
-
-        case onnx::TensorProto::BOOL:
-          alpha = (double) ((unsigned char*) t.raw_data().data())[0];
-          break;
-
-        case onnx::TensorProto::UINT32:
-        case onnx::TensorProto::UINT64:
-          alpha = (double) (t.has_raw_data() ?
-              ((const uint64_t*) t.raw_data().data())[0] :
-              t.uint64_data().data()[0]);
-          break;
-
-        default:
-          throw std::runtime_error("PReLUSubgraph::TransferWeights(): "
-              "unknown data type for PReLU slope tensor!");
-      }
-
-      l->Parameters()[0] = alpha;
-      // The weight is successfully transferred, so, nothing else to do.
-      return;
-    }
+    throw std::runtime_error("PReLUSubgraph::TransferWeights(): failed to "
+        "extract scalar value from slope tensor!");
   }
 
-  // If we got to here, then we failed!
-  throw std::runtime_error("PReLUSubgraph::TransferWeights(): "
-      "failed to find slope tensor in ONNX graph!");
+  l->Parameters()[0] = alpha;
 }
 
 } // namespace onnx_mlpack

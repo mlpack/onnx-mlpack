@@ -304,3 +304,60 @@ TEST_CASE("test_pytorch_dynamo_activations", "[matching]")
 
   REQUIRE(approx_equal(output, outputRef, "both", 0.001, 0.001));
 }
+
+TEST_CASE("test_tensorflow_activations", "[matching]")
+{
+  onnx::GraphProto graph = GetGraph("tf_activations.onnx");
+  DAGNetwork<> dag = SubgraphConvert(graph);
+
+  REQUIRE(dag.Network().size() == 21);
+
+  arma::mat input, outputRef;
+  mlpack::Load("tf_activations_inputs.csv", input, Fatal);
+  mlpack::Load("tf_activations_outputs.csv", outputRef, Fatal);
+
+  arma::mat output;
+  dag.Predict(input, output);
+
+  output.print("output");
+  outputRef.print("outputRef");
+
+  REQUIRE(approx_equal(output, outputRef, "both", 0.001, 0.001));
+}
+
+TEST_CASE("test_tensorflow_gelu_activation", "[matching]")
+{
+  onnx::GraphProto graph = GetGraph("tf_gelu_activation.onnx");
+  DAGNetwork<> dag = SubgraphConvert(graph);
+
+  REQUIRE(dag.Network().size() == 7);
+
+  vector<Layer<>*> sortedLayers = dag.SortedNetwork();
+
+  REQUIRE(sortedLayers.size() == 7);
+  REQUIRE(dynamic_cast<Linear<>*>(sortedLayers[0]) != nullptr);
+  REQUIRE(sortedLayers[0]->OutputDimensions().size() == 1);
+  REQUIRE(sortedLayers[0]->OutputDimensions()[0] == 25);
+  REQUIRE(dynamic_cast<GELUExact<>*>(sortedLayers[1]) != nullptr);
+  REQUIRE(dynamic_cast<Linear<>*>(sortedLayers[2]) != nullptr);
+  REQUIRE(sortedLayers[2]->OutputDimensions().size() == 1);
+  REQUIRE(sortedLayers[2]->OutputDimensions()[0] == 25);
+  REQUIRE(dynamic_cast<GELUExact<>*>(sortedLayers[3]) != nullptr);
+  REQUIRE(dynamic_cast<Linear<>*>(sortedLayers[4]) != nullptr);
+  REQUIRE(sortedLayers[4]->OutputDimensions().size() == 1);
+  REQUIRE(sortedLayers[4]->OutputDimensions()[0] == 10);
+  REQUIRE(dynamic_cast<GELUExact<>*>(sortedLayers[5]) != nullptr);
+  REQUIRE(dynamic_cast<Linear<>*>(sortedLayers[6]) != nullptr);
+  REQUIRE(sortedLayers[6]->OutputDimensions().size() == 1);
+  REQUIRE(sortedLayers[6]->OutputDimensions()[0] == 3);
+
+
+  arma::mat input, outputRef;
+  mlpack::Load("tf_gelu_activation_inputs.csv", input, Fatal);
+  mlpack::Load("tf_gelu_activation_outputs.csv", outputRef, Fatal);
+
+  arma::mat output;
+  dag.Predict(input, output);
+
+  REQUIRE(approx_equal(output, outputRef, "both", 0.001, 0.001));
+}

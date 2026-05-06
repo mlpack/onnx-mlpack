@@ -217,8 +217,8 @@ inline Matching Matcher(const onnx::GraphProto& graph,
             for (size_t j = matchStack.top().matches.size();
                  j < m1.matches.size(); ++j)
             {
-              std::cout << "   * Subgraph match " << i1 << " can be coalesced "
-                  << "with candidate matching " << i2 << "." << std::endl;
+              //std::cout << "   * Subgraph match " << i1 << " can be coalesced "
+              //    << "with candidate matching " << i2 << "." << std::endl;
               m2.matches.push_back(m1.matches[j]);
             }
           }
@@ -227,8 +227,8 @@ inline Matching Matcher(const onnx::GraphProto& graph,
         // When there is overlap, we have to add this submatching exactly as-is.
         if (anyOverlap || matchings.size() == 0)
         {
-          std::cout << "   * Subgraph match " << i1 << " added to list of "
-              << "candidate matchings." << std::endl;
+          //std::cout << "   * Subgraph match " << i1 << " added to list of "
+          //    << "candidate matchings." << std::endl;
           matchings.push_back(m1);
         }
       }
@@ -252,7 +252,8 @@ inline Matching Matcher(const onnx::GraphProto& graph,
         std::cout << "    * { ";
         for (size_t j = 0; j < matchings[m].matches[k].first.n_elem; ++j)
           std::cout << matchings[m].matches[k].first[j] << " ";
-        std::cout << "}" << std::endl;
+        std::cout << "} -> " << matchings[m].matches[k].second->Name()
+            << std::endl;
       }
 
       // Is the matching complete?
@@ -264,6 +265,13 @@ inline Matching Matcher(const onnx::GraphProto& graph,
       }
       else
       {
+        // Find which nodes are not matched.
+        arma::uvec unmatched = arma::find(matchings[m].matchedNodes == 0);
+        std::cout << "    * Unmatched ONNX nodes: { ";
+        for (size_t i = 0; i < unmatched.n_elem; ++i)
+          std::cout << unmatched[i] << " ";
+        std::cout << "}" << std::endl;
+
         // The matching is not complete yet.  We have to recurse with the
         // current state of the matching.
         matchStack.push(std::move(matchings[m]));

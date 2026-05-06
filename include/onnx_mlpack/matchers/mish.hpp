@@ -14,7 +14,7 @@ class MishSubgraph : public Subgraph
  public:
   MishSubgraph() : Subgraph({ "Mish" }) { }
 
-  inline const char* Name() { return "Mish"; }
+  inline const char* Name() const { return "Mish"; }
 
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;
