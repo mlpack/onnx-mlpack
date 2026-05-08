@@ -16,7 +16,7 @@ class SoftplusThresholdSubgraph : public Subgraph
   SoftplusThresholdSubgraph() : Subgraph(
       { "Softplus", "Greater", "Where" }, { { 0, 2 }, { 1, 2 } } ) { }
 
-  inline const char* Name() { return "SoftplusThreshold"; }
+  inline const char* Name() const { return "SoftplusThreshold"; }
 
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;

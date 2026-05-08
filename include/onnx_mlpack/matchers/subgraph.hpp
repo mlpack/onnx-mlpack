@@ -61,7 +61,7 @@ class Subgraph
   virtual ~Subgraph() { }
 
   // The name of the subgraph, for printing debug output.
-  virtual inline const char* Name() = 0;
+  virtual inline const char* Name() const = 0;
 
   const size_t NumVertices() const { return vertices.size(); }
   const size_t NumEdges() const { return edges.size(); }

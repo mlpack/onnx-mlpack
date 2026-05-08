@@ -14,7 +14,7 @@ class LinearNoBiasMatMulSubgraph : public Subgraph
  public:
   LinearNoBiasMatMulSubgraph() : Subgraph({ "MatMul" }) { }
 
-  inline const char* Name() { return "LinearNoBiasMatMul"; }
+  inline const char* Name() const { return "LinearNoBiasMatMul"; }
 
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;

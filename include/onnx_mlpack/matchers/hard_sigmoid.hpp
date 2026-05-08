@@ -14,7 +14,7 @@ class HardSigmoidSubgraph : public Subgraph
  public:
   HardSigmoidSubgraph() : Subgraph({ "HardSigmoid" }) { }
 
-  inline const char* Name() { return "HardSigmoid"; }
+  inline const char* Name() const { return "HardSigmoid"; }
 
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;

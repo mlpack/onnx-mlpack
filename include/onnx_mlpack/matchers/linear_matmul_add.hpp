@@ -16,7 +16,7 @@ class LinearMatMulAddSubgraph : public Subgraph
   // Required structure: MatMul -> Add.
   LinearMatMulAddSubgraph() : Subgraph({ "MatMul", "Add" }, { { 0, 1 } }) { }
 
-  inline const char* Name() { return "LinearMatMulAdd"; }
+  inline const char* Name() const { return "LinearMatMulAdd"; }
 
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;

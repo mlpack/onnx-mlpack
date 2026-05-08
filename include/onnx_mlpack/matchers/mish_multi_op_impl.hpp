@@ -66,16 +66,12 @@ inline bool MishMultiOpSubgraph::Validate(
     if (v.has_name() && v.name() == mulA &&
         v.has_type() && v.type().has_tensor_type() &&
         v.type().tensor_type().has_shape())
-    {
       mulADims = v.type().tensor_type().shape().dim_size();
-    }
 
     if (v.has_name() && v.name() == mulB &&
         v.has_type() && v.type().has_tensor_type() &&
         v.type().tensor_type().has_shape())
-    {
       mulBDims = v.type().tensor_type().shape().dim_size();
-    }
   }
 
   // Make sure we found the initializers.

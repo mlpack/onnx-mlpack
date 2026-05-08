@@ -14,7 +14,7 @@ class SoftplusSubgraph : public Subgraph
  public:
   SoftplusSubgraph() : Subgraph({ "Softplus" }) { }
 
-  inline const char* Name() { return "Softplus"; }
+  inline const char* Name() const { return "Softplus"; }
 
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;
