@@ -81,7 +81,47 @@ inline bool MaxPoolingSubgraph::Validate(
     return false;
   // If auto_pad is SAME_UPPER or SAME_LOWER, then we need to be able to
   // determine the input tensor's size.
-  // TODO!
+  if (autoPad == "SAME_UPPER" || autoPad == "SAME_LOWER")
+  {
+    // Get the input width and height.
+    size_t inputWidth = 0;
+    size_t inputHeight = 0;
+    for (size_t i = 0; i < graph.initializer_size(); ++i)
+    {
+      const onnx::TensorProto& t = graph.initializer(i);
+      if (t.has_name() && t.name() == maxPool.input(0) && t.dims_size() >= 2)
+      {
+        inputWidth = t.dims(0);
+        inputHeight = t.dims(1);
+        break;
+      }
+    }
+
+    // If we did not find the input size, check the ValueInfoProtos too (so,
+    // hopefully shape inference was successful).
+    if (inputWidth == 0 && inputHeight == 0)
+    {
+      for (size_t i = 0; i < graph.value_info_size(); ++i)
+      {
+        const onnx::ValueInfoProto& v = graph.value_info(i);
+        if (v.has_name() && v.name() == maxPool.input(0) && v.has_type() &&
+            v.type().has_tensor_type() &&
+            v.type().tensor_type().has_shape() &&
+            v.type().tensor_type().shape().dim_size() >= 2 &&
+            v.type().tensor_type().shape().dim(0).has_dim_value() &&
+            v.type().tensor_type().shape().dim(1).has_dim_value())
+        {
+          inputWidth = v.type().tensor_type().shape().dim(0).dim_value();
+          inputHeight = v.type().tensor_type().shape().dim(1).dim_value();
+          break;
+        }
+      }
+    }
+
+    // Make sure we could determine the shape of the input.
+    if (inputWidth == 0 && inputHeight == 0)
+      return false;
+  }
 
   int ceilMode;
   if (!ExtractAttribute(maxPool, "ceil_mode", ceilMode))
