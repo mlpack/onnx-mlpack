@@ -170,6 +170,7 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
   subgraphs.push_back(new SoftplusThresholdSubgraph());
   subgraphs.push_back(new SwishSubgraph());
   subgraphs.push_back(new TanhSubgraph());
+  subgraphs.push_back(new MaxPoolingSubgraph());
 
   // Find the best subgraph match.
   const Matching m = Matcher(graph, subgraphs);
