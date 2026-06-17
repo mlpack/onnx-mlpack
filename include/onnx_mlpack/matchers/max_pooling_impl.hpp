@@ -89,10 +89,10 @@ inline bool MaxPoolingSubgraph::Validate(
     for (size_t i = 0; i < graph.initializer_size(); ++i)
     {
       const onnx::TensorProto& t = graph.initializer(i);
-      if (t.has_name() && t.name() == maxPool.input(0) && t.dims_size() >= 2)
+      if (t.has_name() && t.name() == maxPool.input(0) && t.dims_size() == 4)
       {
-        inputWidth = t.dims(0);
-        inputHeight = t.dims(1);
+        inputHeight = t.dims(2);
+        inputWidth = t.dims(3);
         break;
       }
     }
@@ -107,12 +107,12 @@ inline bool MaxPoolingSubgraph::Validate(
         if (v.has_name() && v.name() == maxPool.input(0) && v.has_type() &&
             v.type().has_tensor_type() &&
             v.type().tensor_type().has_shape() &&
-            v.type().tensor_type().shape().dim_size() >= 2 &&
-            v.type().tensor_type().shape().dim(0).has_dim_value() &&
-            v.type().tensor_type().shape().dim(1).has_dim_value())
+            v.type().tensor_type().shape().dim_size() == 4 &&
+            v.type().tensor_type().shape().dim(2).has_dim_value() &&
+            v.type().tensor_type().shape().dim(3).has_dim_value())
         {
-          inputWidth = v.type().tensor_type().shape().dim(0).dim_value();
-          inputHeight = v.type().tensor_type().shape().dim(1).dim_value();
+          inputHeight = v.type().tensor_type().shape().dim(2).dim_value();
+          inputWidth = v.type().tensor_type().shape().dim(3).dim_value();
           break;
         }
       }
@@ -123,7 +123,7 @@ inline bool MaxPoolingSubgraph::Validate(
       return false;
   }
 
-  int ceilMode;
+  int ceilMode = 0;
   if (!ExtractAttribute(maxPool, "ceil_mode", ceilMode))
     return false;
   if (ceilMode != 0 && ceilMode != 1)
@@ -149,13 +149,13 @@ inline bool MaxPoolingSubgraph::Validate(
   std::vector<int> pads;
   if (!ExtractAttribute(maxPool, "pads", pads))
     return false;
-  // Dimensions after the second must be zero padding.
-  const size_t padDims = pads.size() / 2;
-  for (size_t j = 2; j < padDims; ++j)
+  // Padding is for H and W dimensions only.
+  if (pads.size() != 0 && pads.size() != 4)
+    return false;
+  // Padding must be zero for N and C dimensions.
+  if (pads.size() == 8)
   {
-    if (pads[j] != 0)
-      return false;
-    if (pads[padDims + j] != 0)
+    if (pads[0] != 0 || pads[1] != 0 || pads[4] != 0 || pads[5] != 0)
       return false;
   }
 
@@ -247,13 +247,14 @@ inline void MaxPoolingSubgraph::Convert(
     }
   }
 
+  size_t paddingIndex = network.Network().size() + 2;
   if (autoPad != "VALID" || !allPadsZero)
   {
     // If pads is not set, manually set it.
     if (autoPad == "SAME_UPPER" || autoPad == "SAME_LOWER")
     {
-      // Force to two-dimensional.
-      pads.resize(4);
+      // Force to four-dimensional.
+      pads.resize(4, 0);
 
       // Get the input width and height.
       size_t inputWidth = 0;
@@ -261,10 +262,10 @@ inline void MaxPoolingSubgraph::Convert(
       for (size_t i = 0; i < graph.initializer_size(); ++i)
       {
         const onnx::TensorProto& t = graph.initializer(i);
-        if (t.has_name() && t.name() == maxPool.input(0) && t.dims_size() >= 2)
+        if (t.has_name() && t.name() == maxPool.input(0) && t.dims_size() == 4)
         {
-          inputWidth = t.dims(0);
-          inputHeight = t.dims(1);
+          inputHeight = t.dims(2);
+          inputWidth = t.dims(3);
           break;
         }
       }
@@ -279,12 +280,12 @@ inline void MaxPoolingSubgraph::Convert(
           if (v.has_name() && v.name() == maxPool.input(0) && v.has_type() &&
               v.type().has_tensor_type() &&
               v.type().tensor_type().has_shape() &&
-              v.type().tensor_type().shape().dim_size() >= 2 &&
-              v.type().tensor_type().shape().dim(0).has_dim_value() &&
-              v.type().tensor_type().shape().dim(1).has_dim_value())
+              v.type().tensor_type().shape().dim_size() == 4 &&
+              v.type().tensor_type().shape().dim(2).has_dim_value() &&
+              v.type().tensor_type().shape().dim(3).has_dim_value())
           {
-            inputWidth = v.type().tensor_type().shape().dim(0).dim_value();
-            inputHeight = v.type().tensor_type().shape().dim(1).dim_value();
+            inputHeight = v.type().tensor_type().shape().dim(2).dim_value();
+            inputWidth = v.type().tensor_type().shape().dim(3).dim_value();
             break;
           }
         }
@@ -298,73 +299,75 @@ inline void MaxPoolingSubgraph::Convert(
             "type!");
       }
 
-      size_t totalPadWidth;
       size_t totalPadHeight;
+      size_t totalPadWidth;
       if (ceilMode == 0)
       {
-        totalPadWidth = std::floor(double(inputWidth - 1) / strides[0]) *
+        totalPadHeight = std::floor(double(inputWidth - 1) / strides[0]) *
             strides[0] + kernelShape[0] - inputWidth;
-        totalPadHeight = std::floor(double(inputHeight - 1) / strides[1]) *
+        totalPadWidth = std::floor(double(inputHeight - 1) / strides[1]) *
             strides[1] + kernelShape[1] - inputWidth;
       }
       else
       {
-        totalPadWidth = std::ceil(double(inputWidth - 1) / strides[0]) *
+        totalPadHeight = std::ceil(double(inputWidth - 1) / strides[0]) *
             strides[0] + kernelShape[0] - inputWidth;
-        totalPadHeight = std::ceil(double(inputHeight - 1) / strides[1]) *
+        totalPadWidth = std::ceil(double(inputHeight - 1) / strides[1]) *
             strides[1] + kernelShape[1] - inputWidth;
-      }
-
-      if (totalPadWidth % 2 == 0)
-      {
-        pads[0] = totalPadWidth / 2;
-        pads[2] = totalPadWidth / 2;
-      }
-      else if (autoPad == "SAME_UPPER")
-      {
-        pads[0] = std::floor(totalPadWidth / 2.0);
-        pads[2] = std::ceil(totalPadWidth / 2.0);
-      }
-      else
-      {
-        pads[0] = std::ceil(totalPadWidth / 2.0);
-        pads[2] = std::floor(totalPadWidth / 2.0);
       }
 
       if (totalPadHeight % 2 == 0)
       {
-        pads[1] = totalPadHeight / 2;
-        pads[3] = totalPadHeight / 2;
+        pads[0] = totalPadHeight / 2;
+        pads[2] = totalPadHeight / 2;
       }
       else if (autoPad == "SAME_UPPER")
       {
-        pads[1] = std::floor(totalPadHeight / 2.0);
-        pads[3] = std::ceil(totalPadHeight / 2.0);
+        pads[0] = std::floor(totalPadHeight / 2.0);
+        pads[2] = std::ceil(totalPadHeight / 2.0);
       }
       else
       {
-        pads[1] = std::ceil(totalPadHeight / 2.0);
-        pads[3] = std::floor(totalPadHeight / 2.0);
+        pads[0] = std::ceil(totalPadHeight / 2.0);
+        pads[2] = std::floor(totalPadHeight / 2.0);
+      }
+
+      if (totalPadWidth % 2 == 0)
+      {
+        pads[1] = totalPadWidth / 2;
+        pads[3] = totalPadWidth / 2;
+      }
+      else if (autoPad == "SAME_UPPER")
+      {
+        pads[1] = std::floor(totalPadWidth / 2.0);
+        pads[3] = std::ceil(totalPadWidth / 2.0);
+      }
+      else
+      {
+        pads[1] = std::ceil(totalPadWidth / 2.0);
+        pads[3] = std::floor(totalPadWidth / 2.0);
       }
     }
 
-    const size_t padDims = pads.size() / 2;
-
-    network.Add<mlpack::Padding>(pads[0], // left
-                                 pads[padDims], // right
-                                 pads[1], // top
-                                 pads[padDims + 1]); // bottom
+    paddingIndex = network.Add<mlpack::Padding>(pads[1], // left
+                                                pads[3], // right
+                                                pads[0], // top
+                                                pads[2]); // bottom
   }
 
   // Set strides to [1, 1] if not set.
   if (strides.size() == 0)
     strides.resize(2, 1);
 
-  network.Add<mlpack::MaxPooling>(kernelShape[0], // kernel width
-                                  kernelShape[1], // kernel height
-                                  strides[0], // stride width
-                                  strides[1], // stride height
-                                  (ceilMode == 0)); // floor
+  const size_t maxPoolIndex = network.Add<mlpack::MaxPooling>(
+      kernelShape[1], // kernel width
+      kernelShape[0], // kernel height
+      strides[1], // stride width
+      strides[0], // stride height
+      (ceilMode == 0)); // floor
+
+  if (paddingIndex != network.Network().size())
+    network.Connect(paddingIndex, maxPoolIndex);
 }
 
 } // namespace onnx_mlpack
