@@ -144,11 +144,27 @@ inline mlpack::DAGNetwork<> Convert(onnx::GraphProto& graph)
 // Eventually this will replace Convert() overall.
 inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
 {
-  // Before we start, we need to ensure that the graph has only one input.
-  if (graph.input_size() != 1)
+  // Before we start, we need to ensure that the graph has only one
+  // input for which there isn't an initializer.
+  std::set<std::string> initializerNames;
+  for (size_t i = 0; i < graph.initializer_size(); ++i)
+    if (graph.initializer(i).has_name())
+      initializerNames.insert(graph.initializer(i).name());
+
+  size_t inputsWithoutInitializers = 0;
+  for (size_t i = 0; i < graph.input_size(); ++i)
+  {
+    if (graph.input(i).has_name() &&
+        initializerNames.count(graph.input(i).name()) == 0)
+      ++inputsWithoutInitializers;
+    else if (!graph.input(i).has_name())
+      ++inputsWithoutInitializers;
+  }
+
+  if (inputsWithoutInitializers != 1)
   {
     throw std::runtime_error("SubgraphConvert(): input ONNX graph must have "
-        "one and only one input!");
+        "one and only one input without an initializer!");
   }
 
   // First collect all of the subgraphs that we might be trying to match.
