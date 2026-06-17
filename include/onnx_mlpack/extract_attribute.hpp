@@ -19,55 +19,65 @@ namespace onnx_mlpack {
 template<typename eT>
 inline onnx::AttributeProto_AttributeType GetAttributeType()
 {
-  return onnx::AttributeProto_AttributeType::AttributeProto_AttributeType_UNDEFINED;
+  return onnx::AttributeProto_AttributeType::
+      AttributeProto_AttributeType_UNDEFINED;
 }
 
 template<>
 inline onnx::AttributeProto_AttributeType GetAttributeType<float>()
 {
-  return onnx::AttributeProto_AttributeType::AttributeProto_AttributeType_FLOAT;
+  return onnx::AttributeProto_AttributeType::
+      AttributeProto_AttributeType_FLOAT;
 }
 
 template<>
 inline onnx::AttributeProto_AttributeType GetAttributeType<double>()
 {
-  return onnx::AttributeProto_AttributeType::AttributeProto_AttributeType_FLOAT;
+  return onnx::AttributeProto_AttributeType::
+      AttributeProto_AttributeType_FLOAT;
 }
 
 template<>
 inline onnx::AttributeProto_AttributeType GetAttributeType<int>()
 {
-  return onnx::AttributeProto_AttributeType::AttributeProto_AttributeType_INT;
+  return onnx::AttributeProto_AttributeType::
+      AttributeProto_AttributeType_INT;
 }
 
 template<>
 inline onnx::AttributeProto_AttributeType GetAttributeType<std::string>()
 {
-  return onnx::AttributeProto_AttributeType::AttributeProto_AttributeType_STRING;
+  return onnx::AttributeProto_AttributeType::
+      AttributeProto_AttributeType_STRING;
 }
 
 template<>
 inline onnx::AttributeProto_AttributeType GetAttributeType<std::vector<float>>()
 {
-  return onnx::AttributeProto_AttributeType::AttributeProto_AttributeType_FLOATS;
+  return onnx::AttributeProto_AttributeType::
+      AttributeProto_AttributeType_FLOATS;
 }
 
 template<>
 inline onnx::AttributeProto_AttributeType GetAttributeType<std::vector<double>>()
 {
-  return onnx::AttributeProto_AttributeType::AttributeProto_AttributeType_FLOATS;
+  return onnx::AttributeProto_AttributeType::
+      AttributeProto_AttributeType_FLOATS;
 }
 
 template<>
 inline onnx::AttributeProto_AttributeType GetAttributeType<std::vector<int>>()
 {
-  return onnx::AttributeProto_AttributeType::AttributeProto_AttributeType_INTS;
+  return onnx::AttributeProto_AttributeType::
+      AttributeProto_AttributeType_INTS;
 }
 
 template<>
-inline onnx::AttributeProto_AttributeType GetAttributeType<std::vector<std::string>>()
+inline onnx::AttributeProto_AttributeType
+GetAttributeType<std::vector<std::string>>()
 {
-  return onnx::AttributeProto_AttributeType::AttributeProto_AttributeType_STRINGS;
+  return onnx::AttributeProto_AttributeType::
+      AttributeProto_AttributeType_STRINGS;
 }
 
 /**
