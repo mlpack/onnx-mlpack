@@ -39,6 +39,8 @@
 #include "swish.hpp"
 #include "tanh.hpp"
 #include "max_pooling.hpp"
+#include "conv.hpp"
+#include "conv_add.hpp"
 
 #include "matcher_impl.hpp"
 #include "subgraph_impl.hpp"
@@ -70,5 +72,7 @@
 #include "swish_impl.hpp"
 #include "tanh_impl.hpp"
 #include "max_pooling_impl.hpp"
+#include "conv_impl.hpp"
+#include "conv_add_impl.hpp"
 
 #endif
