@@ -9,6 +9,8 @@
 #define ONNX_MLPACK_CONVERT_IMPL_HPP
 
 #include "convert.hpp"
+#include "apply_initial_reshapes.hpp"
+#include "remove_identity_nodes.hpp"
 #include "matchers/match.hpp"
 
 #include <onnx/onnx_pb.h>
@@ -38,8 +40,15 @@ inline onnx::GraphProto GetGraph(const std::string &filePath)
   // Perform shape inference on the model.
   onnx::shape_inference::InferShapes(onnxModel);
 
+  // Apply any reshapes on inputs to the graph.
+  onnx::GraphProto graph = onnxModel.graph();
+  ApplyInitialReshapes(graph);
+
+  // Remove any Identity operators if needed.
+  RemoveIdentityNodes(graph);
+
   // Return the graph from the ONNX model.
-  return onnxModel.graph();
+  return graph;
 }
 
 /**
