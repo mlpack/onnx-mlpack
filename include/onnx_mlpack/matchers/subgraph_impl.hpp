@@ -80,11 +80,6 @@ inline std::vector<Matching> Subgraph::Match(
 
     for (size_t j = 0; j < outputMatches.size(); ++j)
       matchStack.push(std::move(outputMatches[j]));
-
-    // Since we have recursed the DAG for input node i, we are guaranteed that
-    // anything in the stack has those sub-DAG nodes matched, so we can update
-    // matchedNodes.
-    UpdateMatchedNodes(i, matchedNodes);
   }
 
   // Process the results into Matching objects.
