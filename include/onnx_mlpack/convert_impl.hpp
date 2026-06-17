@@ -246,11 +246,13 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
   }
 
   // ONNX generally uses the first dimension as the batch size; we need to
-  // ignore that!
+  // ignore that!  Other dimensions need to have their orders reversed, since
+  // mlpack is column-major and ONNX is row-major.
   std::vector<size_t> inputDims(
       input.type().tensor_type().shape().dim_size() - 1);
 
-  for (size_t i = 1; i < input.type().tensor_type().shape().dim_size(); ++i)
+  const size_t numDims = input.type().tensor_type().shape().dim_size();
+  for (size_t i = 1; i < numDims; ++i)
   {
     if (!input.type().tensor_type().shape().dim(i).has_dim_value())
     {
@@ -259,7 +261,8 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
           << "not have specified size; cannot convert!";
       throw std::runtime_error(oss.str());
     }
-    inputDims[i - 1] = input.type().tensor_type().shape().dim(i).dim_value();
+    inputDims[numDims - i - 1] =
+        input.type().tensor_type().shape().dim(i).dim_value();
   }
 
   result.InputDimensions() = std::move(inputDims);
