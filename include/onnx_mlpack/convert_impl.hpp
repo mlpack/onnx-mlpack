@@ -208,17 +208,34 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
   // TODO: handle template parameters for loss function?
   mlpack::DAGNetwork<> result;
 
-  // Extract all the vertices of the mlpack network.
+  // Extract all the vertices of the mlpack network.  We have to track how many
+  // mlpack layers were added during the conversion.
+  arma::uvec layerCounts(m.matches.size());
   for (size_t i = 0; i < m.matches.size(); ++i)
   {
+    const size_t origNetworkSize = result.Network().size();
     m.matches[i].second->Convert(m.matches[i].first, graph, result);
+    const size_t newNetworkSize = result.Network().size();
+
+    layerCounts[i] = (newNetworkSize - origNetworkSize);
+  }
+
+  // The convention is that the first layer that a subgraph match adds is the
+  // input, and the last layer is the output.
+  arma::uvec layerInputs(m.matches.size());
+  arma::uvec layerOutputs(m.matches.size());
+  layerOutputs[0] = layerCounts[0] - 1;
+  for (size_t i = 1; i < m.matches.size(); ++i)
+  {
+    layerInputs[i] = layerOutputs[i - 1] + 1;
+    layerOutputs[i] = layerOutputs[i - 1] + layerCounts[i];
   }
 
   // Now make connections between each of the vertices.
   std::vector<std::pair<size_t, size_t>> connections =
       FindConnections(m, graph);
   for (const std::pair<size_t, size_t>& p : connections)
-    result.Connect(p.first, p.second);
+    result.Connect(layerOutputs[p.first], layerInputs[p.second]);
 
   // Extract the size of the input.
   const onnx::ValueInfoProto& input = graph.input(0);
