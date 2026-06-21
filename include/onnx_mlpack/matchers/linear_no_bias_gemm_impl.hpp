@@ -34,7 +34,7 @@ inline bool LinearNoBiasGemmSubgraph::Validate(
 
   // We require that the second input parameter, the weights, are fully
   // initialized.
-  const std::string bName = gemm.input(1);
+  const std::string& bName = gemm.input(1);
   bool foundInitializer = false;
   for (size_t i = 0; i < graph.initializer_size(); ++i)
   {

@@ -12,7 +12,7 @@
 namespace onnx_mlpack {
 
 /**
- * Check that a given matching can feasibly convert to a LinearNoBias layer.
+ * Check that a given matching can feasibly convert to a PReLU layer.
  */
 inline bool PReLUMultiOpSubgraph::Validate(
     const arma::uvec& nodes,

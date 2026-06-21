@@ -12,10 +12,25 @@
 
 namespace onnx_mlpack {
 
+/**
+ * Convert the data for the given tensor into Armadillo format.
+ *
+ * If `flatten` is `true`, then the shape of the input is ignored and the data
+ * is returned as a flattened vector.
+ *
+ * If `flatten` is `false` (the default), then `tensor` must have a 1-D or 2-D
+ * shape, and its shape will be used to set the size of the output Armadillo
+ * matrix.
+ *
+ * As ONNX tensors are stored in row-major order, a 2-dimensional tensor with
+ * shape A rows and B columns (e.g. A x B) will result in an Armadillo matrix
+ * with B rows and A columns (e.g. B x A).
+ */
 template<typename eT = double>
-arma::Mat<eT> TensorToArma(const onnx::TensorProto& tensor)
+arma::Mat<eT> TensorToArma(const onnx::TensorProto& tensor,
+                           const bool flatten = false)
 {
-  if (tensor.dims_size() > 2)
+  if (tensor.dims_size() > 2 && !flatten)
   {
     std::ostringstream oss;
     if (tensor.has_name())
@@ -59,8 +74,22 @@ arma::Mat<eT> TensorToArma(const onnx::TensorProto& tensor)
 
   // ONNX stores as row-major, so we need to do an implicit transpose to get
   // column-major (which is what we need).
-  const size_t c = tensor.dims(0);
-  const size_t r = (tensor.dims_size() == 1) ? 1 : tensor.dims(1);
+  size_t c = 0;
+  size_t r = 0;
+  if (flatten)
+  {
+    size_t totalElem = 1;
+    for (size_t i = 0; i < tensor.dims_size(); ++i)
+      totalElem *= tensor.dims(i);
+
+    c = 1;
+    r = totalElem;
+  }
+  else
+  {
+    c = tensor.dims(0);
+    r = (tensor.dims_size() == 1) ? 1 : tensor.dims(1);
+  }
 
   switch (tensor.data_type())
   {

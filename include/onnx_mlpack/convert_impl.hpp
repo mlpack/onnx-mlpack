@@ -9,6 +9,8 @@
 #define ONNX_MLPACK_CONVERT_IMPL_HPP
 
 #include "convert.hpp"
+#include "apply_initial_reshapes.hpp"
+#include "remove_identity_nodes.hpp"
 #include "matchers/match.hpp"
 
 #include <onnx/onnx_pb.h>
@@ -38,8 +40,15 @@ inline onnx::GraphProto GetGraph(const std::string &filePath)
   // Perform shape inference on the model.
   onnx::shape_inference::InferShapes(onnxModel);
 
+  // Apply any reshapes on inputs to the graph.
+  onnx::GraphProto graph = onnxModel.graph();
+  ApplyInitialReshapes(graph);
+
+  // Remove any Identity operators if needed.
+  RemoveIdentityNodes(graph);
+
   // Return the graph from the ONNX model.
-  return onnxModel.graph();
+  return graph;
 }
 
 /**
@@ -135,11 +144,27 @@ inline mlpack::DAGNetwork<> Convert(onnx::GraphProto& graph)
 // Eventually this will replace Convert() overall.
 inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
 {
-  // Before we start, we need to ensure that the graph has only one input.
-  if (graph.input_size() != 1)
+  // Before we start, we need to ensure that the graph has only one
+  // input for which there isn't an initializer.
+  std::set<std::string> initializerNames;
+  for (size_t i = 0; i < graph.initializer_size(); ++i)
+    if (graph.initializer(i).has_name())
+      initializerNames.insert(graph.initializer(i).name());
+
+  size_t inputsWithoutInitializers = 0;
+  for (size_t i = 0; i < graph.input_size(); ++i)
+  {
+    if (graph.input(i).has_name() &&
+        initializerNames.count(graph.input(i).name()) == 0)
+      ++inputsWithoutInitializers;
+    else if (!graph.input(i).has_name())
+      ++inputsWithoutInitializers;
+  }
+
+  if (inputsWithoutInitializers != 1)
   {
     throw std::runtime_error("SubgraphConvert(): input ONNX graph must have "
-        "one and only one input!");
+        "one and only one input without an initializer!");
   }
 
   // First collect all of the subgraphs that we might be trying to match.
@@ -170,6 +195,9 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
   subgraphs.push_back(new SoftplusThresholdSubgraph());
   subgraphs.push_back(new SwishSubgraph());
   subgraphs.push_back(new TanhSubgraph());
+  subgraphs.push_back(new MaxPoolingSubgraph());
+  subgraphs.push_back(new ConvSubgraph());
+  subgraphs.push_back(new ConvAddSubgraph());
 
   // Find the best subgraph match.
   const Matching m = Matcher(graph, subgraphs);
@@ -180,17 +208,34 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
   // TODO: handle template parameters for loss function?
   mlpack::DAGNetwork<> result;
 
-  // Extract all the vertices of the mlpack network.
+  // Extract all the vertices of the mlpack network.  We have to track how many
+  // mlpack layers were added during the conversion.
+  arma::uvec layerCounts(m.matches.size());
   for (size_t i = 0; i < m.matches.size(); ++i)
   {
+    const size_t origNetworkSize = result.Network().size();
     m.matches[i].second->Convert(m.matches[i].first, graph, result);
+    const size_t newNetworkSize = result.Network().size();
+
+    layerCounts[i] = (newNetworkSize - origNetworkSize);
+  }
+
+  // The convention is that the first layer that a subgraph match adds is the
+  // input, and the last layer is the output.
+  arma::uvec layerInputs(m.matches.size());
+  arma::uvec layerOutputs(m.matches.size());
+  layerOutputs[0] = layerCounts[0] - 1;
+  for (size_t i = 1; i < m.matches.size(); ++i)
+  {
+    layerInputs[i] = layerOutputs[i - 1] + 1;
+    layerOutputs[i] = layerOutputs[i - 1] + layerCounts[i];
   }
 
   // Now make connections between each of the vertices.
   std::vector<std::pair<size_t, size_t>> connections =
       FindConnections(m, graph);
   for (const std::pair<size_t, size_t>& p : connections)
-    result.Connect(p.first, p.second);
+    result.Connect(layerOutputs[p.first], layerInputs[p.second]);
 
   // Extract the size of the input.
   const onnx::ValueInfoProto& input = graph.input(0);
@@ -201,11 +246,13 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
   }
 
   // ONNX generally uses the first dimension as the batch size; we need to
-  // ignore that!
+  // ignore that!  Other dimensions need to have their orders reversed, since
+  // mlpack is column-major and ONNX is row-major.
   std::vector<size_t> inputDims(
       input.type().tensor_type().shape().dim_size() - 1);
 
-  for (size_t i = 1; i < input.type().tensor_type().shape().dim_size(); ++i)
+  const size_t numDims = input.type().tensor_type().shape().dim_size();
+  for (size_t i = 1; i < numDims; ++i)
   {
     if (!input.type().tensor_type().shape().dim(i).has_dim_value())
     {
@@ -214,7 +261,8 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
           << "not have specified size; cannot convert!";
       throw std::runtime_error(oss.str());
     }
-    inputDims[i - 1] = input.type().tensor_type().shape().dim(i).dim_value();
+    inputDims[numDims - i - 1] =
+        input.type().tensor_type().shape().dim(i).dim_value();
   }
 
   result.InputDimensions() = std::move(inputDims);
