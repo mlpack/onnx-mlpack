@@ -13,4 +13,11 @@
 
 #include "onnx_mlpack/convert.hpp"
 
+// If the mlpack version is too old, we need to include the backported Scale
+// layer.
+#if MLPACK_VERSION_MAJOR <= 4 || \
+    (MLPACK_VERSION_MAJOR == 4 && MLPACK_VERSION_MINOR <= 8)
+  #include "onnx_mlpack/mlpack_backport/scale.hpp"
+#endif
+
 #endif
