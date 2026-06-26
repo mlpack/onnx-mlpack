@@ -41,6 +41,8 @@
 #include "max_pooling.hpp"
 #include "conv.hpp"
 #include "conv_add.hpp"
+#include "mul_scalar.hpp"
+#include "batch_norm.hpp"
 
 #include "matcher_impl.hpp"
 #include "subgraph_impl.hpp"
@@ -74,5 +76,7 @@
 #include "max_pooling_impl.hpp"
 #include "conv_impl.hpp"
 #include "conv_add_impl.hpp"
+#include "mul_scalar_impl.hpp"
+#include "batch_norm_impl.hpp"
 
 #endif

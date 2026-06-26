@@ -260,6 +260,7 @@ inline void ConvSubgraph::Convert(
         graph.initializer(i).dims_size() == 4)
     {
       foundInitializer = true;
+      maps = graph.initializer(i).dims(0);
       channels = graph.initializer(i).dims(1);
       kernelHeight = graph.initializer(i).dims(2);
       kernelWidth = graph.initializer(i).dims(3);

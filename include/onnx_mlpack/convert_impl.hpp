@@ -198,6 +198,8 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
   subgraphs.push_back(new MaxPoolingSubgraph());
   subgraphs.push_back(new ConvSubgraph());
   subgraphs.push_back(new ConvAddSubgraph());
+  subgraphs.push_back(new MulScalarSubgraph());
+  subgraphs.push_back(new BatchNormSubgraph());
 
   // Find the best subgraph match.
   const Matching m = Matcher(graph, subgraphs);
