@@ -10,7 +10,7 @@
 
 #include "convert.hpp"
 #include "apply_initial_reshapes.hpp"
-#include "remove_identity_nodes.hpp"
+#include "remove_useless_nodes.hpp"
 #include "matchers/match.hpp"
 
 #include <onnx/onnx_pb.h>
@@ -44,8 +44,8 @@ inline onnx::GraphProto GetGraph(const std::string &filePath)
   onnx::GraphProto graph = onnxModel.graph();
   ApplyInitialReshapes(graph);
 
-  // Remove any Identity operators if needed.
-  RemoveIdentityNodes(graph);
+  // Remove any useless operators if possible.
+  RemoveUselessNodes(graph);
 
   // Return the graph from the ONNX model.
   return graph;

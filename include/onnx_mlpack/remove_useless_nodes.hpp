@@ -1,19 +1,23 @@
 /**
- * @file remove_identity_nodes.hpp
+ * @file remove_useless_nodes.hpp
  * @author Ryan Curtin
  *
- * If an ONNX graph has Identity operations, they can be trivially removed (they
- * don't do anything).
+ * If an ONNX graph has operations that don't actually do anything, they can be
+ * trivially removed.
  */
-#ifndef ONNX_MLPACK_REMOVE_IDENTITY_NODES_HPP
-#define ONNX_MLPACK_REMOVE_IDENTITY_NODES_HPP
+#ifndef ONNX_MLPACK_REMOVE_USELESS_NODES_HPP
+#define ONNX_MLPACK_REMOVE_USELESS_NODES_HPP
+
+#include "tensor_to_arma.hpp"
 
 namespace onnx_mlpack {
 
-inline void RemoveIdentityNodes(onnx::GraphProto& graph)
+inline void RemoveUselessNodes(onnx::GraphProto& graph)
 {
   // Iterate over all the nodes in the graph and look for Identity operations.
   std::set<size_t> nodesToRemove;
+  std::set<std::string> tensorsToRemove;
+  std::unordered_map<std::string, std::string> tensorsToReplace;
 
   // For each Identity node we will remove, this holds both the input and output
   // tensor names.  (Elsewhere in the network, we will have to replace
@@ -26,6 +30,52 @@ inline void RemoveIdentityNodes(onnx::GraphProto& graph)
     {
       nodesToRemove.insert(n);
       tensorReplacements[node.output(0)] = node.input(0);
+    }
+    else if (node.op_type() == "Mul" || node.op_type() == "Add")
+    {
+      std::cout << "check if we can remove node " << n << " (" << node.op_type() << ")\n";
+
+      // We can remove a Mul node if we are multiplying by all 1 values, and an
+      // Add node if we are adding only zero values.
+      const double targetValue = (node.op_type() == "Mul") ? 1.0 : 0.0;
+
+      const std::string& aName = node.input(0);
+      const std::string& bName = node.input(1);
+      bool canRemoveA = false;
+      bool canRemoveB = false;
+      for (size_t i = 0; i < graph.initializer_size(); ++i)
+      {
+        if (graph.initializer(i).has_name() &&
+            graph.initializer(i).name() == aName &&
+            graph.initializer(i).dims_size() >= 1)
+        {
+          arma::mat vals = TensorToArma(graph.initializer(i), true);
+          if (all(all(vals == targetValue)))
+            canRemoveA = true;
+        }
+
+        if (graph.initializer(i).has_name() &&
+            graph.initializer(i).name() == bName &&
+            graph.initializer(i).dims_size() >= 1)
+        {
+          arma::mat vals = TensorToArma(graph.initializer(i), true);
+          if (all(all(vals == targetValue)))
+            canRemoveB = true;
+        }
+      }
+
+      // If we can remove only one of the tensors, then we can remove the whole
+      // thing.
+      if (canRemoveA && !canRemoveB)
+      {
+        nodesToRemove.insert(n);
+        tensorReplacements[node.output(0)] = bName;
+      }
+      else if (canRemoveB && !canRemoveA)
+      {
+        nodesToRemove.insert(n);
+        tensorReplacements[node.output(0)] = aName;
+      }
     }
   }
 
