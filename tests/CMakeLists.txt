@@ -17,4 +17,10 @@ add_custom_command(TARGET onnx_mlpack_test
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/test_data/ ${PROJECT_BINARY_DIR})
 
+# Unpack test data.
+add_custom_command(TARGET onnx_mlpack_test
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E tar xjf tinyyolo_data.tar.bz2
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
 add_test(NAME onnx_mlpack_test COMMAND onnx_mlpack_test)
