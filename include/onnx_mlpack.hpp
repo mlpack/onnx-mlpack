@@ -7,6 +7,10 @@
 #ifndef ONNX_MLPACK_HPP
 #define ONNX_MLPACK_HPP
 
+// Prerequisites.
+#include <stdint.h>
+#include <mlpack.hpp>
+
 #include "onnx_mlpack/convert.hpp"
 
 #endif
