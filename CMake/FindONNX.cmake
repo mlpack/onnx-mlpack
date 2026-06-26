@@ -38,10 +38,6 @@ if (NOT "${_ONNX_VERSION_MAJOR}" STREQUAL "")
   file(STRINGS "${ONNX_INCLUDE_DIR}/onnx/common/version.h" _ONNX_VERSION_PATCH
       REGEX "^#define ONNX_VERSION_PATCH")
 
-  message(STATUS "version major ${_ONNX_VERSION_MAJOR}")
-  message(STATUS "version minor ${_ONNX_VERSION_MINOR}")
-  message(STATUS "version patch ${_ONNX_VERSION_PATCH}")
-
   string(REGEX REPLACE "^#define ONNX_VERSION_MAJOR[ \t]+([0-9]+)[ \t]*$" "\\1"
       ONNX_VERSION_MAJOR "${_ONNX_VERSION_MAJOR}")
   string(REGEX REPLACE "^#define ONNX_VERSION_MINOR[ \t]+([0-9]+)[ \t]*$" "\\1"
