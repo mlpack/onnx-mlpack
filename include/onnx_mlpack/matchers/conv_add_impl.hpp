@@ -176,6 +176,11 @@ inline bool ConvAddSubgraph::Validate(
   if (conv.input_size() == 3)
     return false;
 
+  // Get the number of groups, if it's grouped convolution.
+  int groups = 1;
+  if (!ExtractAttribute(conv, "groups", groups))
+    return false;
+
   // The bias in the add node must have the right shape.
   // Note that either input of the add node could be the bias.
   const size_t bIndex = (conv.output(0) == add.input(0) ? 1 : 0);
@@ -187,7 +192,7 @@ inline bool ConvAddSubgraph::Validate(
         graph.initializer(i).name() == bName &&
         graph.initializer(i).dims_size() >= 1)
     {
-      if (graph.initializer(i).dims(0) != maps)
+      if (graph.initializer(i).dims(0) != (maps / groups))
         return false;
 
       // All higher dimensions must be 1.

@@ -168,6 +168,11 @@ inline bool ConvSubgraph::Validate(
   if (pads.size() != 0 && pads.size() != 4)
     return false;
 
+  // Get the number of groups, if it's grouped convolution.
+  int groups = 1;
+  if (!ExtractAttribute(conv, "groups", groups))
+    return false;
+
   // If we have a bias, ensure that it has the right size.
   if (conv.input_size() == 3)
   {
@@ -179,8 +184,7 @@ inline bool ConvSubgraph::Validate(
           graph.initializer(i).name() == bName &&
           graph.initializer(i).dims_size() >= 1)
       {
-        // TODO for PR: I think the bias size can be different if groups != 1
-        if (graph.initializer(i).dims(0) != channels)
+        if (graph.initializer(i).dims(0) != (maps / groups))
           return false;
 
         // All higher dimensions must be 1.
