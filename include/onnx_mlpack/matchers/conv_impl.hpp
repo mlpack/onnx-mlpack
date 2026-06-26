@@ -427,9 +427,10 @@ inline void ConvSubgraph::Convert(
 /**
  * Convert the weights for a matching of the Conv layer.
  */
-inline void ConvSubgraph::TransferWeights(const arma::uvec& nodes,
-                                          const onnx::GraphProto& graph,
-                                          mlpack::Layer<>* layer) const
+inline void ConvSubgraph::TransferWeights(
+    const arma::uvec& nodes,
+    const onnx::GraphProto& graph,
+    std::vector<mlpack::Layer<>*>& layers) const
 {
   const onnx::NodeProto& conv = graph.node(nodes[0]);
   const bool hasBias = (conv.input_size() == 3);
@@ -478,7 +479,7 @@ inline void ConvSubgraph::TransferWeights(const arma::uvec& nodes,
 
   if (groups == 1)
   {
-    mlpack::Convolution<>* l = dynamic_cast<mlpack::Convolution<>*>(layer);
+    mlpack::Convolution<>* l = dynamic_cast<mlpack::Convolution<>*>(layers[0]);
 
     // Expected size of bias: maps x 1.
     if (hasBias)
@@ -494,7 +495,7 @@ inline void ConvSubgraph::TransferWeights(const arma::uvec& nodes,
   else
   {
     mlpack::GroupedConvolution<>* l =
-        dynamic_cast<mlpack::GroupedConvolution<>*>(layer);
+        dynamic_cast<mlpack::GroupedConvolution<>*>(layers[0]);
 
     // Expected size of bias: maps x 1.
     if (hasBias)

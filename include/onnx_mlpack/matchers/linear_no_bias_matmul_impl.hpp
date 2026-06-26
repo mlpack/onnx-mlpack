@@ -97,14 +97,14 @@ inline void LinearNoBiasMatMulSubgraph::Convert(
 inline void LinearNoBiasMatMulSubgraph::TransferWeights(
     const arma::uvec& nodes,
     const onnx::GraphProto& graph,
-    mlpack::Layer<>* layer) const
+    std::vector<mlpack::Layer<>*>& layers) const
 {
   // We have already concluded that the weights of the operation must be the B
   // matrix to the MatMul operation.  Therefore, we simply need to get its
   // weights.
   const onnx::NodeProto& matmul = graph.node(nodes[0]);
   const std::string bName = matmul.input(1);
-  mlpack::LinearNoBias<>* l = dynamic_cast<mlpack::LinearNoBias<>*>(layer);
+  mlpack::LinearNoBias<>* l = dynamic_cast<mlpack::LinearNoBias<>*>(layers[0]);
 
   for (size_t i = 0; i < graph.initializer_size(); ++i)
   {

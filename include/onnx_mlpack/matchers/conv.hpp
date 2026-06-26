@@ -25,7 +25,8 @@ class ConvSubgraph : public Subgraph
 
   inline void TransferWeights(const arma::uvec& indices,
                               const onnx::GraphProto& graph,
-                              mlpack::Layer<>* layer) const override;
+                              std::vector<mlpack::Layer<>*>& layers)
+      const override;
 };
 
 } // namespace onnx_mlpack

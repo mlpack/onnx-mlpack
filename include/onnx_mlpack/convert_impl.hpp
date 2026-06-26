@@ -271,8 +271,13 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
   // Transfer all of the weights of each layer.
   for (size_t i = 0; i < m.matches.size(); ++i)
   {
+    // We have to pass all layers that the subgraph created.
+    std::vector<mlpack::Layer<>*> createdLayers;
+    for (size_t j = layerInputs[i]; j <= layerOutputs[i]; ++j)
+      createdLayers.push_back(result.Network()[j]);
+
     m.matches[i].second->TransferWeights(m.matches[i].first, graph,
-        result.Network()[i]);
+        createdLayers);
   }
 
   // Clean up.

@@ -93,7 +93,7 @@ class Subgraph
   // the layer has no weights.
   virtual void TransferWeights(const arma::uvec& indices,
                                const onnx::GraphProto& graph,
-                               mlpack::Layer<>* layer) const { }
+                               std::vector<mlpack::Layer<>*>& layer) const { }
 
  private:
   std::vector<std::string> vertices;

@@ -105,7 +105,7 @@ inline void LinearMatMulAddSubgraph::Convert(
 inline void LinearMatMulAddSubgraph::TransferWeights(
     const arma::uvec& nodes,
     const onnx::GraphProto& graph,
-    mlpack::Layer<>* layer) const
+    std::vector<mlpack::Layer<>*>& layers) const
 {
   // We have already concluded that the weights of the operation must be the
   // second input of the MatMul node, and the biases are the initialized input
@@ -119,7 +119,7 @@ inline void LinearMatMulAddSubgraph::TransferWeights(
 
   bool weightsDone = false;
   bool biasesDone = false;
-  mlpack::Linear<>* l = dynamic_cast<mlpack::Linear<>*>(layer);
+  mlpack::Linear<>* l = dynamic_cast<mlpack::Linear<>*>(layers[0]);
   for (size_t i = 0; i < graph.initializer_size(); ++i)
   {
     if (graph.initializer(i).has_name() &&
