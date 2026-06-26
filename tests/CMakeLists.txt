@@ -4,8 +4,7 @@
 file(GLOB TEST_SOURCES "*.cpp")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 add_executable(onnx_mlpack_test ${TEST_SOURCES})
-target_precompile_headers(onnx_mlpack_test PUBLIC
-    <armadillo> <mlpack.hpp> <ensmallen.hpp>)
+target_precompile_headers(onnx_mlpack_test PUBLIC <mlpack.hpp> <ensmallen.hpp>)
 target_link_libraries(onnx_mlpack_test PRIVATE ${MLPACK_LIBRARIES} ${ONNX_LIBRARIES})
 
 # Copy test models to build directory.
