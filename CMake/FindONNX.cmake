@@ -42,11 +42,11 @@ if (NOT "${_ONNX_VERSION_MAJOR}" STREQUAL "")
   message(STATUS "version minor ${_ONNX_VERSION_MINOR}")
   message(STATUS "version patch ${_ONNX_VERSION_PATCH}")
 
-  string(REGEX REPLACE "^#define ONNX_VERSION_MAJOR.*([0-9]*).*$" "\\1"
+  string(REGEX REPLACE "^#define ONNX_VERSION_MAJOR[ \t]+([0-9]+)[ \t]*$" "\\1"
       ONNX_VERSION_MAJOR "${_ONNX_VERSION_MAJOR}")
-  string(REGEX REPLACE "^#define ONNX_VERSION_MINOR.*([0-9]*).*$" "\\1"
+  string(REGEX REPLACE "^#define ONNX_VERSION_MINOR[ \t]+([0-9]+)[ \t]*$" "\\1"
       ONNX_VERSION_MINOR "${_ONNX_VERSION_MINOR}")
-  string(REGEX REPLACE "^#define ONNX_VERSION_PATCH.*([0-9]*).*$" "\\1"
+  string(REGEX REPLACE "^#define ONNX_VERSION_PATCH[ \t]+([0-9]+)[ \t]*$" "\\1"
       ONNX_VERSION_PATCH "${_ONNX_VERSION_PATCH}")
 
   set(ONNX_VERSION
