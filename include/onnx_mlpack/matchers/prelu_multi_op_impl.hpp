@@ -61,7 +61,7 @@ inline void PReLUMultiOpSubgraph::Convert(
 inline void PReLUMultiOpSubgraph::TransferWeights(
     const arma::uvec& nodes,
     const onnx::GraphProto& graph,
-    mlpack::Layer<>* layer) const
+    std::vector<mlpack::Layer<>*>& layers) const
 {
   // We have already concluded that the weights of the operation must be the B
   // matrix to the MatMul operation.  Therefore, we simply need to get its
@@ -74,7 +74,7 @@ inline void PReLUMultiOpSubgraph::TransferWeights(
         "to extract scalar value from slope tensor!");
   }
 
-  mlpack::PReLU<>* l = dynamic_cast<mlpack::PReLU<>*>(layer);
+  mlpack::PReLU<>* l = dynamic_cast<mlpack::PReLU<>*>(layers[0]);
 
   // Since the operation represented by ONNX is alpha * Relu(-x), to be correct,
   // we have to invert alpha.

@@ -26,7 +26,8 @@ class LinearGemmSubgraph : public Subgraph
 
   inline void TransferWeights(const arma::uvec& indices,
                               const onnx::GraphProto& graph,
-                              mlpack::Layer<>* layer) const override;
+                              std::vector<mlpack::Layer<>*>& layer)
+      const override;
 };
 
 } // namespace onnx_mlpack

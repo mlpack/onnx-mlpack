@@ -25,11 +25,36 @@ if (NOT ONNX_INCLUDE_DIR)
       PATHS /usr/include /usr/local/include /opt/local/include /opt/include)
 endif ()
 
-# Extract the version.
-file(STRINGS "${ONNX_INCLUDE_DIR}/onnx/common/version.h" _ONNX_VERSION_CONTENTS
-    REGEX "LAST_RELEASE_VERSION")
-string(REGEX REPLACE "^.*\"([0-9.]+)\".*$"
-    "\\1" ONNX_VERSION "${_ONNX_VERSION_CONTENTS}")
+# Extract the version.  First try to look for ONNX_VERSION_MAJOR, although this
+# does not exist in older versions of ONNX:
+#
+# https://github.com/onnx/onnx/pull/7918
+#
+file(STRINGS "${ONNX_INCLUDE_DIR}/onnx/common/version.h" _ONNX_VERSION_MAJOR
+    REGEX "^#define ONNX_VERSION_MAJOR")
+if (NOT "${_ONNX_VERSION_MAJOR}" STREQUAL "")
+  file(STRINGS "${ONNX_INCLUDE_DIR}/onnx/common/version.h" _ONNX_VERSION_MINOR
+      REGEX "^#define ONNX_VERSION_MINOR")
+  file(STRINGS "${ONNX_INCLUDE_DIR}/onnx/common/version.h" _ONNX_VERSION_PATCH
+      REGEX "^#define ONNX_VERSION_PATCH")
+
+  string(REGEX REPLACE "^#define ONNX_VERSION_MAJOR[ \t]+([0-9]+)[ \t]*$" "\\1"
+      ONNX_VERSION_MAJOR "${_ONNX_VERSION_MAJOR}")
+  string(REGEX REPLACE "^#define ONNX_VERSION_MINOR[ \t]+([0-9]+)[ \t]*$" "\\1"
+      ONNX_VERSION_MINOR "${_ONNX_VERSION_MINOR}")
+  string(REGEX REPLACE "^#define ONNX_VERSION_PATCH[ \t]+([0-9]+)[ \t]*$" "\\1"
+      ONNX_VERSION_PATCH "${_ONNX_VERSION_PATCH}")
+
+  set(ONNX_VERSION
+      "${ONNX_VERSION_MAJOR}.${ONNX_VERSION_MINOR}.${ONNX_VERSION_PATCH}")
+else ()
+  # In this case, we have to do the extraction by hand since the version is too
+  # old for the macros.
+  file(STRINGS "${ONNX_INCLUDE_DIR}/onnx/common/version.h"
+      _ONNX_VERSION_CONTENTS REGEX "LAST_RELEASE_VERSION")
+  string(REGEX REPLACE "^.*\"([0-9.]+)\".*$"
+      "\\1" ONNX_VERSION "${_ONNX_VERSION_CONTENTS}")
+endif ()
 
 find_library(ONNX_LIBRARY NAMES onnx
     PATHS /usr/lib /usr/lib64 /usr/local/lib /usr/local/lib64 /opt/local/lib/

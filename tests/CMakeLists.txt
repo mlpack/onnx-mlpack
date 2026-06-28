@@ -4,8 +4,7 @@
 file(GLOB TEST_SOURCES "*.cpp")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 add_executable(onnx_mlpack_test ${TEST_SOURCES})
-target_precompile_headers(onnx_mlpack_test PUBLIC
-    <armadillo> <mlpack.hpp> <ensmallen.hpp>)
+target_precompile_headers(onnx_mlpack_test PUBLIC <mlpack.hpp> <ensmallen.hpp>)
 target_link_libraries(onnx_mlpack_test PRIVATE ${MLPACK_LIBRARIES} ${ONNX_LIBRARIES})
 
 # Copy test models to build directory.
@@ -17,5 +16,11 @@ add_custom_command(TARGET onnx_mlpack_test
 add_custom_command(TARGET onnx_mlpack_test
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/test_data/ ${PROJECT_BINARY_DIR})
+
+# Unpack test data.
+add_custom_command(TARGET onnx_mlpack_test
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E tar xjf tinyyolo_data.tar.bz2
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_test(NAME onnx_mlpack_test COMMAND onnx_mlpack_test)

@@ -1,20 +1,20 @@
 /**
- * @file linear_no_bias_matmul.hpp
+ * @file batch_norm.hpp
  * @author Ryan Curtin
  *
- * Candidate ONNX subgraphs that can match the LinearNoBias layer.
+ * Candidate ONNX subgraphs that can match the BatchNormalization layer.
  */
-#ifndef ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_MATMUL_HPP
-#define ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_MATMUL_HPP
+#ifndef ONNX_MLPACK_MATCHERS_BATCH_NORM_HPP
+#define ONNX_MLPACK_MATCHERS_BATCH_NORM_HPP
 
 namespace onnx_mlpack {
 
-class LinearNoBiasMatMulSubgraph : public Subgraph
+class BatchNormSubgraph : public Subgraph
 {
  public:
-  LinearNoBiasMatMulSubgraph() : Subgraph({ "MatMul" }) { }
+  BatchNormSubgraph() : Subgraph({ "BatchNormalization" }) { }
 
-  inline const char* Name() const { return "LinearNoBiasMatMul"; }
+  inline const char* Name() const { return "BatchNorm"; }
 
   inline bool Validate(const arma::uvec& indices,
                        const onnx::GraphProto& graph) const override;
@@ -25,7 +25,7 @@ class LinearNoBiasMatMulSubgraph : public Subgraph
 
   inline void TransferWeights(const arma::uvec& indices,
                               const onnx::GraphProto& graph,
-                              std::vector<mlpack::Layer<>*>& layer)
+                              std::vector<mlpack::Layer<>*>& layers)
       const override;
 };
 

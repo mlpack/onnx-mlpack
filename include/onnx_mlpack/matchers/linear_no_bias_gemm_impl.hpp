@@ -164,7 +164,7 @@ inline void LinearNoBiasGemmSubgraph::Convert(
 inline void LinearNoBiasGemmSubgraph::TransferWeights(
     const arma::uvec& nodes,
     const onnx::GraphProto& graph,
-    mlpack::Layer<>* layer) const
+    std::vector<mlpack::Layer<>*>& layers) const
 {
   // We have already concluded that the weights of the operation must be the B
   // matrix to the Gemm operation.  Therefore, we simply need to get its
@@ -183,7 +183,7 @@ inline void LinearNoBiasGemmSubgraph::TransferWeights(
     }
   }
 
-  mlpack::LinearNoBias<>* l = dynamic_cast<mlpack::LinearNoBias<>*>(layer);
+  mlpack::LinearNoBias<>* l = dynamic_cast<mlpack::LinearNoBias<>*>(layers[0]);
   for (size_t i = 0; i < graph.initializer_size(); ++i)
   {
     if (graph.initializer(i).has_name() &&

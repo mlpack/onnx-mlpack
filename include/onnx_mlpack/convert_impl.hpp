@@ -10,7 +10,7 @@
 
 #include "convert.hpp"
 #include "apply_initial_reshapes.hpp"
-#include "remove_identity_nodes.hpp"
+#include "remove_useless_nodes.hpp"
 #include "matchers/match.hpp"
 
 #include <onnx/onnx_pb.h>
@@ -44,8 +44,8 @@ inline onnx::GraphProto GetGraph(const std::string &filePath)
   onnx::GraphProto graph = onnxModel.graph();
   ApplyInitialReshapes(graph);
 
-  // Remove any Identity operators if needed.
-  RemoveIdentityNodes(graph);
+  // Remove any useless operators if possible.
+  RemoveUselessNodes(graph);
 
   // Return the graph from the ONNX model.
   return graph;
@@ -198,6 +198,8 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
   subgraphs.push_back(new MaxPoolingSubgraph());
   subgraphs.push_back(new ConvSubgraph());
   subgraphs.push_back(new ConvAddSubgraph());
+  subgraphs.push_back(new MulScalarSubgraph());
+  subgraphs.push_back(new BatchNormSubgraph());
 
   // Find the best subgraph match.
   const Matching m = Matcher(graph, subgraphs);
@@ -271,8 +273,13 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
   // Transfer all of the weights of each layer.
   for (size_t i = 0; i < m.matches.size(); ++i)
   {
+    // We have to pass all layers that the subgraph created.
+    std::vector<mlpack::Layer<>*> createdLayers;
+    for (size_t j = layerInputs[i]; j <= layerOutputs[i]; ++j)
+      createdLayers.push_back(result.Network()[j]);
+
     m.matches[i].second->TransferWeights(m.matches[i].first, graph,
-        result.Network()[i]);
+        createdLayers);
   }
 
   // Clean up.

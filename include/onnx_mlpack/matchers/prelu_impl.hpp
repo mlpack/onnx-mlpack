@@ -52,14 +52,14 @@ inline void PReLUSubgraph::Convert(
 inline void PReLUSubgraph::TransferWeights(
     const arma::uvec& nodes,
     const onnx::GraphProto& graph,
-    mlpack::Layer<>* layer) const
+    std::vector<mlpack::Layer<>*>& layers) const
 {
   // We have already concluded that the weights of the operation must be the B
   // matrix to the MatMul operation.  Therefore, we simply need to get its
   // weights.
   const onnx::NodeProto& prelu = graph.node(nodes[0]);
   const std::string slopeName = prelu.input(1);
-  mlpack::PReLU<>* l = dynamic_cast<mlpack::PReLU<>*>(layer);
+  mlpack::PReLU<>* l = dynamic_cast<mlpack::PReLU<>*>(layers[0]);
 
   double alpha = DBL_MAX;
   if (!ExtractScalar(graph, slopeName, alpha))

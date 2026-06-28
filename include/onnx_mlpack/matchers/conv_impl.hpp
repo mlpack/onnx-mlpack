@@ -168,6 +168,11 @@ inline bool ConvSubgraph::Validate(
   if (pads.size() != 0 && pads.size() != 4)
     return false;
 
+  // Get the number of groups, if it's grouped convolution.
+  int groups = 1;
+  if (!ExtractAttribute(conv, "groups", groups))
+    return false;
+
   // If we have a bias, ensure that it has the right size.
   if (conv.input_size() == 3)
   {
@@ -179,8 +184,7 @@ inline bool ConvSubgraph::Validate(
           graph.initializer(i).name() == bName &&
           graph.initializer(i).dims_size() >= 1)
       {
-        // TODO for PR: I think the bias size can be different if groups != 1
-        if (graph.initializer(i).dims(0) != channels)
+        if (graph.initializer(i).dims(0) != (maps / groups))
           return false;
 
         // All higher dimensions must be 1.
@@ -260,6 +264,7 @@ inline void ConvSubgraph::Convert(
         graph.initializer(i).dims_size() == 4)
     {
       foundInitializer = true;
+      maps = graph.initializer(i).dims(0);
       channels = graph.initializer(i).dims(1);
       kernelHeight = graph.initializer(i).dims(2);
       kernelWidth = graph.initializer(i).dims(3);
@@ -427,9 +432,10 @@ inline void ConvSubgraph::Convert(
 /**
  * Convert the weights for a matching of the Conv layer.
  */
-inline void ConvSubgraph::TransferWeights(const arma::uvec& nodes,
-                                          const onnx::GraphProto& graph,
-                                          mlpack::Layer<>* layer) const
+inline void ConvSubgraph::TransferWeights(
+    const arma::uvec& nodes,
+    const onnx::GraphProto& graph,
+    std::vector<mlpack::Layer<>*>& layers) const
 {
   const onnx::NodeProto& conv = graph.node(nodes[0]);
   const bool hasBias = (conv.input_size() == 3);
@@ -478,7 +484,7 @@ inline void ConvSubgraph::TransferWeights(const arma::uvec& nodes,
 
   if (groups == 1)
   {
-    mlpack::Convolution<>* l = dynamic_cast<mlpack::Convolution<>*>(layer);
+    mlpack::Convolution<>* l = dynamic_cast<mlpack::Convolution<>*>(layers[0]);
 
     // Expected size of bias: maps x 1.
     if (hasBias)
@@ -494,7 +500,7 @@ inline void ConvSubgraph::TransferWeights(const arma::uvec& nodes,
   else
   {
     mlpack::GroupedConvolution<>* l =
-        dynamic_cast<mlpack::GroupedConvolution<>*>(layer);
+        dynamic_cast<mlpack::GroupedConvolution<>*>(layers[0]);
 
     // Expected size of bias: maps x 1.
     if (hasBias)

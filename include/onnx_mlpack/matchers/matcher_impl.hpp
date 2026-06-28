@@ -169,7 +169,7 @@ inline Matching Matcher(const onnx::GraphProto& graph,
     std::cout << "Matching subgraphs with unmatched ONNX nodes: { ";
     for (size_t j = 0; j < matchStack.top().matchedNodes.n_elem; ++j)
       if (matchStack.top().matchedNodes[j] == 0)
-        std::cout << j << " ";
+        std::cout << j << " (" << graph.node(j).op_type() << ") ";
     std::cout << "}" << std::endl;
 
     // Match each subgraph to the current state.
@@ -269,7 +269,10 @@ inline Matching Matcher(const onnx::GraphProto& graph,
         arma::uvec unmatched = arma::find(matchings[m].matchedNodes == 0);
         std::cout << "    * Unmatched ONNX nodes: { ";
         for (size_t i = 0; i < unmatched.n_elem; ++i)
-          std::cout << unmatched[i] << " ";
+        {
+          std::cout << unmatched[i] << " ("
+              << graph.node(unmatched[i]).op_type() << ") ";
+        }
         std::cout << "}" << std::endl;
 
         // The matching is not complete yet.  We have to recurse with the

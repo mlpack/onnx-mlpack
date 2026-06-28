@@ -176,6 +176,11 @@ inline bool ConvAddSubgraph::Validate(
   if (conv.input_size() == 3)
     return false;
 
+  // Get the number of groups, if it's grouped convolution.
+  int groups = 1;
+  if (!ExtractAttribute(conv, "groups", groups))
+    return false;
+
   // The bias in the add node must have the right shape.
   // Note that either input of the add node could be the bias.
   const size_t bIndex = (conv.output(0) == add.input(0) ? 1 : 0);
@@ -187,7 +192,7 @@ inline bool ConvAddSubgraph::Validate(
         graph.initializer(i).name() == bName &&
         graph.initializer(i).dims_size() >= 1)
     {
-      if (graph.initializer(i).dims(0) != maps)
+      if (graph.initializer(i).dims(0) != (maps / groups))
         return false;
 
       // All higher dimensions must be 1.
@@ -430,9 +435,10 @@ inline void ConvAddSubgraph::Convert(
 /**
  * Convert the weights for a matching of the Conv layer.
  */
-inline void ConvAddSubgraph::TransferWeights(const arma::uvec& nodes,
-                                             const onnx::GraphProto& graph,
-                                             mlpack::Layer<>* layer) const
+inline void ConvAddSubgraph::TransferWeights(
+    const arma::uvec& nodes,
+    const onnx::GraphProto& graph,
+    std::vector<mlpack::Layer<>*>& layers) const
 {
   const onnx::NodeProto& conv = graph.node(nodes[0]);
   const onnx::NodeProto& add = graph.node(nodes[1]);
@@ -485,7 +491,7 @@ inline void ConvAddSubgraph::TransferWeights(const arma::uvec& nodes,
 
   if (groups == 1)
   {
-    mlpack::Convolution<>* l = dynamic_cast<mlpack::Convolution<>*>(layer);
+    mlpack::Convolution<>* l = dynamic_cast<mlpack::Convolution<>*>(layers[0]);
 
     // Expected size of bias: maps x 1.
     l->Bias() = bias;
@@ -498,7 +504,7 @@ inline void ConvAddSubgraph::TransferWeights(const arma::uvec& nodes,
   else
   {
     mlpack::GroupedConvolution<>* l =
-        dynamic_cast<mlpack::GroupedConvolution<>*>(layer);
+        dynamic_cast<mlpack::GroupedConvolution<>*>(layers[0]);
 
     // Expected size of bias: maps x 1.
     l->Bias() = bias;

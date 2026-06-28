@@ -349,10 +349,13 @@ inline void MaxPoolingSubgraph::Convert(
       }
     }
 
+    // We have to pad with -DBL_MAX so that the padding values don't end up
+    // being the maximum value in the MaxPooling operation.
     paddingIndex = network.Add<mlpack::Padding>(pads[1], // left
                                                 pads[3], // right
                                                 pads[0], // top
-                                                pads[2]); // bottom
+                                                pads[2], // bottom
+                                                -DBL_MAX);
   }
 
   // Set strides to [1, 1] if not set.
