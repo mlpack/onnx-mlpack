@@ -91,9 +91,7 @@ int main()
 }
 ```
 
-<<<<<<< Updated upstream
-=======
-## Converting from C++
+## Converting in C++
 
 Instead of calling `onnx_mlpack_converter`, you can also just convert directly
 in C++:
@@ -114,7 +112,15 @@ int main()
 }
 ```
 
-See the [simple example](examples/convert_tinyyolo.cpp) for a working example.
+Compiling in C++ requires a minimum of C++17, specifying an ONNX macro, and
+linking against Armadillo, ONNX, and Protobuf:
+
+```sh
+g++ -std=c++17 -DONNX_ML=1 -o program program.cpp -larmadillo -lonnx -lprotobuf
+```
+
+See the [simple example](examples/convert_tinyyolo.cpp) for a working example
+and `Makefile`.
 
 ## C++ API Documentation
 
@@ -164,7 +170,6 @@ See the [simple example](examples/convert_tinyyolo.cpp) for a working example.
    * If the graph cannot be fully matched to an mlpack `DAGNetwork`, a
      `std::runtime_error` will be thrown with more details.
 
->>>>>>> Stashed changes
 ## Notes
 
 This repository is under active development!  At this particular moment, support
