@@ -11,12 +11,9 @@
 #include <stdint.h>
 #include <mlpack.hpp>
 
-// If the mlpack version is too old, we need to include the backported Scale
-// layer.
-#if MLPACK_VERSION_MAJOR <= 4 || \
-    (MLPACK_VERSION_MAJOR == 4 && MLPACK_VERSION_MINOR <= 8)
-  #include "onnx_mlpack/mlpack_backport/scale.hpp"
-#endif
+// Backport required pieces from newer versions of mlpack.
+#include "onnx_mlpack/mlpack_backport/scale.hpp"
+#include "onnx_mlpack/mlpack_backport/connection_types.hpp"
 
 #include "onnx_mlpack/convert.hpp"
 
