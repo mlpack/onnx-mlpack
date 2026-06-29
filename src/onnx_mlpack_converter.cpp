@@ -25,8 +25,7 @@ int main(int argc, char** argv)
   const string inputNetwork(argv[1]);
   const string outputNetwork(argv[2]);
 
-  onnx::GraphProto graph = onnx_mlpack::GetGraph(inputNetwork);
-  DAGNetwork<> dag = onnx_mlpack::Convert(graph);
+  DAGNetwork<> dag = onnx_mlpack::Convert(inputNetwork);
 
   if (dag.Network().size() == 0)
     throw std::runtime_error("Converted DAG is empty!  Aborting.");
