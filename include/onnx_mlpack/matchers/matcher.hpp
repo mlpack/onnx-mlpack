@@ -3,6 +3,11 @@
  * @author Ryan Curtin
  *
  * Subgraph matcher for ONNX graphs.
+ *
+ * The ONNX/mlpack converter is free software; you may redistribute it and/or
+ * modify it under the terms of the 3-clause BSD license.  You should have
+ * received a copy of the 3-clause BSD license along with mlpack.  If not, see
+ * http://www.opensource.org/licenses/BSD-3-Clause for more information.
  */
 #ifndef ONNX_MLPACK_MATCHERS_MATCHER_HPP
 #define ONNX_MLPACK_MATCHERS_MATCHER_HPP
@@ -40,9 +45,6 @@ inline std::vector<std::pair<size_t, size_t>> FindConnections(
 
 /**
  * Perform an exhaustive search of all possible matching of an ONNX graph.
- *
- * NOTE: the current strategy could be quite computationally expensive,
- * especially for 
  */
 inline std::vector<Matching> MatchSubgraph(const onnx::GraphProto& graph);
 

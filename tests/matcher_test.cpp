@@ -3,9 +3,9 @@
  *
  * Test that a simple network can be matched to an mlpack graph.
  *
- * mlpack is free software; you may redistribute it and/or modify it under the
- * terms of the 3-clause BSD license.  You should have received a copy of the
- * 3-clause BSD license along with mlpack.  If not, see
+ * The ONNX/mlpack converter is free software; you may redistribute it and/or
+ * modify it under the terms of the 3-clause BSD license.  You should have
+ * received a copy of the 3-clause BSD license along with mlpack.  If not, see
  * http://www.opensource.org/licenses/BSD-3-Clause for more information.
  */
 #include <onnx_mlpack.hpp>
@@ -13,18 +13,14 @@
 
 using namespace std;
 using namespace mlpack;
-using namespace onnx_mlpack;
 
 // Check that we can load a manually-crafted ONNX network consisting of three
 // LinearNoBias layers.
 TEST_CASE("test_manual_linearnobias_network", "[matching]")
 {
-  // Load the ONNX graph.
+  // Load the ONNX graph and convert.
   const string onnxFilePath = "linear_no_bias.onnx";
-  onnx::GraphProto graph = GetGraph(onnxFilePath);
-
-  // Get the mlpack model from the graph.
-  DAGNetwork<> generatedModel = SubgraphConvert(graph);
+  DAGNetwork<> generatedModel = onnx_mlpack::Convert(onnxFilePath);
 
   REQUIRE(generatedModel.Network().size() == 3);
 
@@ -41,10 +37,9 @@ TEST_CASE("test_manual_linearnobias_network", "[matching]")
 // run it, we get pretty much the same thing.
 TEST_CASE("test_manual_linearnobias_network_forward", "[matching]")
 {
-  // Load the ONNX graph.
+  // Load the ONNX graph and convert.
   const string onnxFilePath = "linear_no_bias.onnx";
-  onnx::GraphProto graph = GetGraph(onnxFilePath);
-  DAGNetwork<> generatedModel = SubgraphConvert(graph);
+  DAGNetwork<> generatedModel = onnx_mlpack::Convert(onnxFilePath);
 
   // These are the results from running this graph with the Python onnxruntime
   // package.  (3 points.)
@@ -83,9 +78,8 @@ TEST_CASE("test_manual_linearnobias_network_forward", "[matching]")
 
 TEST_CASE("test_pytorch_linear_no_bias", "[matching]")
 {
-  // Load the ONNX graph.
-  onnx::GraphProto graph = GetGraph("pytorch_linear_no_bias.onnx");
-  DAGNetwork<> dag = SubgraphConvert(graph);
+  // Load the ONNX graph and convert.
+  DAGNetwork<> dag = onnx_mlpack::Convert("pytorch_linear_no_bias.onnx");
 
   REQUIRE(dag.Network().size() == 3);
 
@@ -114,9 +108,8 @@ TEST_CASE("test_pytorch_linear_no_bias", "[matching]")
 
 TEST_CASE("test_pytorch_linear_no_bias_dynamo", "[matching]")
 {
-  // Load the ONNX graph.
-  onnx::GraphProto graph = GetGraph("pytorch_linear_no_bias_dynamo.onnx");
-  DAGNetwork<> dag = SubgraphConvert(graph);
+  // Load the ONNX graph and convert.
+  DAGNetwork<> dag = onnx_mlpack::Convert("pytorch_linear_no_bias_dynamo.onnx");
 
   REQUIRE(dag.Network().size() == 3);
 
@@ -145,9 +138,8 @@ TEST_CASE("test_pytorch_linear_no_bias_dynamo", "[matching]")
 
 TEST_CASE("test_pytorch_linear", "[matching]")
 {
-  // Load the ONNX graph.
-  onnx::GraphProto graph = GetGraph("pytorch_linear.onnx");
-  DAGNetwork<> dag = SubgraphConvert(graph);
+  // Load the ONNX graph and convert.
+  DAGNetwork<> dag = onnx_mlpack::Convert("pytorch_linear.onnx");
 
   REQUIRE(dag.Network().size() == 3);
 
@@ -176,9 +168,8 @@ TEST_CASE("test_pytorch_linear", "[matching]")
 
 TEST_CASE("test_pytorch_linear_dynamo", "[matching]")
 {
-  // Load the ONNX graph.
-  onnx::GraphProto graph = GetGraph("pytorch_linear_dynamo.onnx");
-  DAGNetwork<> dag = SubgraphConvert(graph);
+  // Load the ONNX graph and convert.
+  DAGNetwork<> dag = onnx_mlpack::Convert("pytorch_linear_dynamo.onnx");
 
   REQUIRE(dag.Network().size() == 3);
 
@@ -207,9 +198,8 @@ TEST_CASE("test_pytorch_linear_dynamo", "[matching]")
 
 TEST_CASE("test_tf_linear_no_bias", "[matching]")
 {
-  // Load the ONNX graph.
-  onnx::GraphProto graph = GetGraph("tf_linear_no_bias.onnx");
-  DAGNetwork<> dag = SubgraphConvert(graph);
+  // Load the ONNX graph and convert.
+  DAGNetwork<> dag = onnx_mlpack::Convert("tf_linear_no_bias.onnx");
 
   REQUIRE(dag.Network().size() == 3);
 
@@ -238,9 +228,8 @@ TEST_CASE("test_tf_linear_no_bias", "[matching]")
 
 TEST_CASE("test_tf_linear", "[matching]")
 {
-  // Load the ONNX graph.
-  onnx::GraphProto graph = GetGraph("tf_linear.onnx");
-  DAGNetwork<> dag = SubgraphConvert(graph);
+  // Load the ONNX graph and convert.
+  DAGNetwork<> dag = onnx_mlpack::Convert("tf_linear.onnx");
 
   REQUIRE(dag.Network().size() == 3);
 
@@ -270,8 +259,8 @@ TEST_CASE("test_tf_linear", "[matching]")
 // Check that a network full of different activations can be converted.
 TEST_CASE("test_pytorch_activations", "[matching]")
 {
-  onnx::GraphProto graph = GetGraph("pytorch_activations.onnx");
-  DAGNetwork<> dag = SubgraphConvert(graph);
+  // Load the ONNX graph and convert.
+  DAGNetwork<> dag = onnx_mlpack::Convert("pytorch_activations.onnx");
 
   REQUIRE(dag.Network().size() == 19);
 
@@ -282,16 +271,13 @@ TEST_CASE("test_pytorch_activations", "[matching]")
   arma::mat output;
   dag.Predict(input, output);
 
-  output.print("output");
-  outputRef.print("output_ref");
-
   REQUIRE(approx_equal(output, outputRef, "both", 0.001, 0.001));
 }
 
 TEST_CASE("test_pytorch_dynamo_activations", "[matching]")
 {
-  onnx::GraphProto graph = GetGraph("pytorch_activations_dynamo.onnx");
-  DAGNetwork<> dag = SubgraphConvert(graph);
+  // Load the graph and convert.
+  DAGNetwork<> dag = onnx_mlpack::Convert("pytorch_activations_dynamo.onnx");
 
   REQUIRE(dag.Network().size() == 19);
 
@@ -307,8 +293,8 @@ TEST_CASE("test_pytorch_dynamo_activations", "[matching]")
 
 TEST_CASE("test_tensorflow_activations", "[matching]")
 {
-  onnx::GraphProto graph = GetGraph("tf_activations.onnx");
-  DAGNetwork<> dag = SubgraphConvert(graph);
+  // Load the graph and convert.
+  DAGNetwork<> dag = onnx_mlpack::Convert("tf_activations.onnx");
 
   REQUIRE(dag.Network().size() == 21);
 
@@ -319,16 +305,13 @@ TEST_CASE("test_tensorflow_activations", "[matching]")
   arma::mat output;
   dag.Predict(input, output);
 
-  output.print("output");
-  outputRef.print("outputRef");
-
   REQUIRE(approx_equal(output, outputRef, "both", 0.001, 0.001));
 }
 
 TEST_CASE("test_tensorflow_gelu_activation", "[matching]")
 {
-  onnx::GraphProto graph = GetGraph("tf_gelu_activation.onnx");
-  DAGNetwork<> dag = SubgraphConvert(graph);
+  // Load the graph and convert.
+  DAGNetwork<> dag = onnx_mlpack::Convert("tf_gelu_activation.onnx");
 
   REQUIRE(dag.Network().size() == 7);
 

@@ -12,6 +12,11 @@ add_custom_command(TARGET onnx_mlpack_test
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/test_models/ ${PROJECT_BINARY_DIR})
 
+# The mobilenet model is in the examples directory.
+add_custom_command(TARGET onnx_mlpack_test
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../examples/mobilenetv2-7.onnx ${PROJECT_BINARY_DIR})
+
 # Copy test data to build directory.
 add_custom_command(TARGET onnx_mlpack_test
     POST_BUILD
@@ -21,6 +26,11 @@ add_custom_command(TARGET onnx_mlpack_test
 add_custom_command(TARGET onnx_mlpack_test
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E tar xjf tinyyolo_data.tar.bz2
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_custom_command(TARGET onnx_mlpack_test
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E tar xjf mobilenet_data.tar.bz2
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_test(NAME onnx_mlpack_test COMMAND onnx_mlpack_test)

@@ -5,11 +5,17 @@
  * Backported definition of the Scale layer, which multiplies its inputs by a
  * constant value.
  *
- * mlpack is free software; you may redistribute it and/or modify it under the
- * terms of the 3-clause BSD license.  You should have received a copy of the
- * 3-clause BSD license along with mlpack.  If not, see
+ * The ONNX/mlpack converter is free software; you may redistribute it and/or
+ * modify it under the terms of the 3-clause BSD license.  You should have
+ * received a copy of the 3-clause BSD license along with mlpack.  If not, see
  * http://www.opensource.org/licenses/BSD-3-Clause for more information.
  */
+
+// If the mlpack version is too old, we need to include the backported Scale
+// layer.
+#if MLPACK_VERSION_MAJOR <= 4 || \
+    (MLPACK_VERSION_MAJOR == 4 && MLPACK_VERSION_MINOR <= 8)
+
 // We use the same header guard in case the user happens to have a branch that
 // has the Scale layer but hasn't had its version bumped.
 #ifndef MLPACK_METHODS_ANN_LAYER_SCALE_HPP
@@ -104,5 +110,7 @@ class Scale : public Layer<MatType>
 
 // Include implementation.
 #include "scale_impl.hpp"
+
+#endif
 
 #endif

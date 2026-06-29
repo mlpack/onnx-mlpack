@@ -3,6 +3,11 @@
  * @author Ryan Curtin
  *
  * Candidate ONNX subgraphs that can match the Conv layer.
+ *
+ * The ONNX/mlpack converter is free software; you may redistribute it and/or
+ * modify it under the terms of the 3-clause BSD license.  You should have
+ * received a copy of the 3-clause BSD license along with mlpack.  If not, see
+ * http://www.opensource.org/licenses/BSD-3-Clause for more information.
  */
 #ifndef ONNX_MLPACK_MATCHERS_CONV_ADD_IMPL_HPP
 #define ONNX_MLPACK_MATCHERS_CONV_ADD_IMPL_HPP
@@ -178,7 +183,7 @@ inline bool ConvAddSubgraph::Validate(
 
   // Get the number of groups, if it's grouped convolution.
   int groups = 1;
-  if (!ExtractAttribute(conv, "groups", groups))
+  if (!ExtractAttribute(conv, "group", groups))
     return false;
 
   // The bias in the add node must have the right shape.
@@ -246,7 +251,7 @@ inline void ConvAddSubgraph::Convert(
 
   // Extract whether or not we are doing grouped convolution.
   int groups = 1;
-  if (!ExtractAttribute(conv, "groups", groups))
+  if (!ExtractAttribute(conv, "group", groups))
   {
     throw std::runtime_error("ConvSubgraph::Convert(): cannot extract 'groups'"
         " attribute!");
@@ -483,7 +488,7 @@ inline void ConvAddSubgraph::TransferWeights(
 
   // Extract whether or not we are doing grouped convolution.
   int groups = 1;
-  if (!ExtractAttribute(conv, "groups", groups))
+  if (!ExtractAttribute(conv, "group", groups))
   {
     throw std::runtime_error("ConvSubgraph::TransferWeights(): cannot extract "
         "'groups' attribute!");

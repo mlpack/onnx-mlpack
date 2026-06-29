@@ -5,6 +5,11 @@
  * Support for matching ONNX subgraphs.  This includes all of the
  * implementations in a specific order, because the Matching class depends on
  * the Subgraph class (and vice versa).
+ *
+ * The ONNX/mlpack converter is free software; you may redistribute it and/or
+ * modify it under the terms of the 3-clause BSD license.  You should have
+ * received a copy of the 3-clause BSD license along with mlpack.  If not, see
+ * http://www.opensource.org/licenses/BSD-3-Clause for more information.
  */
 #ifndef ONNX_MLPACK_MATCHERS_MATCH_HPP
 #define ONNX_MLPACK_MATCHERS_MATCH_HPP
@@ -43,6 +48,9 @@
 #include "conv_add.hpp"
 #include "mul_scalar.hpp"
 #include "batch_norm.hpp"
+#include "softmax.hpp"
+#include "add_connection.hpp"
+#include "mean_pooling.hpp"
 
 #include "matcher_impl.hpp"
 #include "subgraph_impl.hpp"
@@ -78,5 +86,8 @@
 #include "conv_add_impl.hpp"
 #include "mul_scalar_impl.hpp"
 #include "batch_norm_impl.hpp"
+#include "softmax_impl.hpp"
+#include "add_connection_impl.hpp"
+#include "mean_pooling_impl.hpp"
 
 #endif

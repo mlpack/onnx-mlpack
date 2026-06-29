@@ -37,22 +37,22 @@
  *    separate Add node to add in the bias.
  *
  * For the sake of testing our converter, weird is good.
+ *
+ * The ONNX/mlpack converter is free software; you may redistribute it and/or
+ * modify it under the terms of the 3-clause BSD license.  You should have
+ * received a copy of the 3-clause BSD license along with mlpack.  If not, see
+ * http://www.opensource.org/licenses/BSD-3-Clause for more information.
  */
 #include <onnx_mlpack.hpp>
 #include "catch.hpp"
 
 using namespace std;
 using namespace mlpack;
-using namespace onnx_mlpack;
 
 TEST_CASE("lenet5_test", "[lenet]")
 {
-  // Load the ONNX graph.
-  const string onnxFilePath = "onnc-lenet5.onnx";
-  onnx::GraphProto graph = GetGraph(onnxFilePath);
-
   // Get the mlpack model from the graph.
-  DAGNetwork<> generatedModel = SubgraphConvert(graph);
+  DAGNetwork<> generatedModel = onnx_mlpack::Convert("onnc-lenet5.onnx");
 
   REQUIRE(generatedModel.Network().size() == 11);
 

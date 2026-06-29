@@ -4,6 +4,11 @@
  *
  * If an ONNX graph has operations that don't actually do anything, they can be
  * trivially removed.
+ *
+ * The ONNX/mlpack converter is free software; you may redistribute it and/or
+ * modify it under the terms of the 3-clause BSD license.  You should have
+ * received a copy of the 3-clause BSD license along with mlpack.  If not, see
+ * http://www.opensource.org/licenses/BSD-3-Clause for more information.
  */
 #ifndef ONNX_MLPACK_REMOVE_USELESS_NODES_HPP
 #define ONNX_MLPACK_REMOVE_USELESS_NODES_HPP
@@ -33,8 +38,6 @@ inline void RemoveUselessNodes(onnx::GraphProto& graph)
     }
     else if (node.op_type() == "Mul" || node.op_type() == "Add")
     {
-      std::cout << "check if we can remove node " << n << " (" << node.op_type() << ")\n";
-
       // We can remove a Mul node if we are multiplying by all 1 values, and an
       // Add node if we are adding only zero values.
       const double targetValue = (node.op_type() == "Mul") ? 1.0 : 0.0;
@@ -75,6 +78,52 @@ inline void RemoveUselessNodes(onnx::GraphProto& graph)
       {
         nodesToRemove.insert(n);
         tensorReplacements[node.output(0)] = aName;
+      }
+    }
+    else if (node.op_type() == "Reshape")
+    {
+      // If the last node in the graph is a Reshape node, this operation does
+      // not actually change any data.  Since mlpack's DAGNetwork's dimensions
+      // are all logical, this doesn't make a difference and we can remove it.
+      bool usedAsInput = false;
+      for (size_t i = 0; i < graph.node_size(); ++i)
+      {
+        if (i == n)
+          continue;
+
+        for (size_t j = 0; j < graph.node(i).input_size(); ++j)
+        {
+          if (graph.node(i).input(j) == node.output(0))
+          {
+            usedAsInput = true;
+            break;
+          }
+        }
+
+        if (usedAsInput)
+          break;
+      }
+
+      if (!usedAsInput)
+      {
+        bool usedAsOutput = false;
+        for (size_t i = 0; i < graph.output_size(); ++i)
+        {
+          if (graph.output(i).has_name() &&
+              graph.output(i).name() == node.output(0))
+          {
+            usedAsOutput = true;
+            break;
+          }
+        }
+
+        if (usedAsOutput)
+        {
+          // This Reshape node is only used as the output of the whole ONNX
+          // graph, so we can remove it.
+          nodesToRemove.insert(n);
+          tensorReplacements[node.output(0)] = node.input(0);
+        }
       }
     }
   }

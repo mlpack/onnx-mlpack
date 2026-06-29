@@ -4,39 +4,73 @@
  * @author Ryan Curtin
  *
  * Top-level functions for converting ONNX graphs to mlpack DAGNetworks.
+ *
+ * The ONNX/mlpack converter is free software; you may redistribute it and/or
+ * modify it under the terms of the 3-clause BSD license.  You should have
+ * received a copy of the 3-clause BSD license along with mlpack.  If not, see
+ * http://www.opensource.org/licenses/BSD-3-Clause for more information.
  */
-#ifndef CONVERT_HPP
-#define CONVERT_HPP
+#ifndef ONNX_MLPACK_CONVERT_HPP
+#define ONNX_MLPACK_CONVERT_HPP
 
-#include "attribute.hpp"
-#include "add_layer.hpp"
+#include <onnx/onnx_pb.h>
+#include <mlpack.hpp>
 
 namespace onnx_mlpack {
 
 /**
- * Load an ONNX model from the specified file path.
- *
- * This function reads an ONNX model from the provided file path and returns the
- * corresponding GraphProto object.
+ * Load an ONNX model from the specified file path and perform shape inference
+ * on it.
  *
  * @param filepath The path to the .onnx file.
  * @return onnx::GraphProto The graph representation of the ONNX model.
  */
-inline onnx::GraphProto GetGraph(const std::string& filePath);
+inline onnx::GraphProto Load(const std::string& filePath);
 
 /**
- * Convert an ONNX model graph to an mlpack FFN model.
+ * Simplify the given ONNX graph for conversion to mlpack:
  *
- * The core logic for converting an ONNX model into an mlpack FFN model is
- * implemented in this function. Refer to the implementation for detailed steps.
+ *  - Unnecessary Reshapes are removed.
+ *  - Unnecessary Add and Mul operators are removed.
+ *  - Identity nodes are removed.
  *
- * @param graph The ONNX model's graph representation.
+ * This does in-place modification of the given graph.
+ */
+inline void Simplify(onnx::GraphProto& graph);
+
+/**
+ * Load and convert an ONNX model graph to an mlpack DAGNetwork by matching
+ * subgraphs of the ONNX model to individual mlpack layers.
+ *
+ * If the ONNX model cannot be converted into an mlpack DAGNetwork, a
+ * std::runtime_error will be thrown with more details.
+ *
+ * @param filename The name of the file to load the ONNX graph from.
+ * @param logLevel Level of logging output (0-3).  Higher levels gives more
+ *     output.
  * @return mlpack::DAGNetwork<> The equivalent mlpack FFN model.
  */
-inline mlpack::DAGNetwork<> Convert(onnx::GraphProto& graph);
+inline mlpack::DAGNetwork<> Convert(const std::string& filename,
+                                    const size_t logLevel = 0);
+
+/**
+ * Convert an ONNX model graph to an mlpack DAGNetwork by matching
+ * subgraphs of the ONNX model to individual mlpack layers.  Make sure that
+ * `Simplify()` has been called on the ONNX graph first.
+ *
+ * If the ONNX model cannot be converted into an mlpack DAGNetwork, a
+ * std::runtime_error will be thrown with more details.
+ *
+ * @param graph The ONNX model's graph representation.
+ * @param logLevel Level of logging output (0-3).  Higher levels gives more
+ *     output.
+ * @return mlpack::DAGNetwork<> The equivalent mlpack FFN model.
+ */
+inline mlpack::DAGNetwork<> Convert(const onnx::GraphProto& graph,
+                                    const size_t logLevel = 0);
 
 } // namespace onnx_mlpack
 
 #include "convert_impl.hpp"
 
-#endif // CONVERT_HPP
+#endif // ONNX_MLPACK_CONVERT_HPP
