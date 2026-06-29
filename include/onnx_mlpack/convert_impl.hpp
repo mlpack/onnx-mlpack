@@ -51,98 +51,9 @@ inline onnx::GraphProto GetGraph(const std::string &filePath)
   return graph;
 }
 
-/**
- * Convert an ONNX graph to an mlpack FFN model.
- *
- * We iterate through the nodes of the ONNX graph in topological order, adding
- * the corresponding layers to the `mlpack::FFN` model and storing the
- * parameters in `layerParameters`. After adding all the layers to the FFN, we
- * call `ffn.Reset()` to ensure all layers adjust their input/output dimensions
- * and check for compatibility.
- *
- * Finally, we iterate through the layers again, transferring the corresponding
- * weights to the FFN layers.
- */
-inline mlpack::DAGNetwork<> Convert(onnx::GraphProto& graph)
-{
-  mlpack::DAGNetwork<> dag;
-
-  // Get the name of the first node to set the input dimensions of the DAG.
-  std::string modelInput = ModelInput(graph);
-  dag.InputDimensions() = InputDimension(graph, modelInput);
-
-  // Get the nodes in topologically sorted order.
-  std::vector<std::vector<size_t>> adj = AdjacencyMatrix(graph);
-  std::vector<size_t> topoSortedNode = TopologicallySortedNodes(graph, adj);
-  std::map<size_t, std::vector<size_t>> onnxLayerIndex_mlpackLayerIndex;
-
-  // Iterate through the topologically sorted nodes.
-  size_t index = 1;
-  for (size_t nodeIndex : topoSortedNode)
-  {
-    // Get the actual node from its index.
-    const onnx::NodeProto &node = graph.node(nodeIndex);
-
-    std::cout << index << " " << node.name() << " => " << node.op_type()
-        << std::endl;
-    index++;
-    // Extract the attributes from the node.
-    std::map<std::string, double> onnxOperatorAttribute =
-        OnnxOperatorAttribute(graph, node);
-
-    // Use the attributes to generate an mlpack layer and add that layer to the
-    // FFN.  This step adds the layer to the FFN and stores the parameters in
-    // `layerParameters`.
-    onnxLayerIndex_mlpackLayerIndex[nodeIndex] =
-        AddLayer(dag, graph, node, onnxOperatorAttribute);
-  }
-
-  // Make connection in the DAG.
-  for (size_t currOnnxNode = 0; currOnnxNode < adj.size(); currOnnxNode++)
-  {
-    std::vector<size_t> currMlpackLayer =
-        onnxLayerIndex_mlpackLayerIndex[currOnnxNode];
-
-    for (auto nextOnnxNode : adj[currOnnxNode])
-    {
-      std::vector<size_t> nextMlpackLayer =
-          onnxLayerIndex_mlpackLayerIndex[nextOnnxNode];
-
-      dag.Connect(
-          currMlpackLayer[currMlpackLayer.size() - 1],
-          nextMlpackLayer[0]);
-    }
-  }
-
-  // Reset the FFN to ensure all layers adjust their input/output dimensions.
-  dag.Reset();
-
-  /*
-  Method 2: Flatten the layer parameters, put them all together,
-  and then transfer the whole parameters to the model at once.
-  */
-  // arma::mat flattenParameters = FlattenParameters(layerParameters);
-  // ffn.Parameters() = flattenParameters;
-
-  /*
-  Method 1: Transfer the parameters to each layer one by one.
-  */
-  for (auto nodeIndex : topoSortedNode)
-  {
-    const onnx::NodeProto &node = graph.node(nodeIndex);
-    std::map<std::string, double> onnxOperatorAttribute =
-        OnnxOperatorAttribute(graph, node);
-    TransferWeights(dag, onnxLayerIndex_mlpackLayerIndex[nodeIndex], graph,
-        node, onnxOperatorAttribute);
-    std::cout << "Transferred parameters to layer " << node.op_type()
-        << std::endl;
-  }
-
-  return dag;
-}
-
-// Eventually this will replace Convert() overall.
-inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
+// Convert the given ONNX graph into an mlpack DAGNetwork by iteratively
+// matching subgraphs of the ONNX network.
+inline mlpack::DAGNetwork<> Convert(const onnx::GraphProto& graph)
 {
   // Before we start, we need to ensure that the graph has only one
   // input for which there isn't an initializer.
@@ -163,8 +74,8 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
 
   if (inputsWithoutInitializers != 1)
   {
-    throw std::runtime_error("SubgraphConvert(): input ONNX graph must have "
-        "one and only one input without an initializer!");
+    throw std::runtime_error("onnx_mlpack::Convert(): input ONNX graph must "
+        "have one and only one input without an initializer!");
   }
 
   // First collect all of the subgraphs that we might be trying to match.
@@ -243,8 +154,8 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
   const onnx::ValueInfoProto& input = graph.input(0);
   if (!input.has_type() || !input.type().has_tensor_type())
   {
-    throw std::runtime_error("SubgraphConvert(): ONNX graph input must be of "
-        "tensor type!");
+    throw std::runtime_error("onnx_mlpack::Convert(): ONNX graph input must be "
+        "of tensor type!");
   }
 
   // ONNX generally uses the first dimension as the batch size; we need to
@@ -259,8 +170,8 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
     if (!input.type().tensor_type().shape().dim(i).has_dim_value())
     {
       std::ostringstream oss;
-      oss << "SubgraphConvert(): ONNX graph input dimension " << i << " does "
-          << "not have specified size; cannot convert!";
+      oss << "onnx_mlpack::Convert(): ONNX graph input dimension " << i
+          << " does not have specified size; cannot convert!";
       throw std::runtime_error(oss.str());
     }
     inputDims[numDims - i - 1] =

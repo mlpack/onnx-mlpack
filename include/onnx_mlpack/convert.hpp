@@ -5,11 +5,8 @@
  *
  * Top-level functions for converting ONNX graphs to mlpack DAGNetworks.
  */
-#ifndef CONVERT_HPP
-#define CONVERT_HPP
-
-#include "attribute.hpp"
-#include "add_layer.hpp"
+#ifndef ONNX_MLPACK_CONVERT_HPP
+#define ONNX_MLPACK_CONVERT_HPP
 
 namespace onnx_mlpack {
 
@@ -39,4 +36,4 @@ inline mlpack::DAGNetwork<> Convert(onnx::GraphProto& graph);
 
 #include "convert_impl.hpp"
 
-#endif // CONVERT_HPP
+#endif // ONNX_MLPACK_CONVERT_HPP
