@@ -21,17 +21,17 @@
 
 namespace onnx_mlpack {
 
-// Load an ONNX model from the specified path.
-inline onnx::GraphProto GetGraph(const std::string &filePath)
+// Load an ONNX network and apply shape inference.
+inline onnx::GraphProto Load(const std::string& filename)
 {
   // ModelProto contains the ONNX graph along with some metadata.
   // We only need the graph from the ModelProto.
   onnx::ModelProto onnxModel;
-  std::ifstream in(filePath, std::ios_base::binary);
+  std::ifstream in(filename, std::ios_base::binary);
   if (!in.is_open())
   {
-    throw std::runtime_error("Failed to open ONNX model file '" + filePath +
-        "'!");
+    throw std::runtime_error("onnx_mlpack::Load(): Failed to open ONNX model "
+        "file '" + filename + "'!");
   }
   // Parse the ONNX model from the input stream.
   onnxModel.ParseFromIstream(&in);
@@ -40,15 +40,26 @@ inline onnx::GraphProto GetGraph(const std::string &filePath)
   // Perform shape inference on the model.
   onnx::shape_inference::InferShapes(onnxModel);
 
+  return onnxModel.graph();
+}
+
+// Simplify the structure of an ONNX model.
+inline void Simplify(onnx::GraphProto& graph)
+{
   // Apply any reshapes on inputs to the graph.
-  onnx::GraphProto graph = onnxModel.graph();
   ApplyInitialReshapes(graph);
 
   // Remove any useless operators if possible.
   RemoveUselessNodes(graph);
+}
 
-  // Return the graph from the ONNX model.
-  return graph;
+// Load and preprocess the given ONNX graph, and convert into an mlpack
+// DAGNetwork.
+inline mlpack::DAGNetwork<> Convert(const std::string& filename)
+{
+  onnx::GraphProto graph = Load(filename);
+  Simplify(graph);
+  return Convert(graph);
 }
 
 // Convert the given ONNX graph into an mlpack DAGNetwork by iteratively
