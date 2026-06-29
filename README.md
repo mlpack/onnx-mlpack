@@ -18,7 +18,9 @@ directly in C++.
 
 ## Setup
 
-1. Dependencies: make sure that you have, available on your system,
+### 1. Dependencies
+
+Make sure that you have, available on your system,
 
  - C++17 compiler
  - CMake
@@ -42,7 +44,9 @@ On Fedora/RHEL, this command can be used:
 sudo dnf install cmake gcc-c++ mlpack-devel onnx-devel protobuf-devel
 ```
 
-2. Configuration: create a build directory and use CMake to configure:
+### 2. Configuration
+
+Create a build directory and use CMake to configure:
 
 ```sh
 mkdir build/
@@ -53,13 +57,17 @@ cmake ../
 Note that this will automatically fetch mlpack and its dependencies if they are
 not found on the system.
 
-3. Build the converter:
+### 3. Build the converter
+
+Now build the converter in the build directory.
 
 ```sh
 make onnx_mlpack_converter
 ```
 
-4. Optionally, install the converter and header files to the system:
+### 4. Install the converter
+
+Optionally, install the converter and header files to the system:
 
 ```sh
 sudo make install
