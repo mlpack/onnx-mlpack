@@ -8,16 +8,15 @@
 
 using namespace std;
 using namespace mlpack;
-using namespace onnx_mlpack;
 
 TEST_CASE("tiny_yolo_subgraph_match", "[yolo-tiny]")
 {
   // Load the ONNX network.
   const string onnxFilePath = "tinyyolo-v2.3-o8.onnx";
-  onnx::GraphProto graph = GetGraph(onnxFilePath);
+  onnx::GraphProto graph = onnx_mlpack::GetGraph(onnxFilePath);
 
   // Convert to mlpack DAGNetwork.
-  DAGNetwork<> generatedModel = SubgraphConvert(graph);
+  DAGNetwork<> generatedModel = onnx_mlpack::Convert(graph);
 
   REQUIRE(generatedModel.Network().size() == 38);
 

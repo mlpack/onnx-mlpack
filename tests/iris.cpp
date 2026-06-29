@@ -14,7 +14,6 @@
 
 using namespace std;
 using namespace mlpack;
-using namespace onnx_mlpack;
 
 // Check that we can load the ONNX iris network, and check the network
 // structure.
@@ -22,10 +21,10 @@ TEST_CASE("test_iris_onnx_load", "[iris]")
 {
   // Load the ONNX graph.
   const string onnxFilePath = "iris_model.onnx";
-  onnx::GraphProto graph = GetGraph(onnxFilePath);
+  onnx::GraphProto graph = onnx_mlpack::GetGraph(onnxFilePath);
 
   // Get the mlpack model from the graph.
-  DAGNetwork<> generatedModel = Convert(graph);
+  DAGNetwork<> generatedModel = onnx_mlpack::Convert(graph);
 
   REQUIRE(generatedModel.Network().size() == 6);
 
@@ -45,10 +44,10 @@ TEST_CASE("test_iris_convert_and_predict", "[iris]")
 {
   // Load the ONNX graph.
   const string onnxFilePath = "iris_model.onnx";
-  onnx::GraphProto graph = GetGraph(onnxFilePath);
+  onnx::GraphProto graph = onnx_mlpack::GetGraph(onnxFilePath);
 
   // Get the mlpack model from the graph.
-  DAGNetwork<> generatedModel = Convert(graph);
+  DAGNetwork<> generatedModel = onnx_mlpack::Convert(graph);
 
   // Load the iris data for classification.
   arma::mat data;
