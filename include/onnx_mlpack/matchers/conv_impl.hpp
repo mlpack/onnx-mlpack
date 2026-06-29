@@ -170,7 +170,7 @@ inline bool ConvSubgraph::Validate(
 
   // Get the number of groups, if it's grouped convolution.
   int groups = 1;
-  if (!ExtractAttribute(conv, "groups", groups))
+  if (!ExtractAttribute(conv, "group", groups))
     return false;
 
   // If we have a bias, ensure that it has the right size.
@@ -239,7 +239,7 @@ inline void ConvSubgraph::Convert(
 
   // Extract whether or not we are doing grouped convolution.
   int groups = 1;
-  if (!ExtractAttribute(conv, "groups", groups))
+  if (!ExtractAttribute(conv, "group", groups))
   {
     throw std::runtime_error("ConvSubgraph::Convert(): cannot extract 'groups'"
         " attribute!");
@@ -476,7 +476,7 @@ inline void ConvSubgraph::TransferWeights(
 
   // Extract whether or not we are doing grouped convolution.
   int groups = 1;
-  if (!ExtractAttribute(conv, "groups", groups))
+  if (!ExtractAttribute(conv, "group", groups))
   {
     throw std::runtime_error("ConvSubgraph::TransferWeights(): cannot extract "
         "'groups' attribute!");
