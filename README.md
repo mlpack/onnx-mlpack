@@ -181,6 +181,6 @@ and `Makefile`.
 ## Notes
 
 This repository is under active development!  At this particular moment, support
-is pretty primitive, but it is actively being expanded.  If you have a network
-that does not match properly, or encounter other problems, please feel free to
-open a bug report and we will look into the issue.
+is not available for all ONNX operators, but it is actively being expanded.  If
+you have a network that does not match properly, or encounter other problems,
+please feel free to open a bug report and we will look into the issue.
