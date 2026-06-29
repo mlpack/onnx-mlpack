@@ -9,5 +9,32 @@
 #include "catch.hpp"
 
 using namespace std;
+using namespace mlpack;
 using namespace onnx_mlpack;
 
+TEST_CASE("test_mobilenet_subgraph_match", "[mobilenet]")
+{
+  const string onnxFilePath = "mobilenetv2-7.onnx";
+  onnx::GraphProto graph = GetGraph(onnxFilePath);
+
+  DAGNetwork<> generatedModel = SubgraphConvert(graph);
+
+  REQUIRE(generatedModel.SortedNetwork().size() > 0);
+
+  // We could load an image with mlpack's data loader, but STB might choose a
+  // slightly different pixel value than matplotlib's image loader, so we
+  // instead just load images that were exported from matplotlib.
+  arma::mat inputData;
+  Load("mobilenet_inputs.csv", inputData, Fatal);
+
+  arma::mat outputData;
+  Load("mobilenet_outputs.csv", outputData, Fatal);
+
+  // Test running some inputs through the network.
+  arma::mat actualOutputs;
+  generatedModel.Predict(inputData, actualOutputs);
+
+  REQUIRE(actualOutputs.n_cols == outputData.n_cols);
+  REQUIRE(actualOutputs.n_rows == outputData.n_rows);
+  REQUIRE(approx_equal(actualOutputs, outputData, "both", 0.001, 0.001));
+}

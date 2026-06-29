@@ -112,6 +112,11 @@ inline mlpack::DAGNetwork<> Convert(const onnx::GraphProto& graph)
   subgraphs.push_back(new MulScalarSubgraph());
   subgraphs.push_back(new BatchNormSubgraph());
   subgraphs.push_back(new SoftmaxSubgraph());
+  subgraphs.push_back(new MeanPoolingSubgraph());
+
+  // NOTE: this rule should be last!  Otherwise, internal Add connections inside
+  // of a more complex layer may not be recognized correctly.
+  subgraphs.push_back(new AddConnectionSubgraph());
 
   // Find the best subgraph match.
   const Matching m = Matcher(graph, subgraphs);
@@ -145,10 +150,109 @@ inline mlpack::DAGNetwork<> Convert(const onnx::GraphProto& graph)
     layerOutputs[i] = layerOutputs[i - 1] + layerCounts[i];
   }
 
-  // Now make connections between each of the vertices.
+  // Find all the connections between subgraphs.
   std::vector<std::pair<size_t, size_t>> connections =
       FindConnections(m, graph);
+
+  // Collect which of the matches are the special AddConnection subgraphs.
+  // The first element in the pair is the index in m.matches of the
+  // AddConnection subgraph, and the second is the index of the subgraph in
+  // m.matches that it is connected to.
+  std::unordered_map<size_t, std::vector<size_t>> addConnections;
+  for (size_t i = 0; i < m.matches.size(); ++i)
+  {
+    const std::string name = m.matches[i].second->Name();
+    if (name == "AddConnection")
+    {
+      addConnections[i] = {};
+
+      // Find what the AddConnection is connected to.
+      for (const std::pair<size_t, size_t>& p : connections)
+        if (p.first == i)
+          addConnections[i].push_back(p.second);
+
+      if (addConnections[i].size() == 0)
+      {
+        std::ostringstream oss;
+        oss << "SubgraphConvert(): AddConnection subgraph " << i << " has no "
+            << "output connection!";
+        throw std::runtime_error(oss.str());
+      }
+    }
+  }
+
+  // Now make connections between each of the vertices.
   for (const std::pair<size_t, size_t>& p : connections)
+    if (m.matches[p.first].second->Name() == "AddConnection")
+      addConnections[p.first].push_back(p.second);
+
+  // Each pair `p` connects the output of the subgraph index `p.first` to the
+  // input of the subgraph index `p.second`.  However, there is one tricky
+  // case: when the subgraph is an `AddConnection`, then no layer was actually
+  // added to the DAGNetwork.  Instead, we need to connect the inputs of the
+  // `AddConnection` to whatever the *next* layer is, and mark the connection
+  // as an "ADDITION" connection.
+  for (std::pair<const size_t, std::vector<size_t>>& p : addConnections)
+  {
+    // If any outputs of the AddConnection p.first are connected to another
+    // AddConnection, we have to instead add the outputs of the target
+    // AddConnection, and repeat this until there are no more AddConnections
+    // in the list.
+    bool updated = true;
+    while (updated)
+    {
+      std::unordered_set<size_t> addConnectionIndices;
+      std::unordered_set<size_t> newConnections;
+
+      for (const size_t& t : p.second)
+      {
+        if (addConnections.count(t) > 0)
+          addConnectionIndices.insert(t);
+        else
+          newConnections.insert(t);
+      }
+
+      if (addConnectionIndices.size() == 0)
+        updated = false;
+
+      for (const size_t& t : addConnectionIndices)
+        for (const size_t& tt : addConnections[t])
+          newConnections.insert(tt);
+
+      p.second.clear();
+      for (const size_t& t : newConnections)
+        p.second.push_back(t);
+    }
+  }
+
+  // Any layers with an AddConnection as input should have the ADDITION
+  // connection type.
+  for (const std::pair<const size_t, std::vector<size_t>>& p : addConnections)
+    for (const size_t& target : p.second)
+      result.SetConnection(target, mlpack::ConnectionTypes::ADDITION);
+
+  // Now, replace any connections between an AddConnection and another layer
+  // with whatever the actual connection should be.  (There could be multiple
+  // connections that we have to add for a single AddConnection.)
+  std::vector<std::pair<size_t, size_t>> finalConnections;
+  for (const std::pair<size_t, size_t>& p : connections)
+  {
+    if (addConnections.count(p.first) > 0)
+    {
+      continue;
+    }
+    else if (addConnections.count(p.second) > 0)
+    {
+      for (const size_t& t : addConnections[p.second])
+        finalConnections.push_back(std::make_pair(p.first, t));
+    }
+    else
+    {
+      finalConnections.push_back(p);
+    }
+  }
+
+  for (const std::pair<size_t, size_t>& p : finalConnections)
     result.Connect(layerOutputs[p.first], layerInputs[p.second]);
 
   // Extract the size of the input.

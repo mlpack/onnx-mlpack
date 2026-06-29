@@ -318,7 +318,8 @@ inline Matching Matcher(const onnx::GraphProto& graph,
       std::cout << "    - { ";
       for (size_t k = 0; k < finalMatchings[i].matches[j].first.size(); ++k)
         std::cout << finalMatchings[i].matches[j].first[k] << " ";
-      std::cout << "}" << std::endl;
+      std::cout << "} => " << finalMatchings[i].matches[j].second->Name()
+          << std::endl;
     }
   }
 
