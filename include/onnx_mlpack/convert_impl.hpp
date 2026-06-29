@@ -317,7 +317,7 @@ inline mlpack::DAGNetwork<> SubgraphConvert(const onnx::GraphProto& graph)
   // connection type.
   for (const std::pair<const size_t, std::vector<size_t>>& p : addConnections)
     for (const size_t& target : p.second)
-      result.SetConnection(target, mlpack::ADDITION);
+      result.SetConnection(target, mlpack::ConnectionTypes::ADDITION);
 
   // Now, replace any connections between an AddConnection and another layer
   // with whatever the actual connection should be.  (There could be multiple
