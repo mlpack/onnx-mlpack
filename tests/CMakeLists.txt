@@ -12,6 +12,11 @@ add_custom_command(TARGET onnx_mlpack_test
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/test_models/ ${PROJECT_BINARY_DIR})
 
+# The TinyYOLO model is in the examples directory.
+add_custom_command(TARGET onnx_mlpack_test
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../examples/ ${PROJECT_BINARY_DIR})
+
 # Copy test data to build directory.
 add_custom_command(TARGET onnx_mlpack_test
     POST_BUILD
