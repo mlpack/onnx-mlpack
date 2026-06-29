@@ -43,6 +43,7 @@
 #include "conv_add.hpp"
 #include "mul_scalar.hpp"
 #include "batch_norm.hpp"
+#include "softmax.hpp"
 
 #include "matcher_impl.hpp"
 #include "subgraph_impl.hpp"
@@ -78,5 +79,6 @@
 #include "conv_add_impl.hpp"
 #include "mul_scalar_impl.hpp"
 #include "batch_norm_impl.hpp"
+#include "softmax_impl.hpp"
 
 #endif

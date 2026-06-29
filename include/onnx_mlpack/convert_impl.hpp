@@ -111,6 +111,7 @@ inline mlpack::DAGNetwork<> Convert(const onnx::GraphProto& graph)
   subgraphs.push_back(new ConvAddSubgraph());
   subgraphs.push_back(new MulScalarSubgraph());
   subgraphs.push_back(new BatchNormSubgraph());
+  subgraphs.push_back(new SoftmaxSubgraph());
 
   // Find the best subgraph match.
   const Matching m = Matcher(graph, subgraphs);
