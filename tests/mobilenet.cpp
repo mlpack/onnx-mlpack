@@ -10,14 +10,13 @@
 
 using namespace std;
 using namespace mlpack;
-using namespace onnx_mlpack;
 
 TEST_CASE("test_mobilenet_subgraph_match", "[mobilenet]")
 {
   const string onnxFilePath = "mobilenetv2-7.onnx";
-  onnx::GraphProto graph = GetGraph(onnxFilePath);
+  onnx::GraphProto graph = onnx_mlpack::GetGraph(onnxFilePath);
 
-  DAGNetwork<> generatedModel = SubgraphConvert(graph);
+  DAGNetwork<> generatedModel = onnx_mlpack::Convert(graph);
 
   REQUIRE(generatedModel.SortedNetwork().size() > 0);
 
