@@ -235,6 +235,28 @@ arma::Mat<eT> TensorToArma(const onnx::TensorProto& tensor,
   }
 }
 
+/**
+ * Convert the data for the given name of a tensor into Armadillo format.
+ *
+ * This first finds the given named tensor and then calls TensorToArma().
+ *
+ * If the tensor cannot be found, an exception is thrown.
+ */
+template<typename eT = double>
+arma::Mat<eT> TensorToArma(const onnx::GraphProto& graph,
+                           const std::string& name,
+                           const bool flatten = false)
+{
+  size_t index = graph.initializer_size();
+  for (size_t i = 0; i < graph.initializer_size(); ++i)
+    if (graph.initializer(i).has_name() && graph.initializer(i).name() == name)
+      return TensorToArma(graph.initializer(i), flatten);
+
+  throw std::runtime_error("TensorToArma(): could not find named tensor '" +
+      name + "' in ONNX graph initializers!");
+}
+
+
 } // namespace onnx_mlpack
 
 #endif

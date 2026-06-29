@@ -14,6 +14,7 @@
 
 #include "conv.hpp"
 #include "../extract_attribute.hpp"
+#include "../extract_tensor_dims.hpp"
 
 namespace onnx_mlpack {
 
@@ -53,27 +54,9 @@ inline bool ConvSubgraph::Validate(
 
   const std::string& wName = conv.input(1);
   bool foundInitializer = false;
-  size_t maps = 0;
-  size_t channels = 0;
-  size_t kernelWidth = 0;
-  size_t kernelHeight = 0;
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
-  {
-    // Kernel size is expected to be (M x (C/g) x H x W).
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == wName &&
-        graph.initializer(i).dims_size() == 4)
-    {
-      foundInitializer = true;
-      maps = graph.initializer(i).dims(0);
-      channels = graph.initializer(i).dims(1);
-      kernelHeight = graph.initializer(i).dims(2);
-      kernelWidth = graph.initializer(i).dims(3);
-    }
-  }
-
-  // If we didn't find the initializer and don't have a shape, we can't proceed.
-  if (!foundInitializer)
+  std::vector<size_t> kernelDims;
+  ExtractTensorDims(graph, wName, kernelDims, true);
+  if (kernelDims.size() != 4)
     return false;
 
   // Make sure the kernel shape is two-dimensional.
@@ -83,15 +66,14 @@ inline bool ConvSubgraph::Validate(
   if (kernelShape.size() == 0)
   {
     // Infer the kernel shape from the weights.
-    kernelShape.push_back(kernelHeight);
-    kernelShape.push_back(kernelWidth);
+    kernelShape.push_back(kernelDims[2]);
+    kernelShape.push_back(kernelDims[3]);
   }
   else if (kernelShape.size() != 2)
   {
     return false; // Kernel shape is invalid.
   }
-  else if (foundInitializer &&
-           (kernelShape[0] != kernelHeight || kernelShape[1] != kernelWidth))
+  else if (kernelShape[0] != kernelDims[2] || kernelShape[1] != kernelDims[3])
   {
     return false; // Kernel shape does not match tensor.
   }
@@ -127,42 +109,13 @@ inline bool ConvSubgraph::Validate(
   if (autoPad == "SAME_UPPER" || autoPad == "SAME_LOWER")
   {
     // Get the input width and height.
-    size_t inputWidth = 0;
-    size_t inputHeight = 0;
-    for (size_t i = 0; i < graph.initializer_size(); ++i)
-    {
-      const onnx::TensorProto& t = graph.initializer(i);
-      if (t.has_name() && t.name() == conv.input(0) && t.dims_size() == 4)
-      {
-        inputHeight = t.dims(2);
-        inputWidth = t.dims(3);
-        break;
-      }
-    }
-
-    // If we did not find the input size, check the ValueInfoProtos too (so,
-    // hopefully shape inference was successful).
-    if (inputWidth == 0 && inputHeight == 0)
-    {
-      for (size_t i = 0; i < graph.value_info_size(); ++i)
-      {
-        const onnx::ValueInfoProto& v = graph.value_info(i);
-        if (v.has_name() && v.name() == conv.input(0) && v.has_type() &&
-            v.type().has_tensor_type() &&
-            v.type().tensor_type().has_shape() &&
-            v.type().tensor_type().shape().dim_size() == 4 &&
-            v.type().tensor_type().shape().dim(2).has_dim_value() &&
-            v.type().tensor_type().shape().dim(3).has_dim_value())
-        {
-          inputHeight = v.type().tensor_type().shape().dim(2).dim_value();
-          inputWidth = v.type().tensor_type().shape().dim(3).dim_value();
-          break;
-        }
-      }
-    }
+    std::vector<size_t> inputDims;
+    ExtractTensorDims(graph, conv.input(0), inputDims);
+    if (inputDims.size() != 4)
+      return false; // Input must be four-dimensional.
 
     // Make sure we could determine the shape of the input.
-    if (inputWidth == 0 && inputHeight == 0)
+    if (inputDims[2] == 0 && inputDims[3] == 0)
       return false;
   }
 
@@ -181,23 +134,17 @@ inline bool ConvSubgraph::Validate(
   // If we have a bias, ensure that it has the right size.
   if (conv.input_size() == 3)
   {
-    const std::string& bName = conv.input(2);
-    foundInitializer = false;
-    for (size_t i = 0; i < graph.initializer_size(); ++i)
-    {
-      if (graph.initializer(i).has_name() &&
-          graph.initializer(i).name() == bName &&
-          graph.initializer(i).dims_size() >= 1)
-      {
-        if (graph.initializer(i).dims(0) != (maps / groups))
-          return false;
+    std::vector<size_t> biasDims;
+    ExtractTensorDims(graph, conv.input(2), biasDims, true);
+    if (biasDims.size() == 0)
+      return false;
 
-        // All higher dimensions must be 1.
-        for (size_t j = 1; j < graph.initializer(i).dims_size(); ++j)
-          if (graph.initializer(i).dims(j) != 1)
-            return false;
-      }
-    }
+    if (biasDims[0] != (/* maps */ kernelDims[0] / groups))
+      return false;
+    // All higher dimensions must be 1.
+    for (size_t j = 1; j < biasDims.size(); ++j)
+      if (biasDims[j] != 1)
+        return false;
   }
 
   return true;
@@ -257,29 +204,12 @@ inline void ConvSubgraph::Convert(
   // This will be implicit and does not need to be passed to the constructor of
   // the mlpack layers.
   const std::string& wName = conv.input(1);
-  bool foundInitializer = false;
-  size_t maps = 0;
-  size_t channels = 0;
-  size_t kernelWidth = 0;
-  size_t kernelHeight = 0;
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
+  std::vector<size_t> kernelDims;
+  ExtractTensorDims(graph, wName, kernelDims, true);
+  if (kernelDims.size() != 4)
   {
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == wName &&
-        graph.initializer(i).dims_size() == 4)
-    {
-      foundInitializer = true;
-      maps = graph.initializer(i).dims(0);
-      channels = graph.initializer(i).dims(1);
-      kernelHeight = graph.initializer(i).dims(2);
-      kernelWidth = graph.initializer(i).dims(3);
-    }
-  }
-
-  if (!foundInitializer)
-  {
-    throw std::runtime_error("ConvSubgraph::Convert(): cannot find kernel "
-        "tensor '" + wName + "'!");
+    throw std::runtime_error("ConvSubgraph::Convert(): cannot extract size of "
+        "kernel tensor!");
   }
 
   // Make sure the kernel shape is two-dimensional.
@@ -289,8 +219,8 @@ inline void ConvSubgraph::Convert(
   if (kernelShape.size() == 0)
   {
     // Infer the kernel shape from the weights.
-    kernelShape.push_back(kernelHeight);
-    kernelShape.push_back(kernelWidth);
+    kernelShape.push_back(kernelDims[2]);
+    kernelShape.push_back(kernelDims[3]);
   }
 
   // Finally, compute the explicit padding values, if needed.
@@ -313,42 +243,11 @@ inline void ConvSubgraph::Convert(
       pads.resize(4, 0);
 
       // Get the input width and height.
-      size_t inputWidth = 0;
-      size_t inputHeight = 0;
-      for (size_t i = 0; i < graph.initializer_size(); ++i)
-      {
-        const onnx::TensorProto& t = graph.initializer(i);
-        if (t.has_name() && t.name() == conv.input(0) && t.dims_size() == 4)
-        {
-          inputHeight = t.dims(2);
-          inputWidth = t.dims(3);
-          break;
-        }
-      }
-
-      // If we did not find the input size, check the ValueInfoProtos too (so,
-      // hopefully shape inference was successful).
-      if (inputWidth == 0 && inputHeight == 0)
-      {
-        for (size_t i = 0; i < graph.value_info_size(); ++i)
-        {
-          const onnx::ValueInfoProto& v = graph.value_info(i);
-          if (v.has_name() && v.name() == conv.input(0) && v.has_type() &&
-              v.type().has_tensor_type() &&
-              v.type().tensor_type().has_shape() &&
-              v.type().tensor_type().shape().dim_size() == 4 &&
-              v.type().tensor_type().shape().dim(2).has_dim_value() &&
-              v.type().tensor_type().shape().dim(3).has_dim_value())
-          {
-            inputHeight = v.type().tensor_type().shape().dim(2).dim_value();
-            inputWidth = v.type().tensor_type().shape().dim(3).dim_value();
-            break;
-          }
-        }
-      }
+      std::vector<size_t> inputDims;
+      ExtractTensorDims(graph, conv.input(0), inputDims);
 
       // Make sure we could determine the shape of the input.
-      if (inputWidth == 0 && inputHeight == 0)
+      if (inputDims.size() != 4)
       {
         throw std::runtime_error("ConvSubgraph::Convert(): cannot determine "
             "shape of input tensor for SAME_UPPER/SAME_LOWER padding type!");
@@ -358,17 +257,17 @@ inline void ConvSubgraph::Convert(
       size_t totalPadWidth;
       if (ceilMode == 0)
       {
-        totalPadHeight = std::floor(double(inputWidth - 1) / strides[0]) *
-            strides[0] + kernelShape[0] - inputWidth;
-        totalPadWidth = std::floor(double(inputHeight - 1) / strides[1]) *
-            strides[1] + kernelShape[1] - inputWidth;
+        totalPadHeight = std::floor(double(inputDims[3] - 1) / strides[0]) *
+            strides[0] + kernelShape[0] - inputDims[3];
+        totalPadWidth = std::floor(double(inputDims[2] - 1) / strides[1]) *
+            strides[1] + kernelShape[1] - inputDims[2];
       }
       else
       {
-        totalPadHeight = std::ceil(double(inputWidth - 1) / strides[0]) *
-            strides[0] + kernelShape[0] - inputWidth;
-        totalPadWidth = std::ceil(double(inputHeight - 1) / strides[1]) *
-            strides[1] + kernelShape[1] - inputWidth;
+        totalPadHeight = std::ceil(double(inputDims[2] - 1) / strides[0]) *
+            strides[0] + kernelShape[0] - inputDims[2];
+        totalPadWidth = std::ceil(double(inputDims[3] - 1) / strides[1]) *
+            strides[1] + kernelShape[1] - inputDims[3];
       }
 
       if (totalPadHeight % 2 == 0)
@@ -408,7 +307,7 @@ inline void ConvSubgraph::Convert(
   if (groups != 1)
   {
     network.Add<mlpack::GroupedConvolution>(
-        maps, // output maps
+        kernelDims[0], // output maps
         kernelShape[1], // width
         kernelShape[0], // height
         groups,
@@ -422,7 +321,7 @@ inline void ConvSubgraph::Convert(
   else
   {
     network.Add<mlpack::Convolution>(
-        maps, // output maps
+        kernelDims[0], // output maps
         kernelShape[1], // width
         kernelShape[0], // height
         strides[1], // stride width
@@ -444,36 +343,11 @@ inline void ConvSubgraph::TransferWeights(
 {
   const onnx::NodeProto& conv = graph.node(nodes[0]);
   const bool hasBias = (conv.input_size() == 3);
-  const std::string& kName = conv.input(1);
-
-  size_t kIndex = graph.initializer_size();
-  size_t bIndex = graph.initializer_size();
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
-  {
-    const onnx::TensorProto& t = graph.initializer(i);
-    if (t.has_name() && t.name() == kName && t.dims_size() == 4)
-      kIndex = i;
-
-    if (hasBias && t.has_name() && t.name() == conv.input(2))
-      bIndex = i;
-  }
-
-  if (kIndex == graph.initializer_size())
-  {
-    throw std::runtime_error("ConvSubgraph::TransferWeights(): could not find "
-        "suitable kernel tensor '" + kName + "'!");
-  }
-
-  if (hasBias && bIndex == graph.initializer_size())
-  {
-    throw std::runtime_error("ConvSubgraph::TransferWeights(): could not find "
-        "suitable bias tensor '" + conv.input(2) + "'!");
-  }
 
   arma::mat bias, kernel;
-  kernel = TensorToArma(graph.initializer(kIndex), true);
+  kernel = TensorToArma(graph, conv.input(1), true);
   if (hasBias)
-    bias = TensorToArma(graph.initializer(bIndex), true);
+    bias = TensorToArma(graph, conv.input(2), true);
 
   // The input weights are stored in tensor shape (M x C x H x W), but our
   // internal representation is flipped and will be (W x H x C x M).  This is,
