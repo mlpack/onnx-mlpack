@@ -10,7 +10,6 @@
 #include <onnx_mlpack.hpp>
 
 using namespace mlpack;
-using namespace onnx_mlpack;
 using namespace std;
 
 int main(int argc, char** argv)
@@ -26,8 +25,8 @@ int main(int argc, char** argv)
   const string inputNetwork(argv[1]);
   const string outputNetwork(argv[2]);
 
-  onnx::GraphProto graph = GetGraph(inputNetwork);
-  DAGNetwork<> dag = SubgraphConvert(graph);
+  onnx::GraphProto graph = onnx_mlpack::GetGraph(inputNetwork);
+  DAGNetwork<> dag = onnx_mlpack::Convert(graph);
 
   if (dag.Network().size() == 0)
     throw std::runtime_error("Converted DAG is empty!  Aborting.");
