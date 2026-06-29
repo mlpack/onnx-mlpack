@@ -271,9 +271,6 @@ TEST_CASE("test_pytorch_activations", "[matching]")
   arma::mat output;
   dag.Predict(input, output);
 
-  output.print("output");
-  outputRef.print("output_ref");
-
   REQUIRE(approx_equal(output, outputRef, "both", 0.001, 0.001));
 }
 
@@ -307,9 +304,6 @@ TEST_CASE("test_tensorflow_activations", "[matching]")
 
   arma::mat output;
   dag.Predict(input, output);
-
-  output.print("output");
-  outputRef.print("outputRef");
 
   REQUIRE(approx_equal(output, outputRef, "both", 0.001, 0.001));
 }

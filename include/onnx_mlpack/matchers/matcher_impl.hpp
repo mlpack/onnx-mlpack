@@ -14,6 +14,7 @@
 
 #include "matcher.hpp"
 #include "subgraph.hpp"
+#include "../log.hpp"
 
 namespace onnx_mlpack {
 
@@ -135,7 +136,8 @@ inline std::vector<std::pair<size_t, size_t>> FindConnections(
 }
 
 inline Matching Matcher(const onnx::GraphProto& graph,
-                        const std::vector<Subgraph*>& subgraphs)
+                        const std::vector<Subgraph*>& subgraphs,
+                        const size_t logLevel)
 {
   // Now iterate over all the ONNX nodes to try and match.
   std::stack<Matching> matchStack;
@@ -164,18 +166,18 @@ inline Matching Matcher(const onnx::GraphProto& graph,
   // Then, we need to rank the mappings by how good they are.  For starters, we
   // can just use the number of mlpack layers that are in the matching.
 
-  std::cout << "Matcher::Match(): starting matching process on ONNX graph with "
-      << graph.node_size() << " nodes and " << subgraphs.size() << " subgraph "
-      << "candidates." << std::endl << std::endl;
+  Log(logLevel, 2, "Matcher::Match(): starting matching process on ONNX graph "
+      " with ", graph.node_size(), " nodes and ", subgraphs.size(), " subgraph"
+      " candidates.\n");
 
   size_t i = 0;
   while (matchStack.size() > 0)
   {
-    std::cout << "Matching subgraphs with unmatched ONNX nodes: { ";
+    Log(logLevel, 2, "Matching subgraphs with unmatched ONNX nodes: { ");
     for (size_t j = 0; j < matchStack.top().matchedNodes.n_elem; ++j)
       if (matchStack.top().matchedNodes[j] == 0)
-        std::cout << j << " (" << graph.node(j).op_type() << ") ";
-    std::cout << "}" << std::endl;
+        Log(logLevel, 2, j, " (", graph.node(j).op_type(), ") ");
+    Log(logLevel, 2, "}\n");
 
     // Match each subgraph to the current state.
     std::vector<Matching> matchings;
@@ -186,17 +188,15 @@ inline Matching Matcher(const onnx::GraphProto& graph,
 
       if (subMatchings.size() > 0)
       {
-        // TODO: get name of actual subgraph.
-        std::cout << "  Subgraph " << s << " (" << subgraphs[s]->Name()
-            << ") matched to " << subMatchings.size() << " candidates:"
-            << std::endl;
+        Log(logLevel, 2, "  Subgraph ", s, " (", subgraphs[s]->Name(),
+            ") matched to ", subMatchings.size(), " candidates:\n");
         for (size_t k = 0; k < subMatchings.size(); ++k)
         {
           const Matching& m = subMatchings[k];
-          std::cout << "   - " << k << ": { ";
+          Log(logLevel, 2, "   - ", k, ": { ");
           for (size_t j = 0; j < m.matches.back().first.n_elem; ++j)
-            std::cout << m.matches.back().first[j] << " ";
-          std::cout << "}" << std::endl;
+            Log(logLevel, 2, m.matches.back().first[j], " ");
+          Log(logLevel, 2, "}\n");
         }
       }
 
@@ -222,8 +222,6 @@ inline Matching Matcher(const onnx::GraphProto& graph,
             for (size_t j = matchStack.top().matches.size();
                  j < m1.matches.size(); ++j)
             {
-              //std::cout << "   * Subgraph match " << i1 << " can be coalesced "
-              //    << "with candidate matching " << i2 << "." << std::endl;
               m2.matches.push_back(m1.matches[j]);
             }
           }
@@ -232,8 +230,6 @@ inline Matching Matcher(const onnx::GraphProto& graph,
         // When there is overlap, we have to add this submatching exactly as-is.
         if (anyOverlap || matchings.size() == 0)
         {
-          //std::cout << "   * Subgraph match " << i1 << " added to list of "
-          //    << "candidate matchings." << std::endl;
           matchings.push_back(m1);
         }
       }
@@ -245,40 +241,38 @@ inline Matching Matcher(const onnx::GraphProto& graph,
 
     matchStack.pop();
 
-    std::cout << std::endl << "Received " << matchings.size() << " matching "
-        << "candidates." << std::endl;
+    Log(logLevel, 2, "Received ", matchings.size(), " matching candidates.\n");
 
     // Look through each matching we received.
     for (size_t m = 0; m < matchings.size(); ++m)
     {
-      std::cout << "  - Candidate matching " << m << ": " << std::endl;
+      Log(logLevel, 2, " - Candidate matching ", m, ":\n");
       for (size_t k = 0; k < matchings[m].matches.size(); ++k)
       {
-        std::cout << "    * { ";
+        Log(logLevel, 2, "   * { ");
         for (size_t j = 0; j < matchings[m].matches[k].first.n_elem; ++j)
-          std::cout << matchings[m].matches[k].first[j] << " ";
-        std::cout << "} -> " << matchings[m].matches[k].second->Name()
-            << std::endl;
+          Log(logLevel, 2, matchings[m].matches[k].first[j], " ");
+        Log(logLevel, 2, "} -> ", matchings[m].matches[k].second->Name(), "\n");
       }
 
       // Is the matching complete?
       if (arma::all(matchings[m].matchedNodes == 1))
       {
-        std::cout << "    * Matching is complete!  Adding to final results."
-            << std::endl;
+        Log(logLevel, 2,
+            "   * Matching is complete!  Adding to final results.\n");
         fullMatchings.push_back(std::move(matchings[m]));
       }
       else
       {
         // Find which nodes are not matched.
         arma::uvec unmatched = arma::find(matchings[m].matchedNodes == 0);
-        std::cout << "    * Unmatched ONNX nodes: { ";
+        Log(logLevel, 2, "   * Unmatched ONNX nodes: { ");
         for (size_t i = 0; i < unmatched.n_elem; ++i)
         {
-          std::cout << unmatched[i] << " ("
-              << graph.node(unmatched[i]).op_type() << ") ";
+          Log(logLevel, 2, unmatched[i], " (",
+              graph.node(unmatched[i]).op_type(), ") ");
         }
-        std::cout << "}" << std::endl;
+        Log(logLevel, 2, "}\n");
 
         // The matching is not complete yet.  We have to recurse with the
         // current state of the matching.
@@ -314,17 +308,17 @@ inline Matching Matcher(const onnx::GraphProto& graph,
     if (keep[i])
       finalMatchings.push_back(std::move(fullMatchings[i]));
 
-  std::cout << "Final matchings:\n";
+  Log(logLevel, 1, "Final matchings:\n");
   for (size_t i = 0; i < finalMatchings.size(); ++i)
   {
-    std::cout << "  * Matching " << i << ":" << std::endl;
+    Log(logLevel, 1, " * Matching ", i, ":\n");
     for (size_t j = 0; j < finalMatchings[i].matches.size(); ++j)
     {
-      std::cout << "    - { ";
+      Log(logLevel, 1, "   - { ");
       for (size_t k = 0; k < finalMatchings[i].matches[j].first.size(); ++k)
-        std::cout << finalMatchings[i].matches[j].first[k] << " ";
-      std::cout << "} => " << finalMatchings[i].matches[j].second->Name()
-          << std::endl;
+        Log(logLevel, 1, finalMatchings[i].matches[j].first[k], " ");
+      Log(logLevel, 1, "} => ", finalMatchings[i].matches[j].second->Name(),
+          "\n");
     }
   }
 

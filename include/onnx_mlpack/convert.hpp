@@ -45,10 +45,13 @@ inline void Simplify(onnx::GraphProto& graph);
  * If the ONNX model cannot be converted into an mlpack DAGNetwork, a
  * std::runtime_error will be thrown with more details.
  *
- * @param graph The ONNX model's graph representation.
+ * @param filename The name of the file to load the ONNX graph from.
+ * @param logLevel Level of logging output (0-3).  Higher levels gives more
+ *     output.
  * @return mlpack::DAGNetwork<> The equivalent mlpack FFN model.
  */
-inline mlpack::DAGNetwork<> Convert(const std::string& filename);
+inline mlpack::DAGNetwork<> Convert(const std::string& filename,
+                                    const size_t logLevel = 0);
 
 /**
  * Convert an ONNX model graph to an mlpack DAGNetwork by matching
@@ -59,9 +62,12 @@ inline mlpack::DAGNetwork<> Convert(const std::string& filename);
  * std::runtime_error will be thrown with more details.
  *
  * @param graph The ONNX model's graph representation.
+ * @param logLevel Level of logging output (0-3).  Higher levels gives more
+ *     output.
  * @return mlpack::DAGNetwork<> The equivalent mlpack FFN model.
  */
-inline mlpack::DAGNetwork<> Convert(const onnx::GraphProto& graph);
+inline mlpack::DAGNetwork<> Convert(const onnx::GraphProto& graph,
+                                    const size_t logLevel = 0);
 
 } // namespace onnx_mlpack
 

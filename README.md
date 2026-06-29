@@ -155,7 +155,7 @@ and `Makefile`.
 
 ### `Convert()`
 
- - `mlpack::DAGNetwork<> result = onnx_mlpack::Convert(filename)`
+ - `mlpack::DAGNetwork<> result = onnx_mlpack::Convert(filename, logLevel=0)`
    * Load the ONNX graph from `filename` (a `std::string`), simplify the graph,
      and convert to an mlpack `DAGNetwork`.
 
@@ -164,7 +164,10 @@ and `Makefile`.
    * If the graph cannot be fully matched to an mlpack `DAGNetwork`, a
      `std::runtime_error` will be thrown with more details.
 
- - `mlpack::DAGNetwork<> result = onnx_mlpack::Convert(graph)`
+   * The logging level can be set to `0`, `1`, or `2`.  Higher levels gives more
+     output on the subgraph matching process.
+
+ - `mlpack::DAGNetwork<> result = onnx_mlpack::Convert(graph, logLevel=0)`
    * Given `graph`, a loaded ONNX graph of type `onnx::GraphProto`, convert to
      an `mlpack::DAGNetwork<>`.
 
@@ -177,6 +180,9 @@ and `Makefile`.
 
    * If the graph cannot be fully matched to an mlpack `DAGNetwork`, a
      `std::runtime_error` will be thrown with more details.
+
+   * The logging level can be set to `0`, `1`, or `2`.  Higher levels gives more
+     output on the subgraph matching process.
 
 ## Notes
 

@@ -45,9 +45,6 @@ inline std::vector<std::pair<size_t, size_t>> FindConnections(
 
 /**
  * Perform an exhaustive search of all possible matching of an ONNX graph.
- *
- * NOTE: the current strategy could be quite computationally expensive,
- * especially for 
  */
 inline std::vector<Matching> MatchSubgraph(const onnx::GraphProto& graph);
 
