@@ -46,12 +46,8 @@ using namespace mlpack;
 
 TEST_CASE("lenet5_test", "[lenet]")
 {
-  // Load the ONNX graph.
-  const string onnxFilePath = "onnc-lenet5.onnx";
-  onnx::GraphProto graph = onnx_mlpack::GetGraph(onnxFilePath);
-
   // Get the mlpack model from the graph.
-  DAGNetwork<> generatedModel = onnx_mlpack::Convert(graph);
+  DAGNetwork<> generatedModel = onnx_mlpack::Convert("onnc-lenet5.onnx");
 
   REQUIRE(generatedModel.Network().size() == 11);
 

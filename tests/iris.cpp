@@ -21,7 +21,8 @@ TEST_CASE("test_iris_onnx_load", "[iris]")
 {
   // Load the ONNX graph.
   const string onnxFilePath = "iris_model.onnx";
-  onnx::GraphProto graph = onnx_mlpack::GetGraph(onnxFilePath);
+  onnx::GraphProto graph = onnx_mlpack::Load(onnxFilePath);
+  onnx_mlpack::Simplify(graph);
 
   // Get the mlpack model from the graph.
   DAGNetwork<> generatedModel = onnx_mlpack::Convert(graph);
@@ -42,7 +43,8 @@ TEST_CASE("test_iris_convert_and_predict", "[iris]")
 {
   // Load the ONNX graph.
   const string onnxFilePath = "iris_model.onnx";
-  onnx::GraphProto graph = onnx_mlpack::GetGraph(onnxFilePath);
+  onnx::GraphProto graph = onnx_mlpack::Load(onnxFilePath);
+  onnx_mlpack::Simplify(graph);
 
   // Get the mlpack model from the graph.
   DAGNetwork<> generatedModel = onnx_mlpack::Convert(graph);

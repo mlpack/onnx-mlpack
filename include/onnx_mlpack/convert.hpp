@@ -14,21 +14,44 @@
 namespace onnx_mlpack {
 
 /**
- * Load an ONNX model from the specified file path.
- *
- * This function reads an ONNX model from the provided file path and returns the
- * corresponding GraphProto object.
+ * Load an ONNX model from the specified file path and perform shape inference
+ * on it.
  *
  * @param filepath The path to the .onnx file.
  * @return onnx::GraphProto The graph representation of the ONNX model.
  */
-inline onnx::GraphProto GetGraph(const std::string& filePath);
+inline onnx::GraphProto Load(const std::string& filePath);
 
 /**
- * Convert an ONNX model graph to an mlpack FFN model.
+ * Simplify the given ONNX graph for conversion to mlpack:
  *
- * The core logic for converting an ONNX model into an mlpack FFN model is
- * implemented in this function. Refer to the implementation for detailed steps.
+ *  - Unnecessary Reshapes are removed.
+ *  - Unnecessary Add and Mul operators are removed.
+ *  - Identity nodes are removed.
+ *
+ * This does in-place modification of the given graph.
+ */
+inline void Simplify(onnx::GraphProto& graph);
+
+/**
+ * Load and convert an ONNX model graph to an mlpack DAGNetwork by matching
+ * subgraphs of the ONNX model to individual mlpack layers.
+ *
+ * If the ONNX model cannot be converted into an mlpack DAGNetwork, a
+ * std::runtime_error will be thrown with more details.
+ *
+ * @param graph The ONNX model's graph representation.
+ * @return mlpack::DAGNetwork<> The equivalent mlpack FFN model.
+ */
+inline mlpack::DAGNetwork<> Convert(const std::string& filename);
+
+/**
+ * Convert an ONNX model graph to an mlpack DAGNetwork by matching
+ * subgraphs of the ONNX model to individual mlpack layers.  Make sure that
+ * `Simplify()` has been called on the ONNX graph first.
+ *
+ * If the ONNX model cannot be converted into an mlpack DAGNetwork, a
+ * std::runtime_error will be thrown with more details.
  *
  * @param graph The ONNX model's graph representation.
  * @return mlpack::DAGNetwork<> The equivalent mlpack FFN model.

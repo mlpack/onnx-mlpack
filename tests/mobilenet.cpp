@@ -14,9 +14,7 @@ using namespace mlpack;
 TEST_CASE("test_mobilenet_subgraph_match", "[mobilenet]")
 {
   const string onnxFilePath = "mobilenetv2-7.onnx";
-  onnx::GraphProto graph = onnx_mlpack::GetGraph(onnxFilePath);
-
-  DAGNetwork<> generatedModel = onnx_mlpack::Convert(graph);
+  DAGNetwork<> generatedModel = onnx_mlpack::Convert(onnxFilePath);
 
   REQUIRE(generatedModel.SortedNetwork().size() > 0);
 
