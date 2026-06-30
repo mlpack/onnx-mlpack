@@ -123,14 +123,11 @@ inline mlpack::DAGNetwork<> Convert(const onnx::GraphProto& graph)
   subgraphs.push_back(new MulScalarSubgraph());
   subgraphs.push_back(new BatchNormSubgraph());
   subgraphs.push_back(new SoftmaxSubgraph());
-<<<<<<< HEAD
-=======
   subgraphs.push_back(new MeanPoolingSubgraph());
 
   // NOTE: this rule should be last!  Otherwise, internal Add connections inside
   // of a more complex layer may not be recognized correctly.
   subgraphs.push_back(new AddConnectionSubgraph());
->>>>>>> origin/master
 
   // Find the best subgraph match.
   const Matching m = Matcher(graph, subgraphs);
