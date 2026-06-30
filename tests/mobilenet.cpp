@@ -35,4 +35,3 @@ TEST_CASE("test_mobilenet_subgraph_match", "[mobilenet]")
   REQUIRE(actualOutputs.n_rows == outputData.n_rows);
   REQUIRE(approx_equal(actualOutputs, outputData, "both", 0.001, 0.001));
 }
->>>>>>> origin/master
