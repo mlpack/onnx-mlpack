@@ -44,6 +44,8 @@
 #include "mul_scalar.hpp"
 #include "batch_norm.hpp"
 #include "softmax.hpp"
+#include "add_connection.hpp"
+#include "mean_pooling.hpp"
 
 #include "matcher_impl.hpp"
 #include "subgraph_impl.hpp"
@@ -80,5 +82,7 @@
 #include "mul_scalar_impl.hpp"
 #include "batch_norm_impl.hpp"
 #include "softmax_impl.hpp"
+#include "add_connection_impl.hpp"
+#include "mean_pooling_impl.hpp"
 
 #endif
