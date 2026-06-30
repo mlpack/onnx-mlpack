@@ -29,26 +29,16 @@ inline bool SELUSubgraph::Validate(
     return false;
 
   // Only the default values for the SELU are accepted.
-  double alpha = 1.67326319217681884765625;
-  double gamma = 1.05070102214813232421875;
-  for (size_t i = 0; i < selu.attribute_size(); ++i)
-  {
-    if (selu.attribute(i).has_name() && selu.attribute(i).name() == "alpha" &&
-        selu.attribute(i).has_f())
-    {
-      alpha = (double) selu.attribute(i).f();
-    }
-
-    if (selu.attribute(i).has_name() && selu.attribute(i).name() == "gamma" &&
-        selu.attribute(i).has_f())
-    {
-      gamma = (double) selu.attribute(i).f();
-    }
-  }
-
-  if (std::abs(alpha - 1.67326319217681884765625) > 1e-8)
+  float alpha = 1.67326319217681884765625f;
+  if (!ExtractAttribute(selu, "alpha", alpha))
     return false;
-  if (std::abs(gamma - 1.05070102214813232421875) > 1e-8)
+  float gamma = 1.05070102214813232421875f;
+  if (!ExtractAttribute(selu, "gamma", gamma))
+    return false;
+
+  if (std::abs(alpha - 1.67326319217681884765625f) > 1e-8f)
+    return false;
+  if (std::abs(gamma - 1.05070102214813232421875f) > 1e-8f)
     return false;
 
   return true;

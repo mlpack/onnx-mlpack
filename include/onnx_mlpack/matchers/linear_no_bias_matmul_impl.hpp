@@ -36,24 +36,10 @@ inline bool LinearNoBiasMatMulSubgraph::Validate(
 
   // We require that the second input parameter, the weights, are fully
   // initialized.
-  const std::string bName = matmul.input(1);
-  bool foundInitializer = false;
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
-  {
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == bName &&
-        graph.initializer(i).dims_size() == 2)
-    {
-      foundInitializer = true;
-      break;
-    }
-  }
-
-  // The second input must be an input to graph---we can't accept that!
-  if (!foundInitializer)
-  {
+  std::vector<size_t> weightDims;
+  ExtractTensorDims(graph, matmul.input(1), weightDims, true);
+  if (weightDims.size() != 2)
     return false;
-  }
 
   return true;
 }
@@ -74,28 +60,18 @@ inline void LinearNoBiasMatMulSubgraph::Convert(
   // from there.  If C is not specified, then we must infer the size based on
   // the shapes of A and B (and the settings of transA and transB).
 
-  size_t outputDims = 0;
   const onnx::NodeProto& matmul = graph.node(nodes[0]);
 
   // The second dimension of B is the output size.
-  const std::string bName = matmul.input(1);
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
-  {
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == bName &&
-        graph.initializer(i).dims_size() == 2)
-    {
-      outputDims = graph.initializer(i).dims(1);
-    }
-  }
-
-  if (outputDims == 0)
+  std::vector<size_t> weightDims;
+  ExtractTensorDims(graph, matmul.input(1), weightDims, true);
+  if (weightDims[1] == 0)
   {
     throw std::runtime_error("LinearNoBiasMatMulSubgraph::Convert(): cannot "
         "infer output size of ONNX MatMul operation!");
   }
 
-  network.Add<mlpack::LinearNoBias>(outputDims);
+  network.Add<mlpack::LinearNoBias>(weightDims[1]);
 }
 
 inline void LinearNoBiasMatMulSubgraph::TransferWeights(
@@ -107,24 +83,8 @@ inline void LinearNoBiasMatMulSubgraph::TransferWeights(
   // matrix to the MatMul operation.  Therefore, we simply need to get its
   // weights.
   const onnx::NodeProto& matmul = graph.node(nodes[0]);
-  const std::string bName = matmul.input(1);
   mlpack::LinearNoBias<>* l = dynamic_cast<mlpack::LinearNoBias<>*>(layers[0]);
-
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
-  {
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == bName &&
-        graph.initializer(i).dims_size() == 2)
-    {
-      l->Parameters() = TensorToArma(graph.initializer(i));
-      // The weight is successfully transferred, so, nothing else to do.
-      return;
-    }
-  }
-
-  // If we got to here, then we failed!
-  throw std::runtime_error("LinearNoBiasMatMulSubgraph::TransferWeights(): "
-      "failed to find weight tensor in ONNX graph!");
+  l->Parameters() = TensorToArma(graph, matmul.input(1));
 }
 
 } // namespace onnx_mlpack

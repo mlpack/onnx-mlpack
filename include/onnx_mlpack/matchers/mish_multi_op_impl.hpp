@@ -50,42 +50,18 @@ inline bool MishMultiOpSubgraph::Validate(
 
   // We cannot have broadcasting in the mul operation, so we need to ensure that
   // both inputs have the same dimensions.
-  const std::string& mulA = mul.input(0);
-  const std::string& mulB = mul.input(1);
-  size_t mulADims = 0;
-  size_t mulBDims = 0;
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
-  {
-    const onnx::TensorProto& t = graph.initializer(i);
-    if (t.has_name() && t.name() == mulA)
-      mulADims = t.dims_size();
-    if (t.has_name() && t.name() == mulB)
-      mulBDims = t.dims_size();
-  }
-
-  // Now check the ValueInfoProtos too.  Hopefully shape inference was
-  // successful!
-  for (size_t i = 0; i < graph.value_info_size(); ++i)
-  {
-    const onnx::ValueInfoProto& v = graph.value_info(i);
-    if (v.has_name() && v.name() == mulA &&
-        v.has_type() && v.type().has_tensor_type() &&
-        v.type().tensor_type().has_shape())
-      mulADims = v.type().tensor_type().shape().dim_size();
-
-    if (v.has_name() && v.name() == mulB &&
-        v.has_type() && v.type().has_tensor_type() &&
-        v.type().tensor_type().has_shape())
-      mulBDims = v.type().tensor_type().shape().dim_size();
-  }
+  std::vector<size_t> mulADims;
+  std::vector<size_t> mulBDims;
+  ExtractTensorDims(graph, mul.input(0), mulADims);
+  ExtractTensorDims(graph, mul.input(1), mulBDims);
 
   // Make sure we found the initializers.
-  if (mulADims == 0 || mulBDims == 0)
+  if (mulADims.size() == 0 || mulBDims.size() == 0)
     return false;
 
   // Make sure they have the same number of dimensions: if so, we are not
   // broadcasting.
-  if (mulADims != mulBDims)
+  if (mulADims.size() != mulBDims.size())
     return false;
 
   return true;

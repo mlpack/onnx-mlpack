@@ -88,43 +88,10 @@ inline bool MaxPoolingSubgraph::Validate(
   if (autoPad == "SAME_UPPER" || autoPad == "SAME_LOWER")
   {
     // Get the input width and height.
-    size_t inputWidth = 0;
-    size_t inputHeight = 0;
-    for (size_t i = 0; i < graph.initializer_size(); ++i)
-    {
-      const onnx::TensorProto& t = graph.initializer(i);
-      if (t.has_name() && t.name() == maxPool.input(0) && t.dims_size() == 4)
-      {
-        inputHeight = t.dims(2);
-        inputWidth = t.dims(3);
-        break;
-      }
-    }
-
-    // If we did not find the input size, check the ValueInfoProtos too (so,
-    // hopefully shape inference was successful).
-    if (inputWidth == 0 && inputHeight == 0)
-    {
-      for (size_t i = 0; i < graph.value_info_size(); ++i)
-      {
-        const onnx::ValueInfoProto& v = graph.value_info(i);
-        if (v.has_name() && v.name() == maxPool.input(0) && v.has_type() &&
-            v.type().has_tensor_type() &&
-            v.type().tensor_type().has_shape() &&
-            v.type().tensor_type().shape().dim_size() == 4 &&
-            v.type().tensor_type().shape().dim(2).has_dim_value() &&
-            v.type().tensor_type().shape().dim(3).has_dim_value())
-        {
-          inputHeight = v.type().tensor_type().shape().dim(2).dim_value();
-          inputWidth = v.type().tensor_type().shape().dim(3).dim_value();
-          break;
-        }
-      }
-    }
-
-    // Make sure we could determine the shape of the input.
-    if (inputWidth == 0 && inputHeight == 0)
-      return false;
+    std::vector<size_t> inputDims;
+    ExtractTensorDims(graph, maxPool.input(0), inputDims);
+    if (inputDims.size() != 4)
+      return false; // Just check that we can get the size at all.
   }
 
   int ceilMode = 0;
@@ -261,42 +228,9 @@ inline void MaxPoolingSubgraph::Convert(
       pads.resize(4, 0);
 
       // Get the input width and height.
-      size_t inputWidth = 0;
-      size_t inputHeight = 0;
-      for (size_t i = 0; i < graph.initializer_size(); ++i)
-      {
-        const onnx::TensorProto& t = graph.initializer(i);
-        if (t.has_name() && t.name() == maxPool.input(0) && t.dims_size() == 4)
-        {
-          inputHeight = t.dims(2);
-          inputWidth = t.dims(3);
-          break;
-        }
-      }
-
-      // If we did not find the input size, check the ValueInfoProtos too (so,
-      // hopefully shape inference was successful).
-      if (inputWidth == 0 && inputHeight == 0)
-      {
-        for (size_t i = 0; i < graph.value_info_size(); ++i)
-        {
-          const onnx::ValueInfoProto& v = graph.value_info(i);
-          if (v.has_name() && v.name() == maxPool.input(0) && v.has_type() &&
-              v.type().has_tensor_type() &&
-              v.type().tensor_type().has_shape() &&
-              v.type().tensor_type().shape().dim_size() == 4 &&
-              v.type().tensor_type().shape().dim(2).has_dim_value() &&
-              v.type().tensor_type().shape().dim(3).has_dim_value())
-          {
-            inputHeight = v.type().tensor_type().shape().dim(2).dim_value();
-            inputWidth = v.type().tensor_type().shape().dim(3).dim_value();
-            break;
-          }
-        }
-      }
-
-      // Make sure we could determine the shape of the input.
-      if (inputWidth == 0 && inputHeight == 0)
+      std::vector<size_t> inputDims;
+      ExtractTensorDims(graph, maxPool.input(0), inputDims);
+      if (inputDims.size() != 4)
       {
         throw std::runtime_error("MaxPoolingSubgraph::Convert(): cannot "
             "determine shape of input tensor for SAME_UPPER/SAME_LOWER padding "
@@ -307,17 +241,17 @@ inline void MaxPoolingSubgraph::Convert(
       size_t totalPadWidth;
       if (ceilMode == 0)
       {
-        totalPadHeight = std::floor(double(inputWidth - 1) / strides[0]) *
-            strides[0] + kernelShape[0] - inputWidth;
-        totalPadWidth = std::floor(double(inputHeight - 1) / strides[1]) *
-            strides[1] + kernelShape[1] - inputWidth;
+        totalPadHeight = std::floor(double(inputDims[3] - 1) / strides[0]) *
+            strides[0] + kernelShape[0] - inputDims[3];
+        totalPadWidth = std::floor(double(inputDims[2] - 1) / strides[1]) *
+            strides[1] + kernelShape[1] - inputDims[2];
       }
       else
       {
-        totalPadHeight = std::ceil(double(inputWidth - 1) / strides[0]) *
-            strides[0] + kernelShape[0] - inputWidth;
-        totalPadWidth = std::ceil(double(inputHeight - 1) / strides[1]) *
-            strides[1] + kernelShape[1] - inputWidth;
+        totalPadHeight = std::ceil(double(inputDims[3] - 1) / strides[0]) *
+            strides[0] + kernelShape[0] - inputDims[3];
+        totalPadWidth = std::ceil(double(inputDims[2] - 1) / strides[1]) *
+            strides[1] + kernelShape[1] - inputDims[2];
       }
 
       if (totalPadHeight % 2 == 0)

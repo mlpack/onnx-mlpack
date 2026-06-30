@@ -34,18 +34,10 @@ inline bool SwishSubgraph::Validate(
 
   // mlpack does not allow the alpha parameter to be set, so if it's anything
   // different than 1, then we can't match this node.
-  double alpha = 1.0;
-  for (size_t i = 0; i < swish.attribute_size(); ++i)
-  {
-    if (swish.attribute(i).has_name() && swish.attribute(i).name() == "alpha" &&
-        swish.attribute(i).has_f())
-    {
-      alpha = (double) swish.attribute(i).f();
-      break;
-    }
-  }
-
-  if (alpha != 1.0)
+  float alpha = 1.0f;
+  if (!ExtractAttribute(swish, "alpha", alpha))
+    return false;
+  if (alpha != 1.0f)
     return false;
 
   return true;

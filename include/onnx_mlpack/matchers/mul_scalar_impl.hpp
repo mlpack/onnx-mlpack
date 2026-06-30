@@ -36,30 +36,15 @@ inline bool MulScalarSubgraph::Validate(
     return false;
 
   // One of the multiplication operands must be a scalar whose value we know.
-  const std::string& aName = mul.input(0);
-  const std::string& bName = mul.input(1);
-  size_t aElems = 0;
-  size_t bElems = 0;
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
-  {
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == aName &&
-        graph.initializer(i).dims_size() >= 1)
-    {
-      aElems = graph.initializer(i).dims(0);
-      for (size_t j = 1; j < graph.initializer(i).dims_size(); ++j)
-        aElems *= graph.initializer(i).dims(j);
-    }
-
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == bName &&
-        graph.initializer(i).dims_size() >= 1)
-    {
-      bElems = graph.initializer(i).dims(0);
-      for (size_t j = 1; j < graph.initializer(i).dims_size(); ++j)
-        bElems *= graph.initializer(i).dims(j);
-    }
-  }
+  std::vector<size_t> aDims, bDims;
+  ExtractTensorDims(graph, mul.input(0), aDims, true);
+  ExtractTensorDims(graph, mul.input(1), bDims, true);
+  size_t aElems = (aDims.size() == 0) ? 0 : aDims[0];
+  size_t bElems = (bDims.size() == 0) ? 0 : bDims[0];
+  for (size_t i = 1; i < aDims.size(); ++i)
+    aElems *= aDims[i];
+  for (size_t i = 1; i < bDims.size(); ++i)
+    bElems *= bDims[i];
 
   // At least one input must be one-element.
   if (aElems != 1 && bElems != 1)
@@ -79,38 +64,18 @@ inline void MulScalarSubgraph::Convert(
   const onnx::NodeProto& mul = graph.node(nodes[0]);
 
   // Determine which input has the scalar value.
-  const std::string& aName = mul.input(0);
-  const std::string& bName = mul.input(1);
-  size_t aElems = 0;
-  size_t aIndex = 0;
-  size_t bElems = 0;
-  size_t bIndex = 0;
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
-  {
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == aName &&
-        graph.initializer(i).dims_size() >= 1)
-    {
-      aElems = graph.initializer(i).dims(0);
-      for (size_t j = 1; j < graph.initializer(i).dims_size(); ++j)
-        aElems *= graph.initializer(i).dims(j);
-      aIndex = i;
-    }
+  std::vector<size_t> aDims, bDims;
+  ExtractTensorDims(graph, mul.input(0), aDims, true);
+  ExtractTensorDims(graph, mul.input(1), bDims, true);
+  size_t aElems = (aDims.size() == 0) ? 0 : aDims[0];
+  size_t bElems = (bDims.size() == 0) ? 0 : bDims[0];
+  for (size_t i = 1; i < aDims.size(); ++i)
+    aElems *= aDims[i];
+  for (size_t i = 1; i < bDims.size(); ++i)
+    bElems *= bDims[i];
 
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == bName &&
-        graph.initializer(i).dims_size() >= 1)
-    {
-      bElems = graph.initializer(i).dims(0);
-      for (size_t j = 1; j < graph.initializer(i).dims_size(); ++j)
-        bElems *= graph.initializer(i).dims(j);
-      bIndex = i;
-    }
-  }
-
-  arma::mat scalarMat;
-  scalarMat = TensorToArma(graph.initializer(aElems == 1 ? aIndex : bIndex),
-      true);
+  arma::mat scalarMat = TensorToArma(graph,
+      (aElems == 1) ? mul.input(0) : mul.input(1), true);
   if (scalarMat.n_elem != 1)
   {
     throw std::runtime_error("MulScalarSubgraph::Convert(): got multiple values"
