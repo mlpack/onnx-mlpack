@@ -14,7 +14,6 @@
 
 using namespace std;
 using namespace mlpack;
-using namespace onnx_mlpack;
 
 // Check that we can load the ONNX iris network, and check the network
 // structure.
@@ -22,33 +21,31 @@ TEST_CASE("test_iris_onnx_load", "[iris]")
 {
   // Load the ONNX graph.
   const string onnxFilePath = "iris_model.onnx";
-  onnx::GraphProto graph = GetGraph(onnxFilePath);
+  onnx::GraphProto graph = onnx_mlpack::GetGraph(onnxFilePath);
 
   // Get the mlpack model from the graph.
-  DAGNetwork<> generatedModel = Convert(graph);
+  DAGNetwork<> generatedModel = onnx_mlpack::Convert(graph);
 
-  REQUIRE(generatedModel.Network().size() == 6);
+  REQUIRE(generatedModel.Network().size() == 4);
 
   vector<Layer<>*> sortedLayers = generatedModel.SortedNetwork();
 
   // Make sure all layers have the correct type.
-  REQUIRE(sortedLayers.size() == 6);
-  REQUIRE(dynamic_cast<LinearNoBias<>*>(sortedLayers[0]) != nullptr);
-  REQUIRE(dynamic_cast<Add<>*>(sortedLayers[1]) != nullptr);
-  REQUIRE(dynamic_cast<LeakyReLU<>*>(sortedLayers[2]) != nullptr);
-  REQUIRE(dynamic_cast<LinearNoBias<>*>(sortedLayers[3]) != nullptr);
-  REQUIRE(dynamic_cast<Add<>*>(sortedLayers[4]) != nullptr);
-  REQUIRE(dynamic_cast<Softmax<>*>(sortedLayers[5]) != nullptr);
+  REQUIRE(sortedLayers.size() == 4);
+  REQUIRE(dynamic_cast<Linear<>*>(sortedLayers[0]) != nullptr);
+  REQUIRE(dynamic_cast<ReLU<>*>(sortedLayers[1]) != nullptr);
+  REQUIRE(dynamic_cast<Linear<>*>(sortedLayers[2]) != nullptr);
+  REQUIRE(dynamic_cast<Softmax<>*>(sortedLayers[3]) != nullptr);
 }
 
 TEST_CASE("test_iris_convert_and_predict", "[iris]")
 {
   // Load the ONNX graph.
   const string onnxFilePath = "iris_model.onnx";
-  onnx::GraphProto graph = GetGraph(onnxFilePath);
+  onnx::GraphProto graph = onnx_mlpack::GetGraph(onnxFilePath);
 
   // Get the mlpack model from the graph.
-  DAGNetwork<> generatedModel = Convert(graph);
+  DAGNetwork<> generatedModel = onnx_mlpack::Convert(graph);
 
   // Load the iris data for classification.
   arma::mat data;

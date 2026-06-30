@@ -43,6 +43,7 @@
 #include "conv_add.hpp"
 #include "mul_scalar.hpp"
 #include "batch_norm.hpp"
+#include "softmax.hpp"
 #include "add_connection.hpp"
 #include "mean_pooling.hpp"
 
@@ -80,6 +81,7 @@
 #include "conv_add_impl.hpp"
 #include "mul_scalar_impl.hpp"
 #include "batch_norm_impl.hpp"
+#include "softmax_impl.hpp"
 #include "add_connection_impl.hpp"
 #include "mean_pooling_impl.hpp"
 
