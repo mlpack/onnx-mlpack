@@ -47,18 +47,14 @@ inline void LeakyReLUSubgraph::Convert(
   const onnx::NodeProto& relu = graph.node(nodes[0]);
 
   // First we have to extract the correct alpha value.
-  double alpha = 0.01;
-  for (size_t i = 0; i < relu.attribute_size(); ++i)
+  float alpha = 0.01f;
+  if (!ExtractAttribute(relu, "alpha", alpha))
   {
-    if (relu.attribute(i).has_name() &&
-        relu.attribute(i).name() == "alpha" &&
-        relu.attribute(i).has_f())
-    {
-      alpha = (double) relu.attribute(i).f();
-    }
+    throw std::runtime_error("LeakyReLUSubgraph::Convert(): could not extract "
+        "'alpha' attribute!");
   }
 
-  network.Add<mlpack::LeakyReLU>(alpha);
+  network.Add<mlpack::LeakyReLU>((double) alpha);
 }
 
 } // namespace onnx_mlpack

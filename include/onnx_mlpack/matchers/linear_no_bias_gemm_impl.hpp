@@ -13,7 +13,6 @@
 #define ONNX_MLPACK_MATCHERS_LINEAR_NO_BIAS_GEMM_IMPL_HPP
 
 #include "linear_no_bias_gemm.hpp"
-#include "../tensor_to_arma.hpp"
 
 namespace onnx_mlpack {
 

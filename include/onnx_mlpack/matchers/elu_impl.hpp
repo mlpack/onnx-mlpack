@@ -47,19 +47,15 @@ inline void ELUSubgraph::Convert(
   const onnx::NodeProto& elu = graph.node(nodes[0]);
 
   // First we have to extract the value of alpha.
-  double alpha = 1.0;
-  for (size_t i = 0; i < elu.attribute_size(); ++i)
+  float alpha = 1.0;
+  if (!ExtractAttribute(elu, "alpha", alpha))
   {
-    if (elu.attribute(i).has_name() && elu.attribute(i).name() == "alpha" &&
-        elu.attribute(i).has_f())
-    {
-      alpha = (double) elu.attribute(i).f();
-      break;
-    }
+    throw std::runtime_error("ELUSubgraph::Convert(): could not extract "
+        "'alpha' attribute!");
   }
 
-  // We only need to add the CeLU layer with the right alpha value.
-  network.Add<mlpack::ELU>(alpha);
+  // We only need to add the ELU layer with the right alpha value.
+  network.Add<mlpack::ELU>((double) alpha);
 }
 
 } // namespace onnx_mlpack

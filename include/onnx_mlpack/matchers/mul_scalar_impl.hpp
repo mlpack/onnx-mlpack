@@ -14,7 +14,6 @@
 #define ONNX_MLPACK_MATCHERS_MUL_SCALAR_IMPL_HPP
 
 #include "mul_scalar.hpp"
-#include "../tensor_to_arma.hpp"
 
 namespace onnx_mlpack {
 

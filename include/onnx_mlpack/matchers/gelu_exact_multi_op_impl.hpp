@@ -14,7 +14,6 @@
 #define ONNX_MLPACK_MATCHERS_GELU_EXACT_MULTI_OP_IMPL_HPP
 
 #include "gelu_exact_multi_op.hpp"
-#include "../extract_scalar.hpp"
 
 namespace onnx_mlpack {
 

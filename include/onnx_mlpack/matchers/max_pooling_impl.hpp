@@ -13,7 +13,6 @@
 #define ONNX_MLPACK_MATCHERS_MAX_POOLING_IMPL_HPP
 
 #include "max_pooling.hpp"
-#include "../extract_attribute.hpp"
 
 namespace onnx_mlpack {
 

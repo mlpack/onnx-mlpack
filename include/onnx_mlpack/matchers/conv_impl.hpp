@@ -13,8 +13,6 @@
 #define ONNX_MLPACK_MATCHERS_CONV_IMPL_HPP
 
 #include "conv.hpp"
-#include "../extract_attribute.hpp"
-#include "../extract_tensor_dims.hpp"
 
 namespace onnx_mlpack {
 

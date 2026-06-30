@@ -13,7 +13,6 @@
 #define ONNX_MLPACK_MATCHERS_LINEAR_GEMM_IMPL_HPP
 
 #include "linear_gemm.hpp"
-#include "../tensor_to_arma.hpp"
 
 namespace onnx_mlpack {
 
@@ -38,62 +37,26 @@ inline bool LinearGemmSubgraph::Validate(
     return false;
 
   // We cannot accept when beta is 0: then there is no bias.
-  // TODO: use onnxOperatorAttribute or similar
-  double beta = 1.0; // default according to ONNX spec
-  for (size_t i = 0; i < gemm.attribute_size(); ++i)
-  {
-    if (gemm.attribute(i).has_name() && gemm.attribute(i).name() == "beta" &&
-        gemm.attribute(i).has_f())
-    {
-      beta = (double) gemm.attribute(i).f();
-      break;
-    }
-  }
-
-  // TODO: add a little logging here?
-  if (beta == 0.0)
+  float beta = 1.0f; // default according to ONNX spec
+  if (!ExtractAttribute(gemm, "beta", beta))
+    return false;
+  if (beta == 0.0f)
     return false;
 
   // We require that the second and third input parameters (weights and biases)
   // are fully initialized.
-  const std::string bName = gemm.input(1);
-  const std::string cName = gemm.input(2);
-  bool foundInitializerB = false;
-  bool foundInitializerC = false;
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
-  {
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == bName &&
-        graph.initializer(i).dims_size() == 2)
-    {
-      foundInitializerB = true;
-    }
-
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == cName &&
-        graph.initializer(i).dims_size() == 1)
-    {
-      foundInitializerC = true;
-    }
-  }
-
-  if (!foundInitializerB || !foundInitializerC)
+  std::vector<size_t> bDims, cDims;
+  ExtractTensorDims(graph, gemm.input(1), bDims);
+  ExtractTensorDims(graph, gemm.input(2), cDims);
+  if (bDims.size() == 0 || cDims.size() == 0)
     return false;
 
   // The alpha attribute must be set to 1; the Linear layer doesn't support
   // constant scaling.
-  double alpha = 1.0;
-  for (size_t i = 0; i < gemm.attribute_size(); ++i)
-  {
-    if (gemm.attribute(i).has_name() && gemm.attribute(i).name() == "alpha" &&
-        gemm.attribute(i).has_f())
-    {
-      alpha = (double) gemm.attribute(i).f();
-      break;
-    }
-  }
-
-  if (alpha != 1.0)
+  float alpha = 1.0f;
+  if (!ExtractAttribute(gemm, "alpha", alpha))
+    return false;
+  if (alpha != 1.0f)
     return false;
 
   return true;
@@ -112,26 +75,16 @@ inline void LinearGemmSubgraph::Convert(
   // number of output nodes using the shape of the graph.  We can do this by
   // taking the size of C (the biases).
 
-  size_t outputDims = 0;
   const onnx::NodeProto& gemm = graph.node(nodes[0]);
-  const std::string cName = gemm.input(2);
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
-  {
-    if (graph.initializer(i).name() == cName &&
-        graph.initializer(i).dims_size() > 0 &&
-        graph.initializer(i).dims(0) > 0)
-    {
-      outputDims = (size_t) graph.initializer(i).dims(0);
-    }
-  }
-
-  if (outputDims == 0)
+  std::vector<size_t> biasDims;
+  ExtractTensorDims(graph, gemm.input(2), biasDims);
+  if (biasDims.size() != 1)
   {
     throw std::runtime_error("LinearGemmSubgraph::Convert(): cannot "
         "infer output size of ONNX Gemm operation!");
   }
 
-  network.Add<mlpack::Linear>(outputDims);
+  network.Add<mlpack::Linear>(biasDims[0]);
 }
 
 inline void LinearGemmSubgraph::TransferWeights(
@@ -142,50 +95,19 @@ inline void LinearGemmSubgraph::TransferWeights(
   // We have already concluded that the weights of the operation must be the B
   // matrix to the Gemm operation, and the biases must be the C matrix.
   const onnx::NodeProto& gemm = graph.node(nodes[0]);
-  const std::string bName = gemm.input(1);
-  const std::string cName = gemm.input(2);
-  size_t transB = 0;
-  for (size_t i = 0; i < gemm.attribute_size(); ++i)
+  int transB = 0;
+  if (!ExtractAttribute(gemm, "transB", transB))
   {
-    if (gemm.attribute(i).has_name() &&
-        gemm.attribute(i).name() == "transB" &&
-        gemm.attribute(i).has_i())
-    {
-      transB = (size_t) gemm.attribute(i).i();
-      break;
-    }
+    throw std::runtime_error("LinearGemmSubgraph::Convert(): cannot extract "
+        "'transB' attribute!");
   }
 
-  bool weightsDone = false;
-  bool biasesDone = false;
   mlpack::Linear<>* l = dynamic_cast<mlpack::Linear<>*>(layers[0]);
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
-  {
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == bName &&
-        graph.initializer(i).dims_size() == 2)
-    {
-      if (transB == 1)
-        l->Weight() = TensorToArma(graph.initializer(i)).t();
-      else
-        l->Weight() = TensorToArma(graph.initializer(i));
-      weightsDone = true;
-    }
-
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == cName &&
-        graph.initializer(i).dims_size() == 1)
-    {
-      l->Bias() = TensorToArma(graph.initializer(i)).t();
-      biasesDone = true;
-    }
-  }
-
-  if (!weightsDone || !biasesDone)
-  {
-    throw std::runtime_error("LinearGemmSubgraph::TransferWeights(): "
-        "failed to find weight tensor in ONNX graph!");
-  }
+  if (transB == 1)
+    l->Weight() = TensorToArma(graph, gemm.input(1)).t();
+  else
+    l->Weight() = TensorToArma(graph, gemm.input(1));
+  l->Bias() = TensorToArma(graph, gemm.input(2)).t();
 }
 
 } // namespace onnx_mlpack

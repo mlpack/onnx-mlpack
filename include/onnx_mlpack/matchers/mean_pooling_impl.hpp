@@ -13,7 +13,6 @@
 #define ONNX_MLPACK_MATCHERS_MEAN_POOLING_IMPL_HPP
 
 #include "mean_pooling.hpp"
-#include "../extract_attribute.hpp"
 
 namespace onnx_mlpack {
 

@@ -35,15 +35,8 @@ inline bool GELUSubgraph::Validate(
 
   // Ensure that this is the exact form.
   std::string approx = "none";
-  for (size_t i = 0; i < gelu.attribute_size(); ++i)
-  {
-    if (gelu.attribute(i).has_name() &&
-        gelu.attribute(i).name() == "approximate" &&
-        gelu.attribute(i).has_s())
-    {
-      approx = gelu.attribute(i).s();
-    }
-  }
+  if (!ExtractAttribute(gelu, "approximate", approx))
+    return false;
 
   // This is the approximate version only.
   if (approx != "tanh")

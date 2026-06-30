@@ -35,29 +35,17 @@ inline bool HardSigmoidSubgraph::Validate(
 
   // The mlpack HardSigmoid layer is hard-coded to have alpha = 0.2 and beta =
   // 0.5, so we must ensure we have those values only.
-  double alpha = 0.2;
-  double beta = 0.5;
-  for (size_t i = 0; i < hs.attribute_size(); ++i)
-  {
-    if (hs.attribute(i).has_name() &&
-        hs.attribute(i).name() == "alpha" &&
-        hs.attribute(i).has_f())
-    {
-      alpha = (double) hs.attribute(i).f();
-    }
-
-    if (hs.attribute(i).has_name() &&
-        hs.attribute(i).name() == "beta" &&
-        hs.attribute(i).has_f())
-    {
-      beta = (double) hs.attribute(i).f();
-    }
-  }
+  float alpha = 0.2f;
+  float beta = 0.5f;
+  if (!ExtractAttribute(hs, "alpha", alpha))
+    return false;
+  if (!ExtractAttribute(hs, "beta", beta))
+    return false;
 
   // We must have default parameters.
-  if (alpha != 0.2)
+  if (alpha != 0.2f)
     return false;
-  if (beta != 0.5)
+  if (beta != 0.5f)
     return false;
 
   return true;
