@@ -3,6 +3,11 @@
  *
  * Example usage of the ONNX/mlpack converter to convert the MobileNet v2.7
  * network to an mlpack::DAGNetwork<> and use it to classify a few test images.
+ *
+ * The ONNX/mlpack converter is free software; you may redistribute it and/or
+ * modify it under the terms of the 3-clause BSD license.  You should have
+ * received a copy of the 3-clause BSD license along with mlpack.  If not, see
+ * http://www.opensource.org/licenses/BSD-3-Clause for more information.
  */
 #include <onnx_mlpack.hpp>
 
