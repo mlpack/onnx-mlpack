@@ -1,2 +1,4 @@
 # Ignore build directory.
 build/
+examples/convert_mobilenet
+*.swp
