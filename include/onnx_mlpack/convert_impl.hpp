@@ -17,6 +17,7 @@
 #include "apply_initial_reshapes.hpp"
 #include "remove_useless_nodes.hpp"
 #include "matchers/match.hpp"
+#include "log.hpp"
 
 #include <onnx/onnx_pb.h>
 #include <onnx/onnx-ml.pb.h>
@@ -60,16 +61,18 @@ inline void Simplify(onnx::GraphProto& graph)
 
 // Load and preprocess the given ONNX graph, and convert into an mlpack
 // DAGNetwork.
-inline mlpack::DAGNetwork<> Convert(const std::string& filename)
+inline mlpack::DAGNetwork<> Convert(const std::string& filename,
+                                    const size_t logLevel)
 {
   onnx::GraphProto graph = Load(filename);
   Simplify(graph);
-  return Convert(graph);
+  return Convert(graph, logLevel);
 }
 
 // Convert the given ONNX graph into an mlpack DAGNetwork by iteratively
 // matching subgraphs of the ONNX network.
-inline mlpack::DAGNetwork<> Convert(const onnx::GraphProto& graph)
+inline mlpack::DAGNetwork<> Convert(const onnx::GraphProto& graph,
+                                    const size_t logLevel)
 {
   // Before we start, we need to ensure that the graph has only one
   // input for which there isn't an initializer.
@@ -135,7 +138,7 @@ inline mlpack::DAGNetwork<> Convert(const onnx::GraphProto& graph)
   subgraphs.push_back(new AddConnectionSubgraph());
 
   // Find the best subgraph match.
-  const Matching m = Matcher(graph, subgraphs);
+  const Matching m = Matcher(graph, subgraphs, logLevel);
 
   // Next, for each subgraph match, we will convert the relevant layers to the
   // mlpack layer equivalent.
