@@ -4,6 +4,11 @@
  *
  * Candidate ONNX subgraphs that can match the Softplus layer when it is
  * exported with special operations for the PyTorch threshold parameter.
+ *
+ * The ONNX/mlpack converter is free software; you may redistribute it and/or
+ * modify it under the terms of the 3-clause BSD license.  You should have
+ * received a copy of the 3-clause BSD license along with mlpack.  If not, see
+ * http://www.opensource.org/licenses/BSD-3-Clause for more information.
  */
 #ifndef ONNX_MLPACK_MATCHERS_SOFTPLUS_THRESHOLD_HPP
 #define ONNX_MLPACK_MATCHERS_SOFTPLUS_THRESHOLD_HPP

@@ -4,6 +4,11 @@
  *
  * Given the name of an attribute, extract its value from the given node and
  * return a bool indicating whether the operation was successful.
+ *
+ * The ONNX/mlpack converter is free software; you may redistribute it and/or
+ * modify it under the terms of the 3-clause BSD license.  You should have
+ * received a copy of the 3-clause BSD license along with mlpack.  If not, see
+ * http://www.opensource.org/licenses/BSD-3-Clause for more information.
  */
 #ifndef ONNX_MLPACK_EXTRACT_ATTRIBUTE_HPP
 #define ONNX_MLPACK_EXTRACT_ATTRIBUTE_HPP

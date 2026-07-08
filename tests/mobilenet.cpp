@@ -4,6 +4,11 @@
  * Test that MobileNet can be loaded from ONNX correctly.
  * Information about the onnx mobilenet v7 model can be found at:
  * https://github.com/onnx/models/tree/main/validated/vision/classification/mobilenet
+ *
+ * The ONNX/mlpack converter is free software; you may redistribute it and/or
+ * modify it under the terms of the 3-clause BSD license.  You should have
+ * received a copy of the 3-clause BSD license along with mlpack.  If not, see
+ * http://www.opensource.org/licenses/BSD-3-Clause for more information.
  */
 #include <onnx_mlpack.hpp>
 #include "catch.hpp"

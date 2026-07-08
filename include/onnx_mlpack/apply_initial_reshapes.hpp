@@ -5,6 +5,11 @@
  * If a network has Reshape operations applied to any initialized tensors,
  * remove those Reshape operations and change the sizes of the initialized
  * tensors.
+ *
+ * The ONNX/mlpack converter is free software; you may redistribute it and/or
+ * modify it under the terms of the 3-clause BSD license.  You should have
+ * received a copy of the 3-clause BSD license along with mlpack.  If not, see
+ * http://www.opensource.org/licenses/BSD-3-Clause for more information.
  */
 #ifndef ONNX_MLPACK_APPLY_INITIAL_RESHAPES_HPP
 #define ONNX_MLPACK_APPLY_INITIAL_RESHAPES_HPP
