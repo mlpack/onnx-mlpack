@@ -14,7 +14,6 @@
 #define ONNX_MLPACK_MATCHERS_ADD_CONNECTION_IMPL_HPP
 
 #include "add_connection.hpp"
-#include "../tensor_to_arma.hpp"
 
 namespace onnx_mlpack {
 
