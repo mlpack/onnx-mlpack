@@ -11,8 +11,8 @@
  * received a copy of the 3-clause BSD license along with mlpack.  If not, see
  * http://www.opensource.org/licenses/BSD-3-Clause for more information.
  */
-#ifndef ONNX_MLPACK_MATCHERS_ADD_HPP
-#define ONNX_MLPACK_MATCHERS_ADD_HPP
+#ifndef ONNX_MLPACK_MATCHERS_ADD_CONNECTION_HPP
+#define ONNX_MLPACK_MATCHERS_ADD_CONNECTION_HPP
 
 namespace onnx_mlpack {
 

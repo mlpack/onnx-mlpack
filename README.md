@@ -164,7 +164,7 @@ and `Makefile`.
    * If the graph cannot be fully matched to an mlpack `DAGNetwork`, a
      `std::runtime_error` will be thrown with more details.
 
-   * The logging level can be set to `0`, `1`, or `2`.  Higher levels gives more
+   * The logging level can be set to `0`, `1`, or `2`.  Higher levels give more
      output on the subgraph matching process.
 
  - `mlpack::DAGNetwork<> result = onnx_mlpack::Convert(graph, logLevel=0)`
@@ -181,7 +181,7 @@ and `Makefile`.
    * If the graph cannot be fully matched to an mlpack `DAGNetwork`, a
      `std::runtime_error` will be thrown with more details.
 
-   * The logging level can be set to `0`, `1`, or `2`.  Higher levels gives more
+   * The logging level can be set to `0`, `1`, or `2`.  Higher levels give more
      output on the subgraph matching process.
 
 ## Notes
