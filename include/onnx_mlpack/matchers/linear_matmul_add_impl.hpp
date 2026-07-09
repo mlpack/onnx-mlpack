@@ -13,7 +13,6 @@
 #define ONNX_MLPACK_MATCHERS_LINEAR_MATMUL_ADD_IMPL_HPP
 
 #include "linear_matmul_add.hpp"
-#include "../tensor_to_arma.hpp"
 
 namespace onnx_mlpack {
 
@@ -43,33 +42,18 @@ inline bool LinearMatMulAddSubgraph::Validate(
   // We require that the second input parameter of the MatMul is fully
   // initialized, and that one of the two input parameters of the Add is fully
   // initialized.
-  const std::string bName = matmul.input(1);
-  const std::string addName1 = add.input(0);
-  const std::string addName2 = add.input(1);
-  bool matmulInitializer = false;
-  size_t addInitializersFound = 0;
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
-  {
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == bName &&
-        graph.initializer(i).dims_size() == 2)
-    {
-      matmulInitializer = true;
-    }
-
-    if (graph.initializer(i).has_name() &&
-        (graph.initializer(i).name() == addName1 ||
-         graph.initializer(i).name() == addName2) &&
-        graph.initializer(i).dims_size() == 1)
-    {
-      addInitializersFound += 1;
-    }
-  }
-
-  if (!matmulInitializer || (addInitializersFound != 1))
+  std::vector<size_t> weightDims, add1Dims, add2Dims;
+  ExtractTensorDims(graph, matmul.input(1), weightDims, true);
+  ExtractTensorDims(graph, add.input(0), add1Dims, true);
+  ExtractTensorDims(graph, add.input(1), add2Dims, true);
+  if (weightDims.size() != 2)
     return false;
+  if (add1Dims.size() == 0 && add2Dims.size() == 0)
+    return false;
+  if (add1Dims.size() == 1 || add2Dims.size() == 1)
+    return true;
 
-  return true;
+  return false;
 }
 
 /**
@@ -118,37 +102,24 @@ inline void LinearMatMulAddSubgraph::TransferWeights(
   const onnx::NodeProto& matmul = graph.node(nodes[0]);
   const onnx::NodeProto& add = graph.node(nodes[1]);
 
-  const std::string wName = matmul.input(1);
-  const std::string addName1 = add.input(0);
-  const std::string addName2 = add.input(1);
-
-  bool weightsDone = false;
-  bool biasesDone = false;
   mlpack::Linear<>* l = dynamic_cast<mlpack::Linear<>*>(layers[0]);
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
+  l->Weight() = TensorToArma(graph, matmul.input(1));
+
+  std::vector<size_t> biasADims, biasBDims;
+  ExtractTensorDims(graph, add.input(0), biasADims, true);
+  ExtractTensorDims(graph, add.input(1), biasBDims, true);
+  if (biasADims.size() == 1)
   {
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == wName &&
-        graph.initializer(i).dims_size() == 2)
-    {
-      l->Weight() = TensorToArma(graph.initializer(i));
-      weightsDone = true;
-    }
-
-    if (graph.initializer(i).has_name() &&
-        (graph.initializer(i).name() == addName1 ||
-         graph.initializer(i).name() == addName2) &&
-        graph.initializer(i).dims_size() == 1)
-    {
-      l->Bias() = TensorToArma(graph.initializer(i)).t();
-      biasesDone = true;
-    }
+    l->Bias() = TensorToArma(graph, add.input(0)).t();
   }
-
-  if (!weightsDone || !biasesDone)
+  else if (biasBDims.size() == 1)
+  {
+    l->Bias() = TensorToArma(graph, add.input(1)).t();
+  }
+  else
   {
     throw std::runtime_error("LinearMatMulAddSubgraph::TransferWeights(): "
-        "failed to find weight tensor in ONNX graph!");
+        "could not extract bias vector!");
   }
 }
 

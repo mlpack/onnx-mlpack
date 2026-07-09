@@ -14,7 +14,6 @@
 #define ONNX_MLPACK_MATCHERS_ADD_CONNECTION_IMPL_HPP
 
 #include "add_connection.hpp"
-#include "../tensor_to_arma.hpp"
 
 namespace onnx_mlpack {
 
@@ -82,36 +81,11 @@ inline bool AddConnectionSubgraph::Validate(
     return false;
 
   std::vector<size_t> aDims, bDims;
+  ExtractTensorDims(graph, aInput, aDims);
+  ExtractTensorDims(graph, bInput, bDims);
 
-  // Get the inferred dimensions of the tensors and make sure they are the same.
-  for (size_t i = 0; i < graph.value_info_size(); ++i)
-  {
-    const onnx::ValueInfoProto& v = graph.value_info(i);
-    if (v.has_name() && v.name() == aInput && v.has_type() &&
-        v.type().has_tensor_type() && v.type().tensor_type().has_shape())
-    {
-      for (size_t i = 0; i < v.type().tensor_type().shape().dim_size(); ++i)
-      {
-        if (v.type().tensor_type().shape().dim(i).has_dim_value())
-          aDims.push_back(v.type().tensor_type().shape().dim(i).dim_value());
-        else
-          aDims.push_back(0 /* dummy placeholder */);
-      }
-    }
-
-    if (v.has_name() && v.name() == bInput && v.has_type() &&
-        v.type().has_tensor_type() && v.type().tensor_type().has_shape())
-    {
-      for (size_t i = 0; i < v.type().tensor_type().shape().dim_size(); ++i)
-      {
-        if (v.type().tensor_type().shape().dim(i).has_dim_value())
-          bDims.push_back(v.type().tensor_type().shape().dim(i).dim_value());
-        else
-          bDims.push_back(0 /* dummy placeholder */);
-      }
-    }
-  }
-
+  if (aDims.size() == 0 || bDims.size() == 0)
+    return false;
   if (aDims.size() != bDims.size())
     return false;
   for (size_t d = 0; d < aDims.size(); ++d)

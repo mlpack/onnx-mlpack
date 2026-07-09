@@ -13,7 +13,6 @@
 #define ONNX_MLPACK_MATCHERS_CELU_IMPL_HPP
 
 #include "celu.hpp"
-#include "../tensor_to_arma.hpp"
 
 namespace onnx_mlpack {
 
@@ -49,19 +48,15 @@ inline void CELUSubgraph::Convert(
   const onnx::NodeProto& celu = graph.node(nodes[0]);
 
   // First we have to extract the value of alpha.
-  double alpha = 1.0;
-  for (size_t i = 0; i < celu.attribute_size(); ++i)
+  float alpha = 1.0f;
+  if (!ExtractAttribute(celu, "alpha", alpha))
   {
-    if (celu.attribute(i).has_name() && celu.attribute(i).name() == "alpha" &&
-        celu.attribute(i).has_f())
-    {
-      alpha = (double) celu.attribute(i).f();
-      break;
-    }
+    throw std::runtime_error("CELUSubgraph::Convert(): could not extract "
+        "'alpha' attribute!");
   }
 
   // We only need to add the CELU layer with the right alpha value.
-  network.Add<mlpack::CELU>(alpha);
+  network.Add<mlpack::CELU>((double) alpha);
 }
 
 } // namespace onnx_mlpack

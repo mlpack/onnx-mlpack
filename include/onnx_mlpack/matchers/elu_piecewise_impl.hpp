@@ -14,7 +14,6 @@
 #define ONNX_MLPACK_MATCHERS_ELU_PIECEWISE_IMPL_HPP
 
 #include "elu_piecewise.hpp"
-#include "../extract_scalar.hpp"
 
 namespace onnx_mlpack {
 

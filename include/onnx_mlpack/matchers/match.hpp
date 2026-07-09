@@ -14,6 +14,11 @@
 #ifndef ONNX_MLPACK_MATCHERS_MATCH_HPP
 #define ONNX_MLPACK_MATCHERS_MATCH_HPP
 
+#include "../extract_attribute.hpp"
+#include "../extract_scalar.hpp"
+#include "../extract_tensor_dims.hpp"
+#include "../tensor_to_arma.hpp"
+
 #include "matcher.hpp"
 #include "subgraph.hpp"
 #include "linear_no_bias_gemm.hpp"

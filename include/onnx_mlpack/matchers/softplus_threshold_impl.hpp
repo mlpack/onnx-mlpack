@@ -56,48 +56,20 @@ inline bool SoftplusThresholdSubgraph::Validate(
     return false;
 
   // We can't have any broadcasting in the Where operation.
-  const std::string& whereA = where.input(0);
-  const std::string& whereB = where.input(1);
-  const std::string& whereC = where.input(2);
-  size_t whereADims = 0;
-  size_t whereBDims = 0;
-  size_t whereCDims = 0;
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
-  {
-    const onnx::TensorProto& t = graph.initializer(i);
-    if (t.has_name() && t.name() == whereA)
-      whereADims = t.dims_size();
-    else if (t.has_name() && t.name() == whereB)
-      whereBDims = t.dims_size();
-    else if (t.has_name() && t.name() == whereC)
-      whereCDims = t.dims_size();
-  }
-
-  // Now check the ValueInfoProtos too.  Hopefully shape inference was
-  // successful!
-  for (size_t i = 0; i < graph.value_info_size(); ++i)
-  {
-    const onnx::ValueInfoProto& v = graph.value_info(i);
-    if (v.has_name() && v.name() == whereA && v.has_type() &&
-        v.type().has_tensor_type() && v.type().tensor_type().has_shape())
-      whereADims = v.type().tensor_type().shape().dim_size();
-
-    if (v.has_name() && v.name() == whereB && v.has_type() &&
-        v.type().has_tensor_type() && v.type().tensor_type().has_shape())
-      whereBDims = v.type().tensor_type().shape().dim_size();
-
-    if (v.has_name() && v.name() == whereC && v.has_type() &&
-        v.type().has_tensor_type() && v.type().tensor_type().has_shape())
-      whereCDims = v.type().tensor_type().shape().dim_size();
-  }
+  std::vector<size_t> whereADims, whereBDims, whereCDims;
+  ExtractTensorDims(graph, where.input(0), whereADims);
+  ExtractTensorDims(graph, where.input(1), whereBDims);
+  ExtractTensorDims(graph, where.input(2), whereCDims);
 
   // Make sure we found the initializers.
-  if (whereADims == 0 || whereBDims == 0 || whereCDims == 0)
+  if (whereADims.size() == 0 || whereBDims.size() == 0 ||
+      whereCDims.size() == 0)
     return false;
 
   // Make sure they have the same number of dimensions; if so, we are not
   // broadcasting.
-  if (whereADims != whereBDims || whereBDims != whereCDims)
+  if (whereADims.size() != whereBDims.size() ||
+      whereBDims.size() != whereCDims.size())
     return false;
 
   // We have to recover the actual value used by the Greater node's scalar

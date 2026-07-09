@@ -12,8 +12,7 @@
 #ifndef ONNX_MLPACK_MATCHERS_BATCH_NORM_IMPL_HPP
 #define ONNX_MLPACK_MATCHERS_BATCH_NORM_IMPL_HPP
 
-#include "linear_no_bias_gemm.hpp"
-#include "../tensor_to_arma.hpp"
+#include "batch_norm.hpp"
 
 namespace onnx_mlpack {
 
@@ -44,94 +43,50 @@ inline bool BatchNormSubgraph::Validate(
 
   // We require that the four weights (scale/bias/running_mean/running_variance)
   // are all initialized.
-  const std::string& scaleName = bn.input(1);
-  const std::string& biasName = bn.input(2);
-  const std::string& meanName = bn.input(3);
-  const std::string& varName = bn.input(4);
-  size_t scaleDims = 0;
-  size_t biasDims = 0;
-  size_t meanDims = 0;
-  size_t varDims = 0;
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
-  {
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == scaleName &&
-        graph.initializer(i).dims_size() >= 1)
-    {
-      scaleDims = graph.initializer(i).dims(0);
-      for (size_t j = 1; j < graph.initializer(i).dims_size(); ++j)
-        scaleDims *= graph.initializer(i).dims(j);
-    }
+  std::vector<size_t> scaleDims, biasDims, meanDims, varDims;
+  ExtractTensorDims(graph, bn.input(1), scaleDims, true);
+  ExtractTensorDims(graph, bn.input(2), biasDims, true);
+  ExtractTensorDims(graph, bn.input(3), meanDims, true);
+  ExtractTensorDims(graph, bn.input(4), varDims, true);
 
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == biasName &&
-        graph.initializer(i).dims_size() >= 1)
-    {
-      biasDims = graph.initializer(i).dims(0);
-      for (size_t j = 1; j < graph.initializer(i).dims_size(); ++j)
-        biasDims *= graph.initializer(i).dims(j);
-    }
-
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == meanName &&
-        graph.initializer(i).dims_size() >= 1)
-    {
-      meanDims = graph.initializer(i).dims(0);
-      for (size_t j = 1; j < graph.initializer(i).dims_size(); ++j)
-        meanDims *= graph.initializer(i).dims(j);
-    }
-
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == meanName &&
-        graph.initializer(i).dims_size() >= 1)
-    {
-      varDims = graph.initializer(i).dims(0);
-      for (size_t j = 1; j < graph.initializer(i).dims_size(); ++j)
-        varDims *= graph.initializer(i).dims(j);
-    }
-  }
-
-  // Now we have to extract the shape of the input tensor, to make sure that the
-  // shapes of all the weights match.
-  size_t channels = 0;
-  const std::string& inputName = bn.input(0);
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
-  {
-    const onnx::TensorProto& t = graph.initializer(i);
-    if (t.has_name() && t.name() == inputName && t.dims_size() >= 3)
-    {
-      channels = t.dims(1);
-      break;
-    }
-
-    // If we did not find the input size, check the ValueInfoProtos too (so,
-    // hopefully shape inference was successful).
-    if (channels == 0)
-    {
-      for (size_t i = 0; i < graph.value_info_size(); ++i)
-      {
-        const onnx::ValueInfoProto& v = graph.value_info(i);
-        if (v.has_name() && v.name() == inputName && v.has_type() &&
-            v.type().has_tensor_type() &&
-            v.type().tensor_type().has_shape() &&
-            v.type().tensor_type().shape().dim_size() >= 3 &&
-            v.type().tensor_type().shape().dim(1).has_dim_value())
-        {
-          channels = v.type().tensor_type().shape().dim(1).dim_value();
-          break;
-        }
-      }
-    }
-  }
-
-  // Make sure the dimensions match.
-  if (scaleDims != channels)
+  if (scaleDims.size() == 0)
     return false;
-  if (biasDims != channels)
+  if (biasDims.size() == 0)
     return false;
-  if (meanDims != channels)
+  if (meanDims.size() == 0)
     return false;
-  if (varDims != channels)
+  if (varDims.size() == 0)
+    return false;
+
+  size_t totalScaleDims = scaleDims[0];
+  for (size_t j = 1; j < scaleDims.size(); ++j)
+    totalScaleDims *= scaleDims[j];
+
+  size_t totalBiasDims = biasDims[0];
+  for (size_t j = 1; j < biasDims.size(); ++j)
+    totalBiasDims *= biasDims[j];
+
+  size_t totalMeanDims = meanDims[0];
+  for (size_t j = 1; j < meanDims.size(); ++j)
+    totalMeanDims *= meanDims[j];
+
+  size_t totalVarDims = varDims[0];
+  for (size_t j = 1; j < varDims.size(); ++j)
+    totalVarDims *= varDims[j];
+
+  std::vector<size_t> inputDims;
+  ExtractTensorDims(graph, bn.input(0), inputDims);
+  if (inputDims.size() != 4)
+    return false;
+
+  // Make sure the dimensions match.  inputDims[1] is the number of channels.
+  if (totalScaleDims != inputDims[1])
+    return false;
+  if (totalBiasDims != inputDims[1])
+    return false;
+  if (totalMeanDims != inputDims[1])
+    return false;
+  if (totalVarDims != inputDims[1])
     return false;
 
   return true;
@@ -154,37 +109,9 @@ inline void BatchNormSubgraph::Convert(
 
   // For the first, we can extract the number of dimensions from the input
   // tensor shape.
-  size_t inputDims = 0;
-  const std::string& inputName = bn.input(0);
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
-  {
-    const onnx::TensorProto& t = graph.initializer(i);
-    if (t.has_name() && t.name() == inputName && t.dims_size() >= 3)
-    {
-      inputDims = t.dims_size();
-      break;
-    }
-
-    // If we did not find the input size, check the ValueInfoProtos too (so,
-    // hopefully shape inference was successful).
-    if (inputDims == 0)
-    {
-      for (size_t i = 0; i < graph.value_info_size(); ++i)
-      {
-        const onnx::ValueInfoProto& v = graph.value_info(i);
-        if (v.has_name() && v.name() == inputName && v.has_type() &&
-            v.type().has_tensor_type() &&
-            v.type().tensor_type().has_shape() &&
-            v.type().tensor_type().shape().dim_size() >= 3)
-        {
-          inputDims = v.type().tensor_type().shape().dim_size();
-          break;
-        }
-      }
-    }
-  }
-
-  if (inputDims == 0)
+  std::vector<size_t> inputDims;
+  ExtractTensorDims(graph, bn.input(0), inputDims);
+  if (inputDims.size() == 0)
   {
     throw std::runtime_error("BatchNormSubgraph::Convert(): could not extract "
         "the number of dimensions in the input tensor!");
@@ -206,8 +133,8 @@ inline void BatchNormSubgraph::Convert(
 
   // Batch normalization is only applied on the channel axis, which will end up
   // being the last axis.
-  network.Add<mlpack::BatchNorm>(inputDims - 2, inputDims - 2, double(epsilon),
-      false /* ONNX always uses momentum */, double(momentum));
+  network.Add<mlpack::BatchNorm>(inputDims.size() - 2, inputDims.size() - 2,
+      double(epsilon), false /* ONNX always uses momentum */, double(momentum));
 }
 
 inline void BatchNormSubgraph::TransferWeights(
@@ -222,32 +149,10 @@ inline void BatchNormSubgraph::TransferWeights(
   // We can just extract the individual tensors as vectors, since that is how
   // mlpack shapes them.
   arma::mat scale, bias, mean, var;
-  for (size_t i = 0; i < graph.initializer_size(); ++i)
-  {
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == bn.input(1))
-    {
-      scale = TensorToArma(graph.initializer(i), true);
-    }
-
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == bn.input(2))
-    {
-      bias = TensorToArma(graph.initializer(i), true);
-    }
-
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == bn.input(3))
-    {
-      mean = TensorToArma(graph.initializer(i), true);
-    }
-
-    if (graph.initializer(i).has_name() &&
-        graph.initializer(i).name() == bn.input(4))
-    {
-      var = TensorToArma(graph.initializer(i), true);
-    }
-  }
+  scale = TensorToArma(graph, bn.input(1), true);
+  bias = TensorToArma(graph, bn.input(2), true);
+  mean = TensorToArma(graph, bn.input(3), true);
+  var = TensorToArma(graph, bn.input(4), true);
 
   // Make sure we were able to extract all the vectors.
   if (scale.n_elem == 0)
